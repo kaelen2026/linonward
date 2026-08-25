@@ -22,7 +22,8 @@ enforced by commitlint in the `commit-msg` hook.
 ```
 
 Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
-`build`, `ci`, `chore`, `revert`. Header limit is 100 characters.
+`build`, `ci`, `chore`, `revert`. Header limit is 100 characters, and so is every
+line of the body and footer — a long unwrapped line there fails the hook too.
 
 ```
 feat(www): add pricing page

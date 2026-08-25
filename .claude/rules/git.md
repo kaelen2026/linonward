@@ -10,7 +10,8 @@ Finishing an edit is not a request to commit.
 
 Never run destructive history or worktree commands on your own: no `push --force`,
 `reset --hard`, `rebase`, `checkout -- .`, `clean -fd`, `stash drop`,
-`worktree remove --force`, or branch deletion. If one of those is the right fix, say so and let the user decide.
+`worktree remove --force`, or branch deletion. If one of those is the right fix,
+say so and let the user decide.
 
 ## Commit message format
 
@@ -26,6 +27,8 @@ Conventional Commits, enforced by commitlint in the `commit-msg` hook:
   (`www`, `typescript-config`). Omit it for root/repo-wide changes.
 - Header — 100 characters max, including type and scope.
 - Subject — imperative mood, no trailing period. Case is unchecked.
+- Body and footer — every line 100 characters max, and that is an **error**, not
+  a warning. A pasted URL or error string left on one long line fails the hook.
 
 ```
 feat(www): add pricing page
@@ -34,8 +37,7 @@ chore: bump turborepo to 2.10
 docs: document the shadcn workflow
 ```
 
-Body is optional; use it for the *why*, wrapped at 100 columns. Close issues with
-a `Closes #123` footer.
+Body is optional; use it for the *why*. Close issues with a `Closes #123` footer.
 
 End every commit message you author with:
 
@@ -68,7 +70,9 @@ worktree, where hooks are absent until you run it (see [Worktrees](#worktrees)).
 | `commit-msg` | `commitlint` against the rules above |
 
 Biome rewrites files in place, so a commit can change what you staged; that is
-expected. Markdown, YAML, and MDX have no staged-file hook.
+expected. It also means the commit you got may not be the diff you reviewed —
+confirm with `git show --stat HEAD` before reporting the change as done.
+Markdown, YAML, and MDX have no staged-file hook.
 
 Do not pass `--no-verify`. If a hook fails, fix the cause: `pnpm lint:fix` for
 Biome findings, or reword the message for commitlint. Bypassing is the user's
@@ -83,8 +87,9 @@ pnpm lint
 pnpm typecheck
 ```
 
-If either fails, fix it or say plainly that it fails — do not commit over red and
-call it done.
+Add `pnpm build` for anything touching the build — the same gate CLAUDE.md sets.
+If any of them fails, fix it or say plainly that it fails — do not commit over
+red and call it done.
 
 ## Branches
 
@@ -159,34 +164,78 @@ what changed, why, and how it was verified. End with:
 
 ### Merging
 
-Merge with **rebase**, so `main` stays close to linear and the individual
-Conventional Commits survive:
+Check CI first — the PR gate is the reason this flow exists, and `commitlint`
+runs in CI only on `pull_request`, so a PR is the only place it sees the branch:
 
 ```bash
-gh pr merge <n> --rebase
+gh pr checks <n>
 ```
+
+Anything red or still running means not yet; `gh run view --log-failed` for the
+failure. Never merge over a failing check.
+
+Then merge with **squash**, so each PR lands on `main` as exactly one commit:
+
+```bash
+gh pr merge <n> --squash
+```
+
+`--delete-branch` would fold cleanup step 3 into the merge. It is still branch
+deletion, so pass it only when asked — the repo's `delete_branch_on_merge` is
+off, and nothing removes the branch on its own.
 
 `merge`, `squash` and `rebase` are all enabled on the repo and the choice is
-permanent history. Never pick one on your own; ask.
+permanent history. Switching away from squash is the user's call; never pick a
+different strategy on your own.
 
-Rebasing rewrites the SHAs, which has a consequence worth knowing *before* you
-reach for cleanup: the local branch's commits are no longer ancestors of `main`,
-so `git branch -d` reports **"not fully merged"** and refuses. `-D` is required.
+Squash means the branch's own commits never reach `main` — they are review-time
+structure only. The repo is set to `COMMIT_OR_PR_TITLE` / `COMMIT_MESSAGES`, so
+*which* text becomes the permanent commit depends on how many commits the branch
+carries. Check that before polishing the wrong thing:
 
-Prove nothing is lost first with `git cherry`, which compares **patch ids** and
-so sees through the rewritten SHAs:
+- **One commit** — its subject and body are used verbatim and the **PR title is
+  ignored**. The commit message is what to get right; a good PR title will not
+  rescue a bad commit subject. This is the common case here.
+- **More than one** — the **PR title** becomes the subject, so it has to stand
+  on its own under the rules above, and the body is every commit message
+  concatenated. Fix the title before merging rather than after, trim the body to
+  the *why*, and leave **one** `Co-Authored-By` trailer instead of the N copies
+  the concatenation produces.
+
+The squash is a new SHA over a combined diff, so the branch's commits are not
+ancestors of `main`: `git branch -d` reports **"not fully merged"** and refuses.
+`-D` is required.
+
+Two local checks look like they would clear that, and neither works here:
+
+- `git cherry main feat/pricing-page` compares **patch ids**, and a squash has
+  no patch to match. N commits collapsed into one produce a single combined
+  patch id that equals none of theirs, so every commit comes back `+` ("not
+  upstream") on any branch longer than one commit. It is right about the patch
+  ids and wrong about the question.
+- Reverse-applying the branch's net diff
+  (`git diff main...feat/pricing-page | git apply --reverse --check -`) fails as
+  soon as a later commit on `main` touched lines near yours — which happens
+  routinely in this repo — so a failure says nothing either way.
+
+Ask GitHub, which performed the squash and is the authority on whether it
+landed:
 
 ```bash
-git cherry main feat/pricing-page
+gh pr view <n> --json state,mergedAt,mergeCommit
 ```
 
-Read the markers, not the presence of output: `-` means that patch is already
-upstream, `+` means it is **not**. Only `+` lines block deletion. No `+` lines,
-and `-D` discards nothing but stale SHAs.
+`state: MERGED` with a `mergeCommit` SHA is the proof, and `-D` then discards
+nothing but the pre-squash SHAs. To see that commit locally, grep `main` for the
+PR number GitHub appends to the subject:
+
+```bash
+git log main --oneline --grep='(#<n>)'
+```
 
 Do **not** compare trees (`git rev-parse 'branch^{tree}'` against
 `'main^{tree}'`) to decide this. It is only equal when nothing else landed on
-`main` between the rebase and the check — merge one other PR first and the trees
+`main` between the merge and the check — merge one other PR first and the trees
 legitimately differ while the branch is fully merged, which reads as data loss
 when it is not.
 
@@ -197,7 +246,7 @@ Order matters — a branch still checked out in a worktree cannot be deleted:
 1. `git pull --ff-only` in the main checkout, to bring `main` up to the merge
 2. `git worktree remove ../linonward-pricing-page`
 3. `git push origin --delete feat/pricing-page`
-4. `git branch -D feat/pricing-page` — after the `git cherry` check above
+4. `git branch -D feat/pricing-page` — after the `gh pr view` check above
 
 The repo does not auto-delete merged branches. Every step here is branch or
 worktree deletion, so all of it is the user's call: do it only when asked, never
