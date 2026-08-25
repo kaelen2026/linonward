@@ -73,7 +73,8 @@ jobs:
             规则:
             - 遵守 CLAUDE.md 与 .claude/rules/git.md。
             - 绝不推送到 main。任何改动都开分支提 PR。
-            - 提交前跑 pnpm lint 和 pnpm typecheck,失败就修,或如实说明失败。
+            - 提交前跑 pnpm lint、pnpm typecheck 和 pnpm test,失败就修,
+              或如实说明失败。
             - 最后输出一段中文总结:做了什么、验证结果、PR 链接(若有)。
 
       # A separate step on purpose: the Feishu credentials must not exist in the
