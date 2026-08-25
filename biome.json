@@ -13,6 +13,8 @@
       "!**/.turbo",
       "!**/node_modules",
       "!**/dist",
+      "!**/playwright-report",
+      "!**/test-results",
       "!**/next-env.d.ts",
       "!**/pnpm-lock.yaml"
     ]
