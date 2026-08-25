@@ -22,7 +22,7 @@ a `test` task in `turbo.json`, and a `.lintstagedrc.mjs` glob.
 `@radix-ui/*` packages here, so stock shadcn/Radix snippets copied from the web will not compile.
 
 - Composition uses a **`render` prop**, not `asChild`/`Slot`:
-  `<Button render={<a href="…" />} size="lg">` — see `src/app/page.tsx`.
+  `<Button render={<a href="…" />} size="lg">` — see `src/app/[locale]/page.tsx`.
 - Custom primitives use `useRender` + `mergeProps` — see `src/components/ui/badge.tsx`.
 - Variants are `cva`, merged through `cn()` in `src/lib/utils.ts`.
 
@@ -35,13 +35,45 @@ cd apps/www && pnpm dlx shadcn@latest add dialog
 
 ## Tailwind v4 has no config file
 
-Theming lives in `src/app/globals.css`. Changing a color or radius token means editing **both**
-the `--color-*` mapping in `@theme inline` and the underlying property in `:root`/`.dark`. Colors
-are `oklch()`; dark mode is a `@custom-variant` keyed on `.dark`.
+Theming lives in `src/app/globals.css`, in three layers. Know which one you are editing:
 
-Fonts work because `layout.tsx` names the `next/font` CSS variables `--font-sans` and
-`--font-mono` on `<html>` — exactly what the theme block reads. Renaming them silently breaks
-typography.
+- A plain `@theme` block holds the **brand ramp** (`--color-navy-*`, `--color-teal-*`), sampled
+  from `public/logo.png`. Static — identical in light and dark, so no indirection.
+- `:root` plus a `@media (prefers-color-scheme: dark)` block hold the **semantic tokens**, each
+  pointing at a ramp step. This is the layer that flips. Retuning a color or radius means
+  editing here and nowhere else.
+- `@theme inline` maps `--color-primary` → `var(--primary)`. Adding a **new** semantic token means
+  editing this **and** both `:root` blocks; miss this and the utility class silently doesn't
+  exist.
+
+Colors are `oklch()`. Dark mode follows **`prefers-color-scheme`** — the scaffold's
+`@custom-variant dark (&:is(.dark *))` override is deliberately gone, so Tailwind v4's built-in
+media-query `dark:` variant applies and the token block is keyed on the same media query. Moving
+back to a class strategy means reintroducing a blocking inline script to set the class before
+first paint; React does not execute a `<script>` rendered from a component on the client, so
+Next.js logs a console error for the obvious implementation. There is no theme toggle.
+
+Brand teal (`teal-500`) is **2.61:1 on white** — never body text on a light surface. Use the
+`brand` Button variant (teal surface, navy label, 5.73:1) or step down to `teal-700` for teal
+text. Full reasoning and the contrast table: [docs/design-system.md](./docs/design-system.md).
+
+Fonts are a two-file contract: `layout.tsx` names the `next/font` variables `--font-geist-sans`
+and `--font-geist-mono`, and `globals.css` builds `--font-sans` from those **plus a system CJK
+fallback stack**. Rename one side without the other and Chinese text silently falls back to the
+browser default. Do not add `uppercase` or wide `tracking` to shared text styles — both are
+useless or harmful in Chinese.
+
+## The site is bilingual
+
+Every route lives under `src/app/[locale]/`, and that is where the **root layout** is — there is
+no `src/app/layout.tsx`. Locales are `zh` (default) and `en`, declared in `src/lib/i18n.ts`;
+`next.config.ts` redirects `/` → `/zh`.
+
+All copy lives in `src/content/site.ts` as `Record<Locale, SiteContent>`, so a section added to
+one language fails to compile until the other has it too. Put strings there, not in components.
+
+`Button` rendered as a link needs `nativeButton={false}` — Base UI asserts a native `<button>`
+otherwise and warns at runtime about the lost semantics.
 
 ## TypeScript settings that change how you write code
 
