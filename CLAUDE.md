@@ -79,8 +79,11 @@ otherwise and warns at runtime about the lost semantics.
 
 - `verbatimModuleSyntax` — type-only imports **must** be `import type { … }`.
 - `noUncheckedIndexedAccess` — `arr[0]` is `T | undefined`; narrow before use.
-- `typedRoutes` — a typo'd `href` is a type error, and new routes need a `build` or `typecheck`
-  pass before they resolve.
+- `typedRoutes` — a typo'd `href` is a type error. It also means `PageProps<'/[locale]'>` and
+  `LayoutProps<…>` are **generated** globals living in `.next/types`, not imports. That is why
+  `apps/www`'s `typecheck` script is `next typegen && tsc --noEmit`: bare `tsc` passes locally
+  off a stale `.next` and then fails on a clean CI checkout with `Cannot find name 'PageProps'`.
+  Do not "simplify" the `next typegen` away.
 
 ## Gotchas
 
