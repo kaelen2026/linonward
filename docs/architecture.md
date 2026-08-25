@@ -22,6 +22,7 @@ them from disk instead of resolving them from the registry.
 | `dev` | — | no | `persistent: true`, long-running |
 | `start` | `build` | no | `persistent: true` |
 | `typecheck` | `^build` | yes | No outputs; the cache stores the pass/fail result |
+| `test` | `^build` | yes | Vitest; same deal — the cache stores the result |
 | `clean` | — | no | |
 
 `^build` means "build every dependency of this workspace first". Because

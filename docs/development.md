@@ -16,12 +16,15 @@ pnpm dev                             # all apps
 pnpm --filter @linonward/www dev     # just the website
 pnpm build
 pnpm typecheck
+pnpm test                            # Vitest, every workspace
 pnpm lint                            # check only
 pnpm lint:fix                        # apply safe fixes
 ```
 
-Turborepo caches `build` and `typecheck`. A second run with no changes replays
-from cache in milliseconds. Force a fresh run with `--force`:
+Testing has its own page: [testing.md](./testing.md).
+
+Turborepo caches `build`, `typecheck`, and `test`. A second run with no changes
+replays from cache in milliseconds. Force a fresh run with `--force`:
 
 ```bash
 pnpm build --force
