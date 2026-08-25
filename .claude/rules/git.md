@@ -159,8 +159,8 @@ what changed, why, and how it was verified. End with:
 
 ### Merging
 
-Merge with **rebase**, so `main` stays linear — it has no merge commits — and
-the individual Conventional Commits survive:
+Merge with **rebase**, so `main` stays close to linear and the individual
+Conventional Commits survive:
 
 ```bash
 gh pr merge <n> --rebase
@@ -172,15 +172,23 @@ permanent history. Never pick one on your own; ask.
 Rebasing rewrites the SHAs, which has a consequence worth knowing *before* you
 reach for cleanup: the local branch's commits are no longer ancestors of `main`,
 so `git branch -d` reports **"not fully merged"** and refuses. `-D` is required.
-Prove nothing is lost first by comparing the trees rather than the commits:
+
+Prove nothing is lost first with `git cherry`, which compares **patch ids** and
+so sees through the rewritten SHAs:
 
 ```bash
-git rev-parse 'feat/pricing-page^{tree}'    # must equal
-git rev-parse 'main^{tree}'                 # this
+git cherry main feat/pricing-page
 ```
 
-Identical trees mean the content is already on `main` and `-D` discards only the
-stale SHAs. Different trees mean stop and say so.
+Read the markers, not the presence of output: `-` means that patch is already
+upstream, `+` means it is **not**. Only `+` lines block deletion. No `+` lines,
+and `-D` discards nothing but stale SHAs.
+
+Do **not** compare trees (`git rev-parse 'branch^{tree}'` against
+`'main^{tree}'`) to decide this. It is only equal when nothing else landed on
+`main` between the rebase and the check — merge one other PR first and the trees
+legitimately differ while the branch is fully merged, which reads as data loss
+when it is not.
 
 ### Post-merge cleanup
 
@@ -189,7 +197,7 @@ Order matters — a branch still checked out in a worktree cannot be deleted:
 1. `git pull --ff-only` in the main checkout, to bring `main` up to the merge
 2. `git worktree remove ../linonward-pricing-page`
 3. `git push origin --delete feat/pricing-page`
-4. `git branch -D feat/pricing-page` — after the tree check above
+4. `git branch -D feat/pricing-page` — after the `git cherry` check above
 
 The repo does not auto-delete merged branches. Every step here is branch or
 worktree deletion, so all of it is the user's call: do it only when asked, never
