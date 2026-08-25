@@ -153,3 +153,41 @@ what changed, why, and how it was verified. End with:
 ```
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
+
+### Merging
+
+Merge with **rebase**, so `main` stays linear — it has no merge commits — and
+the individual Conventional Commits survive:
+
+```bash
+gh pr merge <n> --rebase
+```
+
+`merge`, `squash` and `rebase` are all enabled on the repo and the choice is
+permanent history. Never pick one on your own; ask.
+
+Rebasing rewrites the SHAs, which has a consequence worth knowing *before* you
+reach for cleanup: the local branch's commits are no longer ancestors of `main`,
+so `git branch -d` reports **"not fully merged"** and refuses. `-D` is required.
+Prove nothing is lost first by comparing the trees rather than the commits:
+
+```bash
+git rev-parse 'feat/pricing-page^{tree}'    # must equal
+git rev-parse 'main^{tree}'                 # this
+```
+
+Identical trees mean the content is already on `main` and `-D` discards only the
+stale SHAs. Different trees mean stop and say so.
+
+### Post-merge cleanup
+
+Order matters — a branch still checked out in a worktree cannot be deleted:
+
+1. `git pull --ff-only` in the main checkout, to bring `main` up to the merge
+2. `git worktree remove ../linonward-pricing-page`
+3. `git push origin --delete feat/pricing-page`
+4. `git branch -D feat/pricing-page` — after the tree check above
+
+The repo does not auto-delete merged branches. Every step here is branch or
+worktree deletion, so all of it is the user's call: do it only when asked, never
+with `--force`, and never to a worktree you did not create.
