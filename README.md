@@ -38,6 +38,7 @@ The website runs at http://localhost:3000.
 | `pnpm build` | Build every workspace |
 | `pnpm typecheck` | Type-check every workspace |
 | `pnpm test` | Run Vitest across every workspace |
+| `pnpm test:e2e` | Run Playwright end-to-end against a production build |
 | `pnpm lint` | Biome lint + format check |
 | `pnpm lint:fix` | Biome autofix |
 | `pnpm format` | Biome format only |

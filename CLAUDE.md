@@ -13,10 +13,15 @@ things that will bite an agent.
 `pnpm lint` + `pnpm typecheck` + `pnpm test`, plus `pnpm build` for anything touching the build.
 Report real output; don't commit over red and call it done.
 
-Tests are Vitest with Testing Library, in `apps/www`, next to the code as `*.test.{ts,tsx}`.
-`pnpm test` fans out through Turborepo; `pnpm --filter @linonward/www test:watch` is the TDD
-loop. The `pre-commit` hook does **not** run them — CI does, between typecheck and build. An
-`async` server component cannot be rendered by Vitest at all; a synchronous one can. Read
+Two runners in `apps/www`. **Vitest** with Testing Library for logic and components, next to
+the code as `*.test.{ts,tsx}` — `pnpm test`, or `pnpm --filter @linonward/www test:watch` for
+the TDD loop. **Playwright** for end-to-end, in `e2e/**/*.spec.ts` — `pnpm test:e2e`, which
+builds first and drives Chromium at two viewports. Neither runs in `pre-commit`; CI runs both
+in parallel jobs.
+
+Two traps worth knowing up front: an `async` server component cannot be rendered by Vitest at
+all (a synchronous one can), and Playwright locators must be scoped to a landmark — the header
+and footer both hold a nav and a language switcher, so a bare `getByRole` matches twice. Read
 [`.claude/rules/tdd.md`](.claude/rules/tdd.md) before writing a test.
 
 ## UI: Base UI, not Radix

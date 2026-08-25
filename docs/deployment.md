@@ -34,7 +34,9 @@ start it with `node server.js`.
 ## CI
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push to
-`main` and every pull request against it. One `verify` job:
+`main` and every pull request against it, in two parallel jobs.
+
+`verify`:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -44,6 +46,11 @@ pnpm typecheck
 pnpm test
 pnpm build
 ```
+
+`e2e` installs Chromium — cached on the resolved Playwright version, with
+`playwright install-deps` still run on a cache hit because the system libraries
+live outside the cached path — then runs `pnpm test:e2e` against a production
+build. The HTML report uploads as an artifact on every run, kept 7 days.
 
 pnpm comes from `pnpm/action-setup`, which reads the pinned version out of
 `packageManager`; Node comes from `.nvmrc`. The pnpm store is cached by

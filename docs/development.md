@@ -17,6 +17,7 @@ pnpm --filter @linonward/www dev     # just the website
 pnpm build
 pnpm typecheck
 pnpm test                            # Vitest, every workspace
+pnpm test:e2e                        # Playwright, against a production build
 pnpm lint                            # check only
 pnpm lint:fix                        # apply safe fixes
 ```
