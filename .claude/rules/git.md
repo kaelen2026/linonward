@@ -9,8 +9,8 @@ Never commit, amend, push, tag, or create a PR unless the user asks for it.
 Finishing an edit is not a request to commit.
 
 Never run destructive history or worktree commands on your own: no `push --force`,
-`reset --hard`, `rebase`, `checkout -- .`, `clean -fd`, `stash drop`, or branch
-deletion. If one of those is the right fix, say so and let the user decide.
+`reset --hard`, `rebase`, `checkout -- .`, `clean -fd`, `stash drop`,
+`worktree remove --force`, or branch deletion. If one of those is the right fix, say so and let the user decide.
 
 ## Commit message format
 
@@ -59,7 +59,8 @@ first rather than using `-f`.
 
 ## Hooks
 
-Husky installs on `pnpm install` via the root `prepare` script.
+Husky installs on `pnpm install` via the root `prepare` script — including in a new
+worktree, where hooks are absent until you run it (see [Worktrees](#worktrees)).
 
 | Hook | Runs |
 | --- | --- |
@@ -95,6 +96,54 @@ branch first:
 ```
 
 Use the same type vocabulary as commits. Never force-push a shared branch.
+
+## Worktrees
+
+Do the work in a worktree, not by switching branches in the main checkout. The
+main checkout at `linonward/` stays on `main` and stays clean, so a dev server,
+a build, or a second task never has the rug pulled out from under it.
+
+Worktrees live **beside** the repository, never inside it — a worktree nested in
+the working tree would be swept into `pnpm-workspace.yaml` globs and Biome's file
+walk. Name the directory after the branch:
+
+```
+workspace/github/kaelen2026/
+├── linonward/                     # main checkout — stays on main
+├── linonward-pricing-page/        # feat/pricing-page
+└── linonward-dark-mode-border/    # fix/dark-mode-border
+```
+
+Create one, then install before touching anything:
+
+```bash
+git worktree add ../linonward-pricing-page -b feat/pricing-page
+cd ../linonward-pricing-page
+pnpm install
+```
+
+`pnpm install` is **not optional**. A fresh worktree has no `node_modules`, and
+`.husky/_` is gitignored so it does not come across either — but `core.hooksPath`
+is shared repo config and still points at `.husky/_`. Until `prepare` recreates
+that directory, git finds no hooks and **commits skip lint-staged and commitlint
+silently, with no error**. Verify with `git config --get core.hooksPath` and a
+directory listing if a commit looks suspiciously quiet.
+
+Two more things are per-worktree, not shared: the Turborepo cache in `.turbo/`
+(the first build in a new worktree is a cold one) and `.env*.local` files, which
+are gitignored and must be copied over by hand if the task needs them.
+
+When the branch is merged or abandoned, remove the worktree — a stale one keeps
+its branch checked out and blocks deleting it:
+
+```bash
+git worktree list                              # from anywhere in the repo
+git worktree remove ../linonward-pricing-page
+```
+
+Never `worktree remove --force`, and never remove a worktree you did not create:
+it discards uncommitted work in a directory the user may still be using. If a
+worktree refuses to go, say why and let the user decide.
 
 ## PRs
 
