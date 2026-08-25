@@ -4,17 +4,20 @@ Guidance for Claude Code (claude.ai/code) in this repository.
 
 Setup, scripts, and workspace layout are in [README.md](./README.md). Long-form detail is in
 [`docs/`](./docs). Git rules — commit format, hooks, staging, branches — are in
-[`.claude/rules/git.md`](.claude/rules/git.md). This file covers only what those don't: the
+[`.claude/rules/git.md`](.claude/rules/git.md), and how to write tests is in
+[`.claude/rules/tdd.md`](.claude/rules/tdd.md). This file covers only what those don't: the
 things that will bite an agent.
 
 ## Verification
 
-`pnpm lint` + `pnpm typecheck`, plus `pnpm build` for anything touching the build. Report real
-output; don't commit over red and call it done.
+`pnpm lint` + `pnpm typecheck` + `pnpm test`, plus `pnpm build` for anything touching the build.
+Report real output; don't commit over red and call it done.
 
-**There is no test runner here** — no `test` script, no vitest/jest, no test files. Do not invent
-`pnpm test`. Adding a runner is itself the task, and worth asking about first: it means new deps,
-a `test` task in `turbo.json`, and a `.lintstagedrc.mjs` glob.
+Tests are Vitest with Testing Library, in `apps/www`, next to the code as `*.test.{ts,tsx}`.
+`pnpm test` fans out through Turborepo; `pnpm --filter @linonward/www test:watch` is the TDD
+loop. The `pre-commit` hook does **not** run them — CI does, between typecheck and build. An
+`async` server component cannot be rendered by Vitest at all; a synchronous one can. Read
+[`.claude/rules/tdd.md`](.claude/rules/tdd.md) before writing a test.
 
 ## UI: Base UI, not Radix
 

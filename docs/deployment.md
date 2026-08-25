@@ -41,6 +41,7 @@ pnpm install --frozen-lockfile
 pnpm exec commitlint --from <base> --to <head>   # pull requests only
 pnpm lint
 pnpm typecheck
+pnpm test
 pnpm build
 ```
 

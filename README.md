@@ -37,6 +37,7 @@ The website runs at http://localhost:3000.
 | `pnpm dev` | Run every app in dev mode via Turborepo |
 | `pnpm build` | Build every workspace |
 | `pnpm typecheck` | Type-check every workspace |
+| `pnpm test` | Run Vitest across every workspace |
 | `pnpm lint` | Biome lint + format check |
 | `pnpm lint:fix` | Biome autofix |
 | `pnpm format` | Biome format only |
