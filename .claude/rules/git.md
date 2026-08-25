@@ -129,9 +129,12 @@ that directory, git finds no hooks and **commits skip lint-staged and commitlint
 silently, with no error**. Verify with `git config --get core.hooksPath` and a
 directory listing if a commit looks suspiciously quiet.
 
-Two more things are per-worktree, not shared: the Turborepo cache in `.turbo/`
-(the first build in a new worktree is a cold one) and `.env*.local` files, which
-are gitignored and must be copied over by hand if the task needs them.
+The Turborepo cache, on the other hand, *is* shared. Turbo resolves the
+repository root through the `.git` file a worktree carries, so every worktree
+reads and writes `linonward/.turbo/cache` in the main checkout — a fresh
+worktree gets warm builds for free, and `rm -rf .turbo` from one clears them
+for all. What does not come across is `.env*.local`: gitignored, so copy it by
+hand if the task needs it.
 
 When the branch is merged or abandoned, remove the worktree — a stale one keeps
 its branch checked out and blocks deleting it:
