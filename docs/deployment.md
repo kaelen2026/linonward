@@ -33,15 +33,28 @@ start it with `node server.js`.
 
 ## CI
 
-A minimal pipeline:
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push to
+`main` and every pull request against it. One `verify` job:
 
 ```bash
 pnpm install --frozen-lockfile
+pnpm exec commitlint --from <base> --to <head>   # pull requests only
 pnpm lint
 pnpm typecheck
 pnpm build
 ```
 
-Turborepo's remote cache makes these near-instant across runs — connect one
-with `npx turbo login && npx turbo link`, then expose `TURBO_TOKEN` and
-`TURBO_TEAM` to CI.
+pnpm comes from `pnpm/action-setup`, which reads the pinned version out of
+`packageManager`; Node comes from `.nvmrc`. The pnpm store is cached by
+`actions/setup-node`. A new push to a PR cancels the run still in flight.
+
+The commitlint step is the backstop for the `commit-msg` hook, which a local
+`--no-verify` can skip. It needs full history, hence `fetch-depth: 0`.
+
+### Remote caching
+
+The workflow already passes `TURBO_TOKEN` and `TURBO_TEAM` through; both are
+optional, and Turborepo falls back to a cold local cache when they are unset. To
+turn remote caching on, run `npx turbo login && npx turbo link`, then add
+`TURBO_TOKEN` as a repository **secret** and `TURBO_TEAM` as a repository
+**variable**. Fork pull requests cannot read secrets and will keep building cold.
