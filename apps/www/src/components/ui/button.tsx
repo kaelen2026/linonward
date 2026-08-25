@@ -9,6 +9,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        // The logo's own pairing: teal surface, navy label. Brand teal is never
+        // a text colour on light surfaces (2.61:1) — only a surface (5.73:1).
+        brand:
+          "bg-brand text-brand-foreground hover:bg-[color-mix(in_oklch,var(--brand),var(--brand-foreground)_12%)]",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:

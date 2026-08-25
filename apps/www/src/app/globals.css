@@ -2,11 +2,65 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* No `@custom-variant dark` override: Tailwind v4's built-in `dark:` variant is
+ * already `@media (prefers-color-scheme: dark)`, which is what the token block
+ * below is keyed on. Switching to a class strategy means reintroducing a
+ * blocking inline script to set that class before first paint. */
+
+/* ---------------------------------------------------------------------------
+ * Brand primitives
+ *
+ * Both ramps are sampled from public/logo.png and anchored so that the two
+ * colours in the mark land exactly on a scale step:
+ *
+ *   navy-900  #03274D  oklch(0.273 0.081 253.54)   the L
+ *   teal-500  #0DB2B3  oklch(0.692 0.117 195.52)   the rising arrow
+ *
+ * Lightness follows a fixed curve; chroma tapers at both ends so the tints
+ * stay clean and the shades stay in gamut. These values do not change between
+ * light and dark, so they live in a plain `@theme` block — only the semantic
+ * tokens below flip. See docs/design-system.md.
+ * ------------------------------------------------------------------------- */
+@theme {
+  --color-navy-50: oklch(0.975 0.01 253.54);
+  --color-navy-100: oklch(0.945 0.019 253.54);
+  --color-navy-200: oklch(0.895 0.032 253.54);
+  --color-navy-300: oklch(0.825 0.048 253.54);
+  --color-navy-400: oklch(0.76 0.066 253.54);
+  --color-navy-500: oklch(0.692 0.081 253.54);
+  --color-navy-600: oklch(0.6 0.08 253.54);
+  --color-navy-700: oklch(0.5 0.076 253.54);
+  --color-navy-800: oklch(0.39 0.073 253.54);
+  --color-navy-900: oklch(0.273 0.081 253.54);
+  --color-navy-950: oklch(0.18 0.066 253.54);
+
+  --color-teal-50: oklch(0.975 0.015 195.52);
+  --color-teal-100: oklch(0.945 0.028 195.52);
+  --color-teal-200: oklch(0.895 0.047 195.52);
+  --color-teal-300: oklch(0.825 0.07 195.52);
+  --color-teal-400: oklch(0.76 0.096 195.52);
+  --color-teal-500: oklch(0.692 0.117 195.52);
+  --color-teal-600: oklch(0.6 0.115 195.52);
+  --color-teal-700: oklch(0.5 0.11 195.52);
+  --color-teal-800: oklch(0.39 0.105 195.52);
+  --color-teal-900: oklch(0.273 0.117 195.52);
+  --color-teal-950: oklch(0.18 0.096 195.52);
+}
 
 @theme inline {
+  /* Geist for latin, system CJK for Chinese. The next/font variables are
+   * named --font-geist-* in layout.tsx; this is the only place the CJK
+   * fallback is appended, so the two must be renamed together. */
+  --font-sans:
+    var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans CJK SC", "Source Han Sans SC", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-subtle: var(--brand-subtle);
+  --color-brand-subtle-foreground: var(--brand-subtle-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -47,73 +101,95 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ---------------------------------------------------------------------------
+ * Semantic tokens
+ *
+ * Every text pairing below is verified at >= 4.5:1. The one rule the ramp
+ * cannot express: teal-500 on white is 2.61:1, so the brand teal is never a
+ * text colour on a light surface — it is a *surface* whose label is navy-900
+ * (5.73:1), which is the pairing the logo itself uses. For teal text on white,
+ * step down to teal-700 (5.44:1).
+ * ------------------------------------------------------------------------- */
 :root {
+  /* Lets the UA theme scrollbars, form controls and the canvas to match. */
+  color-scheme: light dark;
+
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: var(--color-navy-900);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: var(--color-navy-900);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --popover-foreground: var(--color-navy-900);
+  --primary: var(--color-navy-900);
+  --primary-foreground: var(--color-navy-50);
+  --secondary: var(--color-navy-50);
+  --secondary-foreground: var(--color-navy-800);
+  --muted: var(--color-navy-50);
+  --muted-foreground: var(--color-navy-700);
+  --accent: var(--color-teal-50);
+  --accent-foreground: var(--color-teal-800);
+  --brand: var(--color-teal-500);
+  --brand-foreground: var(--color-navy-900);
+  --brand-subtle: var(--color-teal-50);
+  --brand-subtle-foreground: var(--color-teal-800);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border: var(--color-navy-200);
+  --input: var(--color-navy-200);
+  --ring: var(--color-teal-500);
+  --chart-1: var(--color-teal-500);
+  --chart-2: var(--color-navy-600);
+  --chart-3: var(--color-teal-700);
+  --chart-4: var(--color-navy-300);
+  --chart-5: var(--color-teal-300);
+  --radius: 0.75rem;
+  --sidebar: var(--color-navy-50);
+  --sidebar-foreground: var(--color-navy-900);
+  --sidebar-primary: var(--color-navy-900);
+  --sidebar-primary-foreground: var(--color-navy-50);
+  --sidebar-accent: var(--color-teal-50);
+  --sidebar-accent-foreground: var(--color-teal-800);
+  --sidebar-border: var(--color-navy-200);
+  --sidebar-ring: var(--color-teal-500);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--color-navy-950);
+    --foreground: var(--color-navy-50);
+    --card: var(--color-navy-900);
+    --card-foreground: var(--color-navy-50);
+    --popover: var(--color-navy-900);
+    --popover-foreground: var(--color-navy-50);
+    --primary: var(--color-teal-500);
+    --primary-foreground: var(--color-navy-950);
+    --secondary: var(--color-navy-800);
+    --secondary-foreground: var(--color-navy-50);
+    --muted: var(--color-navy-900);
+    --muted-foreground: var(--color-navy-400);
+    --accent: var(--color-navy-800);
+    --accent-foreground: var(--color-teal-300);
+    --brand: var(--color-teal-500);
+    --brand-foreground: var(--color-navy-950);
+    --brand-subtle: var(--color-teal-900);
+    --brand-subtle-foreground: var(--color-teal-300);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 16%);
+    --ring: var(--color-teal-500);
+    --chart-1: var(--color-teal-400);
+    --chart-2: var(--color-navy-400);
+    --chart-3: var(--color-teal-600);
+    --chart-4: var(--color-navy-600);
+    --chart-5: var(--color-teal-200);
+    --sidebar: var(--color-navy-900);
+    --sidebar-foreground: var(--color-navy-50);
+    --sidebar-primary: var(--color-teal-500);
+    --sidebar-primary-foreground: var(--color-navy-950);
+    --sidebar-accent: var(--color-navy-800);
+    --sidebar-accent-foreground: var(--color-teal-300);
+    --sidebar-border: oklch(1 0 0 / 12%);
+    --sidebar-ring: var(--color-teal-500);
+  }
 }
 
 @layer base {
@@ -125,5 +201,47 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  /* The arrow in the mark travels lower-left to upper-right; every brand
+   * gradient follows that same 45-degree axis. */
+  .brand-gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(45deg, var(--color-navy-900) 0%, var(--color-teal-600) 100%);
+  }
+  @media (prefers-color-scheme: dark) {
+    .brand-gradient-text {
+      background-image: linear-gradient(
+        45deg,
+        var(--color-navy-200) 0%,
+        var(--color-teal-400) 100%
+      );
+    }
+  }
+
+  /* Faint 45-degree wash used behind the hero and the closing band. */
+  .brand-wash {
+    background-image:
+      radial-gradient(
+        ellipse 80% 60% at 15% 100%,
+        color-mix(in oklch, var(--color-teal-500) 14%, transparent),
+        transparent
+      ),
+      radial-gradient(
+        ellipse 70% 50% at 90% 0%,
+        color-mix(in oklch, var(--color-navy-500) 12%, transparent),
+        transparent
+      );
+  }
+
+  /* Hairline grid, echoing the axes of a chart. */
+  .brand-grid {
+    background-image:
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black, transparent);
   }
 }
