@@ -7,12 +7,11 @@ import type { Locale } from "@/lib/i18n";
  * identical — the `Record<Locale, SiteContent>` type below fails to compile the
  * moment one language grows a section the other is missing.
  *
- * TODO(product): the contact address and the section copy are a first draft.
- * Replace `contactEmail` and re-check every claim against what the platform
- * actually ships before this goes public.
+ * TODO(product): the section copy is a first draft — re-check every capability
+ * claim against what the platform actually ships before this goes public.
  */
 
-export const contactEmail = "hello@linonward.com";
+export const contactEmail = "linonward@gmail.com";
 
 /** Keys resolved to lucide components in `src/components/site/icon.tsx`. */
 export type IconName =
