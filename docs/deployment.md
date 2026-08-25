@@ -34,7 +34,8 @@ start it with `node server.js`.
 ## CI
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push to
-`main` and every pull request against it, in two parallel jobs.
+`main` and on every pull request regardless of its base — a PR stacked on
+another branch gets the same gate. Two jobs, in parallel.
 
 `verify`:
 
