@@ -66,7 +66,8 @@ apps/api/src/
 ├── index.ts        # config → app → listen
 ├── composition.ts  # the mount table; where the real clock, ids, and storage are chosen
 ├── app.ts          # request id, CORS, and the one error envelope
-├── shared/         # the shared kernel: ApiError, the ApiModule contract, mountModules
+├── migrate.ts      # applies migrations/*.sql, then exits
+├── shared/         # the shared kernel: ApiError, the ApiModule contract, Postgres, Redis
 └── modules/        # health/ and contact/, each a vertical routes → service → repository slice
 ```
 
@@ -78,9 +79,15 @@ naming the file and the specifier. Anything shared between modules goes through 
 instead, which is what keeps a later extraction cheap.
 
 Dependencies are injected rather than reached for (`clock`, `nextId`, `repository`), so modules
-test without a socket or a database. Inquiry storage is an in-memory `Map` behind an
-`InquiryRepository` port — deliberate, and the seam to replace first. Endpoints, the error body,
-and configuration live in [the app README](../apps/api/README.md).
+test without a socket or a database. Postgres backs inquiries and Redis backs the submission rate
+limit, but `composition.ts` is the only file that knows either exists: modules see an
+`InquiryRepository` and a `RateLimiter` and cannot tell which adapter they were handed. Both are
+optional locally — absent, the in-memory adapters take over — and both are refused under
+`NODE_ENV=production`, so no deploy can quietly lose its data to a restart.
+
+`apps/api/compose.yml` runs the three containers together; migrations are plain SQL applied by
+`dist/migrate.js` before the server starts. Endpoints, the error body, and configuration live in
+[the app README](../apps/api/README.md).
 
 ## `apps/feishu`
 

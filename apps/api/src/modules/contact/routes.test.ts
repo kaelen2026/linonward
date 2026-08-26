@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createApp } from "../../app.js";
+import { createInMemoryRateLimiter, rateLimit } from "../../shared/rate-limit.js";
 import { createContactModule } from "./index.js";
 import { createInMemoryInquiryRepository } from "./repository.js";
 
@@ -11,14 +12,20 @@ const body = {
   locale: "zh",
 };
 
-function appWithContact() {
+function appWithContact(limit = 100) {
+  const clock = () => new Date("2026-08-26T07:00:00.000Z");
+
   return createApp({
     allowedOrigins: [],
     modules: [
       createContactModule({
         repository: createInMemoryInquiryRepository(),
-        clock: () => new Date("2026-08-26T07:00:00.000Z"),
+        clock,
         nextId: () => "inq_1",
+        throttle: rateLimit(
+          createInMemoryRateLimiter({ limit, windowSeconds: 60 }, clock),
+          (c) => c.req.header("x-client") ?? "anonymous",
+        ),
       }),
     ],
   });
@@ -86,5 +93,35 @@ describe("contact routes", () => {
 
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({ error: { code: "inquiry_not_found" } });
+  });
+
+  it("throttles a client that submits past its budget", async () => {
+    const app = appWithContact(1);
+    const submit = () =>
+      app.request("/contact/inquiries", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    await submit();
+
+    const response = await submit();
+
+    expect(response.status).toBe(429);
+    expect(await response.json()).toMatchObject({ error: { code: "rate_limited" } });
+  });
+
+  it("does not spend the submission budget on reading an inquiry back", async () => {
+    const app = appWithContact(1);
+    await app.request("/contact/inquiries", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    await app.request("/contact/inquiries/inq_1");
+    const response = await app.request("/contact/inquiries/inq_1");
+
+    expect(response.status).toBe(200);
   });
 });

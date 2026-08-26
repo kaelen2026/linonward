@@ -1,15 +1,21 @@
 import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
+import { Hono, type MiddlewareHandler } from "hono";
 
 import { ApiError } from "../../shared/api-error.js";
 import type { AppEnv } from "../../shared/module.js";
 import { inquiryInputSchema } from "./schema.js";
 import type { InquiryService } from "./service.js";
 
-export function createContactRoutes(service: InquiryService): Hono<AppEnv> {
+export function createContactRoutes(
+  service: InquiryService,
+  throttle: MiddlewareHandler<AppEnv>,
+): Hono<AppEnv> {
   return new Hono<AppEnv>()
     .post(
       "/inquiries",
+      // Throttled before validation, so a flood costs a counter increment
+      // rather than a schema parse.
+      throttle,
       // Without the hook, the validator answers with its own body shape and the
       // API would have two different error formats.
       zValidator("json", inquiryInputSchema, (result) => {
