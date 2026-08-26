@@ -36,9 +36,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    # Bound to loopback: reachable for `pnpm dev` and the Postgres half of the
+    # repository contract test, not from anywhere else on the network.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     restart: unless-stopped
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      # Postgres 18+ wants the mount one level up from `data`: the image stores
+      # under a major-version subdirectory so `pg_upgrade --link` does not have
+      # to cross a mount boundary. Mounting `/var/lib/postgresql/data`, the
+      # pre-18 convention, makes the container refuse to start.
+      - postgres-data:/var/lib/postgresql
 
   redis:
     image: redis:8-alpine
@@ -50,6 +58,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     restart: unless-stopped
 
 volumes:
