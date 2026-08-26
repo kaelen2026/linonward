@@ -18,6 +18,7 @@ export type DispatchResult = {
 
 export type DispatchTask = (task: Task) => Promise<DispatchResult | undefined>;
 export type ReplyTask = (task: Task, text: string) => Promise<void>;
+export type ClaimMessage = (messageId: string) => boolean;
 
 export type FeishuMessageEvent = {
   message: {
@@ -35,11 +36,31 @@ export type FeishuMessageEvent = {
   };
 };
 
+export function createMessageIdDeduplicator(maxEntries = 10_000): ClaimMessage {
+  const messageIds = new Set<string>();
+
+  return (messageId) => {
+    if (messageIds.has(messageId)) {
+      return false;
+    }
+
+    messageIds.add(messageId);
+    if (messageIds.size > maxEntries) {
+      const oldestMessageId = messageIds.values().next().value;
+      if (oldestMessageId) {
+        messageIds.delete(oldestMessageId);
+      }
+    }
+    return true;
+  };
+}
+
 export async function handleFeishuMessage(
   event: FeishuMessageEvent,
   config: RelayConfig,
   dispatch: DispatchTask,
   reply: ReplyTask = async () => undefined,
+  claimMessage: ClaimMessage = () => true,
 ): Promise<{ status: "dispatched" | "ignored" }> {
   if (event.message.message_type !== "text") {
     return { status: "ignored" };
@@ -52,6 +73,11 @@ export async function handleFeishuMessage(
 
   const task = getTask(event.message, config.maxTaskLength, openId);
   if (!task) {
+    return { status: "ignored" };
+  }
+
+  if (!claimMessage(task.messageId)) {
+    console.info("Ignoring duplicate Feishu message", task.messageId);
     return { status: "ignored" };
   }
 

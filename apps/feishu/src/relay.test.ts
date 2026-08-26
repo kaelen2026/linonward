@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { handleFeishuMessage, type RelayConfig } from "./relay.js";
+import { createMessageIdDeduplicator, handleFeishuMessage, type RelayConfig } from "./relay.js";
 
 const config: RelayConfig = {
   allowedOpenIds: new Set(["ou_authorized"]),
@@ -49,6 +49,31 @@ describe("handleFeishuMessage", () => {
       },
       "收到，正在处理。",
     );
+  });
+
+  it("ignores a duplicate delivery of the same Feishu message", async () => {
+    const dispatch = vi.fn().mockResolvedValue(undefined);
+    const reply = vi.fn().mockResolvedValue(undefined);
+    const claimMessage = createMessageIdDeduplicator();
+    const event = {
+      message: {
+        chat_id: "oc_chat",
+        content: JSON.stringify({ text: "summarize the latest commit" }),
+        message_id: "om_delivered_twice",
+        message_type: "text",
+      },
+      sender: { sender_id: { open_id: "ou_authorized" } },
+    };
+
+    await expect(
+      handleFeishuMessage(event, config, dispatch, reply, claimMessage),
+    ).resolves.toEqual({ status: "dispatched" });
+    await expect(
+      handleFeishuMessage(event, config, dispatch, reply, claimMessage),
+    ).resolves.toEqual({ status: "ignored" });
+
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(reply).toHaveBeenCalledTimes(1);
   });
 
   it("routes a /内容 command to the local content producer", async () => {
