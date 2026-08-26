@@ -1,7 +1,7 @@
 // biome-ignore-all lint/suspicious/noUndeclaredEnvVars: GitHub Actions supplies these only at runtime.
 import { readFile } from "node:fs/promises";
 
-import { extractResultText, parseMessages } from "./execution-result.mjs";
+import { formatExecutionReply, parseMessages } from "./execution-result.mjs";
 
 const appId = process.env.LARKSUITE_CLI_APP_ID;
 const appSecret = process.env.LARKSUITE_CLI_APP_SECRET;
@@ -28,7 +28,7 @@ async function readReplyText() {
   if (executionFile) {
     try {
       const content = await readFile(executionFile, "utf8");
-      const result = extractResultText(parseMessages(content));
+      const result = formatExecutionReply(parseMessages(content), runUrl);
       if (result) return truncate(result);
     } catch (error) {
       console.warn("Unable to read Claude execution output", error);

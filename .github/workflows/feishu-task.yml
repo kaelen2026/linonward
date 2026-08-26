@@ -109,7 +109,7 @@ jobs:
           claude_args: >-
             --model claude-opus-5
             --dangerously-skip-permissions
-            --max-turns 30
+            --max-turns 60
             ${{ steps.session-mode.outputs.claude_session_arg }}
           prompt: ${{ steps.build-prompt.outputs.value }}
 
