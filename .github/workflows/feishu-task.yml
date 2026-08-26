@@ -129,40 +129,6 @@ jobs:
           LARKSUITE_CLI_APP_ID: ${{ secrets.LARKSUITE_CLI_APP_ID }}
           LARKSUITE_CLI_APP_SECRET: ${{ secrets.LARKSUITE_CLI_APP_SECRET }}
           MESSAGE_ID: ${{ github.event.client_payload.message_id }}
-          OUTCOME: ${{ steps.claude.outcome }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${LARKSUITE_CLI_APP_ID}" ]; then
-            echo "::notice::LARKSUITE_CLI_APP_ID unset — skipping the Feishu reply."
-            exit 0
-          fi
-          if [ -z "${MESSAGE_ID}" ]; then
-            echo "::notice::client_payload.message_id missing — nothing to reply to."
-            exit 0
-          fi
-
-          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
-          run_url="${run_url}/actions/runs/${GITHUB_RUN_ID}"
-
-          case "${OUTCOME}" in
-            success) body="任务完成。详情:${run_url}" ;;
-            *)       body="任务失败(${OUTCOME})。日志:${run_url}" ;;
-          esac
-
-          token_response="$(curl --fail-with-body --silent --show-error \
-            --request POST 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal' \
-            --header 'Content-Type: application/json; charset=utf-8' \
-            --data "$(jq -nc \
-              --arg app_id "${LARKSUITE_CLI_APP_ID}" \
-              --arg app_secret "${LARKSUITE_CLI_APP_SECRET}" \
-              '{app_id:$app_id, app_secret:$app_secret}')")"
-          tenant_access_token="$(jq -er '.tenant_access_token' <<<"${token_response}")"
-
-          curl --fail-with-body --silent --show-error \
-            --request POST "https://open.feishu.cn/open-apis/im/v1/messages/${MESSAGE_ID}/reply" \
-            --header "Authorization: Bearer ${tenant_access_token}" \
-            --header 'Content-Type: application/json; charset=utf-8' \
-            --data "$(jq -nc --arg text "${body}" \
-              '{msg_type:"text", content:($text | {text:.} | tostring)}')" \
-            | jq -e '.code == 0' >/dev/null
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node .github/scripts/feishu-reply.mjs

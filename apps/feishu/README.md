@@ -73,5 +73,6 @@ docker compose -f apps/feishu/compose.yml down
 For the first live check, send an innocuous message from an allowlisted account, such as
 `只说明仓库当前默认分支和最新提交，不修改文件`. GitHub Actions starts the `Feishu task` run, and
 the relay immediately replies `收到，正在处理。` in that message's topic. When the task finishes,
-the workflow replies there again with the run URL. Send a follow-up in the same topic to continue
-the Claude Code session.
+the workflow replies there again with Claude's final response. A run URL is included only when
+Claude's output cannot be read. Send a follow-up in the same topic to continue the Claude Code
+session.
