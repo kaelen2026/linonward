@@ -1,9 +1,9 @@
 # Feishu relay
 
 This service is the single Feishu long-connection owner. It turns authorized text messages into
-either the `feishu-task` GitHub `repository_dispatch` event consumed by
-[`.github/workflows/feishu-task.yml`](../../.github/workflows/feishu-task.yml), or a local
-Hermes content-production request.
+either the `workflow_dispatch` input for the unified
+[`linonward-bot` workflow](../../.github/workflows/linonward-bot.yml), or a local Hermes
+content-production request.
 
 It immediately acknowledges every accepted request under its Feishu topic. That reply opens a
 topic for a main-stream message; follow-ups in the same topic share one Claude Code session while
@@ -25,7 +25,8 @@ events, so there is only one long connection and every reply uses the same Bot i
 - Only `im.message.receive_v1` text messages are accepted.
 - Only senders listed in `FEISHU_ALLOWED_OPEN_IDS` can trigger a task. Use open IDs, not
   display names, and keep the allowlist deliberately small.
-- The GitHub dispatch token is only used by this service and is never passed to a workflow.
+- The GitHub dispatch token is only used by this service to start `linonward-bot`; it is never
+  passed to a workflow.
 - Hermes is addressed through its loopback-only API server with a bearer key; it is not exposed to
   Feishu or the public network. The Docker service reaches it through `host.docker.internal`.
 - Task text defaults to 6,000 characters (set `MAX_TASK_LENGTH` to lower it, if needed).
@@ -36,18 +37,22 @@ one long-lived process with outbound access to Feishu and GitHub.
 ## Configure
 
 1. Copy `.env.example` to an untracked `.env` file and replace every placeholder.
-2. Create a fine-grained GitHub token scoped to this repository with **Contents: write**.
-   Store it as `GITHUB_DISPATCH_TOKEN`. GitHub requires that permission to create a
-   `repository_dispatch` event.
+2. Create a fine-grained GitHub token scoped to this repository with **Actions: write**.
+   Store it as `GITHUB_DISPATCH_TOKEN`; the relay uses it only to invoke `linonward-bot` on
+   `main`.
 3. In the Feishu developer console, select **Use long connection to receive events** as the event
    subscription mode. No request URL, verification token, or public ingress is needed.
 4. Subscribe to `im.message.receive_v1`, grant the bot the required message-receiving scope, and
    publish the app to the users represented by `FEISHU_ALLOWED_OPEN_IDS`.
-5. Set the repository secrets used by the workflow itself:
+5. Create and install a GitHub App named `linonward-bot` on this repository. Grant it
+   **Contents**, **Issues**, and **Pull requests** read/write access. Set its client ID as the
+   repository variable `LINONWARD_BOT_CLIENT_ID` and its private key as the repository secret
+   `LINONWARD_BOT_PRIVATE_KEY`.
+6. Set the repository secrets used by the workflow itself:
    `CLAUDE_CODE_OAUTH_TOKEN`, `LARKSUITE_CLI_APP_ID`, and `LARKSUITE_CLI_APP_SECRET`.
 
-`repository_dispatch` only reads workflows from the repository's default branch. Merge
-`feishu-task.yml` into `main` before running an end-to-end test.
+`workflow_dispatch` requires `linonward-bot.yml` to exist on `main` before the relay can invoke
+it. Set `GITHUB_WORKFLOW_REF` only when deliberately dispatching a different ref.
 
 ### Add local Hermes content production
 
@@ -113,7 +118,7 @@ docker compose -f apps/feishu/compose.yml down
 ```
 
 For the first live check, send an innocuous message from an allowlisted account, such as
-`只说明仓库当前默认分支和最新提交，不修改文件`. GitHub Actions starts the `Feishu task` run, and
+`只说明仓库当前默认分支和最新提交，不修改文件`. GitHub Actions starts the `linonward-bot` run, and
 the relay immediately replies `收到，正在处理。` in that message's topic. When the task finishes,
 the workflow replies there again with Claude's final response. A run URL is included only when
 Claude's output cannot be read. Send a follow-up in the same topic to continue the Claude Code

@@ -3,8 +3,10 @@ import { sessionIdForTopic } from "./session.js";
 
 export type GitHubConfig = {
   apiUrl: string;
+  ref: string;
   repository: string;
   token: string;
+  workflow: string;
 };
 
 type Fetcher = (input: string, init: RequestInit) => Promise<Response>;
@@ -13,19 +15,20 @@ export function createGitHubDispatcher(
   config: GitHubConfig,
   fetcher: Fetcher = fetch,
 ): DispatchTask {
-  const endpoint = `${config.apiUrl.replace(/\/$/, "")}/repos/${config.repository}/dispatches`;
+  const endpoint = `${config.apiUrl.replace(/\/$/, "")}/repos/${config.repository}/actions/workflows/${encodeURIComponent(config.workflow)}/dispatches`;
 
   return async (task) => {
     const response = await fetcher(endpoint, {
       body: JSON.stringify({
-        client_payload: {
-          chat_id: task.chatId,
-          message_id: task.messageId,
+        inputs: {
+          feishu_message_id: task.messageId,
+          feishu_sender: task.senderOpenId ?? "",
+          feishu_sender_name: "",
+          prompt: task.text,
           session_uuid: sessionIdForTopic(task.threadKey),
-          text: task.text,
           thread_key: task.threadKey,
         },
-        event_type: "feishu-task",
+        ref: config.ref,
       }),
       headers: {
         Accept: "application/vnd.github+json",
@@ -37,7 +40,7 @@ export function createGitHubDispatcher(
     });
 
     if (!response.ok) {
-      throw new Error(`GitHub repository dispatch failed with ${response.status}`);
+      throw new Error(`GitHub workflow dispatch failed with ${response.status}`);
     }
 
     return undefined;
