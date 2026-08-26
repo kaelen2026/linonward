@@ -19,9 +19,14 @@ src/
 ├── composition.ts           # the mount table and the real dependencies
 ├── app.ts                   # composition root: request id, CORS, error envelope
 ├── config.ts                # environment → ApiConfig
+├── migrate.ts               # applies migrations/*.sql, then exits
 ├── shared/                  # the shared kernel — the only thing modules may import
 │   ├── api-error.ts         # ApiError + the one error body every failure uses
-│   └── module.ts            # the ApiModule contract, AppEnv, mountModules
+│   ├── migrate.ts           # the migration runner
+│   ├── module.ts            # the ApiModule contract, AppEnv, mountModules
+│   ├── postgres.ts          # connection + ping
+│   ├── rate-limit.ts        # the RateLimiter port, in-memory adapter, middleware
+│   └── redis.ts             # connection + the Redis RateLimiter adapter
 └── modules/
     ├── boundaries.test.ts   # the fitness function that keeps modules apart
     ├── health/
@@ -33,6 +38,7 @@ src/
         ├── routes.ts        # HTTP edge + zod validation
         ├── service.ts       # domain logic
         ├── repository.ts    # storage port + in-memory adapter
+        ├── postgres-repository.ts  # the durable adapter
         └── schema.ts        # the wire contract
 ```
 
@@ -58,7 +64,8 @@ testable without a server, a clock, or a database. That is why the suite runs in
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/health` | Liveness, running version, uptime |
+| `GET` | `/health` | Liveness, running version, uptime — touches no dependency |
+| `GET` | `/health/ready` | Readiness; `200` ready, `503` degraded, naming what failed |
 | `POST` | `/contact/inquiries` | Submit a contact-form inquiry; `201` + `Location` |
 | `GET` | `/contact/inquiries/:id` | Read one inquiry back |
 
@@ -79,11 +86,43 @@ Every failure — validation, unknown route, unexpected crash — uses one envel
 the matching log line. An unexpected error is logged in full and answered with an opaque
 `internal_error`; the original message never reaches the client.
 
-## Storage is in memory, on purpose
+## Postgres and Redis
 
-`createInMemoryInquiryRepository` keeps inquiries in a `Map`. They do not survive a restart, and
-a second replica would not see the first one's writes. `InquiryRepository` is the port to
-implement when that stops being acceptable — nothing outside `repository.ts` changes.
+Both are optional, and both are *required in production* — `loadApiConfig` refuses to start with
+`NODE_ENV=production` and either one missing. That is the whole safety story: locally you get
+zero-setup defaults, and the footgun (deploy, lose every inquiry to a restart) cannot reach a
+real environment.
+
+| | `DATABASE_URL` set | unset |
+| --- | --- | --- |
+| Inquiries | `inquiries` table via postgres.js | a `Map`, gone on restart |
+
+| | `REDIS_URL` set | unset |
+| --- | --- | --- |
+| Submission budget | one shared counter across replicas | per process, so N replicas get N budgets |
+
+Rate limiting is a fixed window (`INCR`, then `EXPIRE` only on the hit that opened it — re-arming
+on every hit would let a steady stream hold the window open forever). `POST /contact/inquiries`
+is throttled *before* validation, so a flood costs a counter increment rather than a schema
+parse. Reading an inquiry back is not throttled.
+
+`composition.ts` is the only file that knows either technology exists. The modules see an
+`InquiryRepository` and a `RateLimiter`, and cannot tell which adapter they were handed —
+`repository.test.ts` runs one contract suite against both, so the durable adapter is held to the
+same behaviour as the in-memory one.
+
+### Migrations
+
+Plain `.sql` in [`migrations/`](./migrations), applied in filename order, each in its own
+transaction, recorded in `schema_migrations`:
+
+```bash
+DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
+  pnpm --filter @linonward/api migrate
+```
+
+Under Compose the app container runs `node dist/migrate.js && node dist/index.js`, so there is
+never a window where the code is newer than the schema.
 
 ## Run
 
@@ -92,6 +131,9 @@ pnpm install
 cp apps/api/.env.example apps/api/.env
 pnpm --filter @linonward/api dev
 ```
+
+With no `DATABASE_URL` or `REDIS_URL` this starts against in-memory adapters and needs no
+containers. It logs which pair it chose at boot.
 
 ```bash
 curl localhost:3001/health
@@ -106,6 +148,21 @@ Production artifact:
 pnpm --filter @linonward/api build
 pnpm --filter @linonward/api start
 ```
+
+## Run with Docker Compose
+
+Brings up Postgres 18, Redis 8, and the API, with the app waiting on both healthchecks:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+docker compose -f apps/api/compose.yml up --build -d
+curl localhost:3001/health/ready
+docker compose -f apps/api/compose.yml down          # add -v to drop the data volume
+```
+
+Postgres keeps a named volume. Redis deliberately has none — rate-limit counters are disposable,
+so it runs with persistence off and a 128 MB `allkeys-lru` ceiling rather than an unbounded
+dataset.
 
 ## Configure
 
@@ -122,3 +179,12 @@ pnpm --filter @linonward/api test:watch
 
 Vitest only; there is no browser to drive. Routes are exercised through `app.request()`, which
 runs the real middleware stack without opening a socket.
+
+The Postgres half of the repository contract is skipped unless `DATABASE_URL` is set — CI has no
+service containers, so it runs the in-memory half only. To run both:
+
+```bash
+docker compose -f apps/api/compose.yml up -d postgres
+DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
+  pnpm --filter @linonward/api test
+```

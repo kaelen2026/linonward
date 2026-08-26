@@ -24,7 +24,7 @@ The Feishu long-connection client requires its own environment configuration; se
 ```
 .
 ├── apps/
-│   ├── api/                    # Backend — Hono modular monolith
+│   ├── api/                    # Backend — Hono modular monolith, Postgres + Redis
 │   ├── feishu/                 # Feishu-to-GitHub task relay
 │   └── www/                    # Official website — Next.js App Router
 ├── packages/
