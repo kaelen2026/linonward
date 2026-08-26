@@ -170,6 +170,10 @@ Every variable is optional; the defaults run locally as-is. See
 [`.env.example`](./.env.example) for the full list. `CORS_ALLOWED_ORIGINS` takes bare origins —
 an entry with a path is rejected at boot rather than silently never matching.
 
+The caller that needs it is [`apps/www`](../www): its contact form posts here from the browser, so
+the site's origin has to be listed. The other half of that handshake is `NEXT_PUBLIC_API_URL` in
+[`apps/www/.env.example`](../www/.env.example) — change one and change the other.
+
 ## Test
 
 ```bash
