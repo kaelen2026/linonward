@@ -86,10 +86,6 @@ jobs:
         env:
           LARKSUITE_CLI_APP_ID: ${{ secrets.LARKSUITE_CLI_APP_ID }}
           LARKSUITE_CLI_APP_SECRET: ${{ secrets.LARKSUITE_CLI_APP_SECRET }}
-          LARKSUITE_CLI_BRAND: feishu
-          LARKSUITE_CLI_CONFIG_DIR: ${{ runner.temp }}/lark-cli
-          LARKSUITE_CLI_DEFAULT_AS: bot
-          LARKSUITE_CLI_STRICT_MODE: bot
           MESSAGE_ID: ${{ github.event.client_payload.message_id }}
           OUTCOME: ${{ steps.claude.outcome }}
         run: |
@@ -112,9 +108,19 @@ jobs:
             *)       body="任务失败(${OUTCOME})。日志:${run_url}" ;;
           esac
 
-          npx --yes @larksuite/cli@latest install
-          printf '%s\n' "${LARKSUITE_CLI_APP_SECRET}" | \
-            lark-cli config init --app-id "${LARKSUITE_CLI_APP_ID}" --app-secret-stdin
-          lark-cli api POST "/open-apis/im/v1/messages/${MESSAGE_ID}/reply" \
-            --data "$(jq -nc --arg t "${body}" \
-              '{msg_type:"text", content:($t | {text:.} | tostring)}')"
+          token_response="$(curl --fail-with-body --silent --show-error \
+            --request POST 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal' \
+            --header 'Content-Type: application/json; charset=utf-8' \
+            --data "$(jq -nc \
+              --arg app_id "${LARKSUITE_CLI_APP_ID}" \
+              --arg app_secret "${LARKSUITE_CLI_APP_SECRET}" \
+              '{app_id:$app_id, app_secret:$app_secret}')")"
+          tenant_access_token="$(jq -er '.tenant_access_token' <<<"${token_response}")"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST "https://open.feishu.cn/open-apis/im/v1/messages/${MESSAGE_ID}/reply" \
+            --header "Authorization: Bearer ${tenant_access_token}" \
+            --header 'Content-Type: application/json; charset=utf-8' \
+            --data "$(jq -nc --arg text "${body}" \
+              '{msg_type:"text", content:($text | {text:.} | tostring)}')" \
+            | jq -e '.code == 0' >/dev/null
