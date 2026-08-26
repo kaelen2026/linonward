@@ -141,8 +141,9 @@ worktree gets warm builds for free, and `rm -rf .turbo` from one clears them
 for all. What does not come across is `.env*.local`: gitignored, so copy it by
 hand if the task needs it.
 
-When the branch is merged or abandoned, remove the worktree — a stale one keeps
-its branch checked out and blocks deleting it:
+After a PR is confirmed merged, clean up its worktree and branch using the
+post-merge procedure below — a stale worktree keeps its branch checked out and
+blocks deleting it. For an abandoned branch, cleanup remains the user's call:
 
 ```bash
 git worktree list                              # from anywhere in the repo
@@ -180,9 +181,8 @@ Then merge with **squash**, so each PR lands on `main` as exactly one commit:
 gh pr merge <n> --squash
 ```
 
-`--delete-branch` would fold cleanup step 3 into the merge. It is still branch
-deletion, so pass it only when asked — the repo's `delete_branch_on_merge` is
-off, and nothing removes the branch on its own.
+Do not pass `--delete-branch`: clean up after GitHub confirms the merge, in the
+order below, so the checked-out worktree does not block local branch deletion.
 
 `merge`, `squash` and `rebase` are all enabled on the repo and the choice is
 permanent history. Switching away from squash is the user's call; never pick a
@@ -239,15 +239,25 @@ Do **not** compare trees (`git rev-parse 'branch^{tree}'` against
 legitimately differ while the branch is fully merged, which reads as data loss
 when it is not.
 
-### Post-merge cleanup
+### Post-merge synchronization and cleanup
 
-Order matters — a branch still checked out in a worktree cannot be deleted:
+After GitHub confirms a merge, first synchronize the main checkout with
+`origin/main` and verify it is current:
 
-1. `git pull --ff-only` in the main checkout, to bring `main` up to the merge
-2. `git worktree remove ../linonward-pricing-page`
-3. `git push origin --delete feat/pricing-page`
-4. `git branch -D feat/pricing-page` — after the `gh pr view` check above
+```bash
+git fetch origin main
+git pull --ff-only origin main
+git rev-list --left-right --count main...origin/main # must output: 0 0
+```
 
-The repo does not auto-delete merged branches. Every step here is branch or
-worktree deletion, so all of it is the user's call: do it only when asked, never
-with `--force`, and never to a worktree you did not create.
+Then clean up in this order — a branch still checked out in a worktree cannot
+be deleted:
+
+1. `git worktree remove ../linonward-pricing-page`
+2. `git push origin --delete feat/pricing-page`
+3. `git branch -D feat/pricing-page` — after the `gh pr view` check above
+
+Run this cleanup after every confirmed merge. It applies only to the worktree
+created for the merged branch. Never use `--force`; if the worktree has
+uncommitted changes or cannot be removed cleanly, stop and report the condition
+to the user rather than deleting anything.
