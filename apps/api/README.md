@@ -66,8 +66,7 @@ testable without a server, a clock, or a database. That is why the suite runs in
 | --- | --- | --- |
 | `GET` | `/health` | Liveness, running version, uptime — touches no dependency |
 | `GET` | `/health/ready` | Readiness; `200` ready, `503` degraded, naming what failed |
-| `POST` | `/contact/inquiries` | Submit a contact-form inquiry; `201` + `Location` |
-| `GET` | `/contact/inquiries/:id` | Read one inquiry back |
+| `POST` | `/contact/inquiries` | Submit a contact-form inquiry |
 
 Every failure — validation, unknown route, unexpected crash — uses one envelope:
 
@@ -101,10 +100,11 @@ real environment.
 | --- | --- | --- |
 | Submission budget | one shared counter across replicas | per process, so N replicas get N budgets |
 
-Rate limiting is a fixed window (`INCR`, then `EXPIRE` only on the hit that opened it — re-arming
-on every hit would let a steady stream hold the window open forever). `POST /contact/inquiries`
+Rate limiting is a fixed window. Redis runs the increment, initial expiry, and TTL read as one
+Lua script, so a failed round trip cannot leave an immortal counter. `POST /contact/inquiries`
 is throttled *before* validation, so a flood costs a counter increment rather than a schema
-parse. Reading an inquiry back is not throttled.
+parse. Inquiry data is write-only through this public API; reading it belongs
+behind a future authenticated internal interface.
 
 `composition.ts` is the only file that knows either technology exists. The modules see an
 `InquiryRepository` and a `RateLimiter`, and cannot tell which adapter they were handed —
@@ -113,8 +113,8 @@ same behaviour as the in-memory one.
 
 ### Migrations
 
-Plain `.sql` in [`migrations/`](./migrations), applied in filename order, each in its own
-transaction, recorded in `schema_migrations`:
+Plain `.sql` in [`migrations/`](./migrations), applied in filename order in one
+transaction-scoped advisory lock, recorded in `schema_migrations`:
 
 ```bash
 DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
@@ -169,6 +169,8 @@ dataset.
 Every variable is optional; the defaults run locally as-is. See
 [`.env.example`](./.env.example) for the full list. `CORS_ALLOWED_ORIGINS` takes bare origins —
 an entry with a path is rejected at boot rather than silently never matching.
+`TRUSTED_PROXY_IPS` is empty by default: only list literal socket peers controlled by your
+deployment, and configure each proxy to overwrite or append `X-Forwarded-For`.
 
 The caller that needs it is [`apps/www`](../www): its contact form posts here from the browser, so
 the site's origin has to be listed. The other half of that handshake is `NEXT_PUBLIC_API_URL` in

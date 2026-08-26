@@ -71,7 +71,8 @@ sides of one handshake.
 request is spent, and deliberately is not a second source of truth — the server
 revalidates and wins, and a disagreement surfaces as `invalid` on the field the
 server named. The mailto link below the form stays as the fallback for when the
-API is down.
+API is down. Contact data is write-only at the public boundary; a future internal
+reader must add authentication rather than re-expose this endpoint.
 
 ## `apps/api`
 

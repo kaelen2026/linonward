@@ -13,7 +13,6 @@ export type Inquiry = InquiryInput & {
  */
 export type InquiryRepository = {
   save(inquiry: Inquiry): Promise<void>;
-  findById(id: string): Promise<Inquiry | undefined>;
 };
 
 /**
@@ -27,9 +26,6 @@ export function createInMemoryInquiryRepository(): InquiryRepository {
     save(inquiry) {
       inquiries.set(inquiry.id, inquiry);
       return Promise.resolve();
-    },
-    findById(id) {
-      return Promise.resolve(inquiries.get(id));
     },
   };
 }

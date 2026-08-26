@@ -38,6 +38,15 @@ describe("loadApiConfig", () => {
       "CORS_ALLOWED_ORIGINS must list bare http(s) origins",
     );
   });
+
+  it("accepts only literal addresses as trusted proxies", () => {
+    expect(loadApiConfig({ TRUSTED_PROXY_IPS: "127.0.0.1, 10.0.0.4" })).toMatchObject({
+      trustedProxyIps: ["127.0.0.1", "10.0.0.4"],
+    });
+    expect(() => loadApiConfig({ TRUSTED_PROXY_IPS: "proxy.internal" })).toThrow(
+      "TRUSTED_PROXY_IPS must list IP addresses",
+    );
+  });
 });
 
 describe("loadApiConfig infrastructure", () => {

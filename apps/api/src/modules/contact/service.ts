@@ -1,4 +1,3 @@
-import { ApiError } from "../../shared/api-error.js";
 import type { Inquiry, InquiryRepository } from "./repository.js";
 import type { InquiryInput } from "./schema.js";
 
@@ -10,7 +9,6 @@ export type InquiryServiceDependencies = {
 
 export type InquiryService = {
   submit(input: InquiryInput): Promise<Inquiry>;
-  get(id: string): Promise<Inquiry>;
 };
 
 export function createInquiryService({
@@ -30,14 +28,6 @@ export function createInquiryService({
       };
 
       await repository.save(inquiry);
-      return inquiry;
-    },
-
-    async get(id) {
-      const inquiry = await repository.findById(id);
-      if (!inquiry) {
-        throw new ApiError(404, "inquiry_not_found", `No inquiry with id ${id}`);
-      }
       return inquiry;
     },
   };

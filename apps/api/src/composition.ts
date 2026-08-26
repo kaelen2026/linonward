@@ -12,6 +12,7 @@ import {
 } from "./modules/contact/repository.js";
 import { createHealthModule } from "./modules/health/index.js";
 import type { DependencyProbes } from "./modules/health/service.js";
+import { clientIp } from "./shared/client-ip.js";
 import type { ApiModule, AppEnv } from "./shared/module.js";
 import { connectPostgres, type PostgresConnection } from "./shared/postgres.js";
 import { createInMemoryRateLimiter, type RateLimiter, rateLimit } from "./shared/rate-limit.js";
@@ -30,6 +31,7 @@ export type ApiDependencies = {
   inquiries: InquiryRepository;
   inquiryRateLimiter: RateLimiter;
   probes: DependencyProbes;
+  trustedProxyIps: readonly string[];
   /** Closed on shutdown; empty when everything is in-memory. */
   close: () => Promise<void>;
 };
@@ -71,6 +73,7 @@ export async function createDefaultDependencies(config: ApiConfig): Promise<ApiD
       ? createRedisRateLimiter(redis, config.inquiryRateLimit)
       : createInMemoryRateLimiter(config.inquiryRateLimit, clock),
     probes,
+    trustedProxyIps: config.trustedProxyIps,
     close: async () => {
       for (const closer of closers) {
         await closer();
@@ -80,13 +83,15 @@ export async function createDefaultDependencies(config: ApiConfig): Promise<ApiD
 }
 
 /**
- * The proxy hop is trusted because the API is only ever exposed through one.
- * Reached for here rather than in `shared/`, since it is the composition root
- * that knows the app runs on Node behind a reverse proxy.
+ * The composition root knows the socket peer and deployment's trusted proxy
+ * list. The policy itself lives in `shared` so it can be verified in isolation.
  */
-function clientKey(c: Context<AppEnv>): string {
-  const forwarded = c.req.header("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded || getConnInfo(c).remote.address || "unknown";
+function clientKey(c: Context<AppEnv>, trustedProxyIps: readonly string[]): string {
+  return clientIp({
+    forwardedFor: c.req.header("x-forwarded-for"),
+    remoteAddress: getConnInfo(c).remote.address,
+    trustedProxyIps,
+  });
 }
 
 /** The mount table. Adding a module to the monolith means adding a line here. */
@@ -102,7 +107,9 @@ export function createApiModules(dependencies: ApiDependencies): ApiModule[] {
       repository: dependencies.inquiries,
       clock: dependencies.clock,
       nextId: dependencies.nextId,
-      throttle: rateLimit(dependencies.inquiryRateLimiter, clientKey),
+      throttle: rateLimit(dependencies.inquiryRateLimiter, (c) =>
+        clientKey(c, dependencies.trustedProxyIps),
+      ),
     }),
   ];
 }
