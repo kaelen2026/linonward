@@ -43,8 +43,10 @@ export function loadServiceConfig(environment: Record<string, string | undefined
     },
     github: {
       apiUrl: readApiUrl(environment.GITHUB_API_URL),
+      ref: environment.GITHUB_WORKFLOW_REF?.trim() || "main",
       repository: readRepository(readRequired(environment, "GITHUB_REPOSITORY")),
       token: readRequired(environment, "GITHUB_DISPATCH_TOKEN"),
+      workflow: environment.GITHUB_WORKFLOW?.trim() || "linonward-bot.yml",
     },
     hermes: loadHermesConfig(environment),
     relay: {

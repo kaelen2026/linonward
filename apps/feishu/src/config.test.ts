@@ -20,8 +20,10 @@ describe("loadServiceConfig", () => {
       },
       github: {
         apiUrl: "https://api.github.com",
+        ref: "main",
         repository: "kaelen2026/linonward",
         token: "github-token",
+        workflow: "linonward-bot.yml",
       },
       hermes: {
         apiKey: "hermes-api-key",

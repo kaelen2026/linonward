@@ -2,6 +2,7 @@ export type Task = {
   chatId: string;
   messageId: string;
   route: "github" | "hermes";
+  senderOpenId?: string;
   text: string;
   threadKey: string;
 };
@@ -49,7 +50,7 @@ export async function handleFeishuMessage(
     return { status: "ignored" };
   }
 
-  const task = getTask(event.message, config.maxTaskLength);
+  const task = getTask(event.message, config.maxTaskLength, openId);
   if (!task) {
     return { status: "ignored" };
   }
@@ -72,7 +73,11 @@ export async function handleFeishuMessage(
   return { status: "dispatched" };
 }
 
-function getTask(message: FeishuMessageEvent["message"], maxTaskLength: number): Task | undefined {
+function getTask(
+  message: FeishuMessageEvent["message"],
+  maxTaskLength: number,
+  senderOpenId: string,
+): Task | undefined {
   const content = parseTextContent(message.content);
   if (!content) {
     return undefined;
@@ -90,6 +95,7 @@ function getTask(message: FeishuMessageEvent["message"], maxTaskLength: number):
     messageId: message.message_id,
     route: contentTask ? "hermes" : "github",
     text: contentTask?.[1]?.trim() ?? text,
+    senderOpenId,
     threadKey: message.thread_id ?? message.root_id ?? message.message_id,
   };
 }

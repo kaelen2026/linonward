@@ -34,6 +34,7 @@ describe("handleFeishuMessage", () => {
       chatId: "oc_chat",
       messageId: "om_message",
       route: "github",
+      senderOpenId: "ou_authorized",
       text: "summarize the latest commit",
       threadKey: "omt_topic",
     });
@@ -42,6 +43,7 @@ describe("handleFeishuMessage", () => {
         chatId: "oc_chat",
         messageId: "om_message",
         route: "github",
+        senderOpenId: "ou_authorized",
         text: "summarize the latest commit",
         threadKey: "omt_topic",
       },
@@ -73,6 +75,7 @@ describe("handleFeishuMessage", () => {
       chatId: "oc_chat",
       messageId: "om_message",
       route: "hermes",
+      senderOpenId: "ou_authorized",
       text: "写一篇产品介绍",
       threadKey: "omt_topic",
     });

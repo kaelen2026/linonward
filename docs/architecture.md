@@ -132,8 +132,8 @@ package instead of copying the ramp again. Details in
 ## `apps/feishu`
 
 `apps/feishu` is a Node.js long-connection client. It authenticates with Feishu using the app ID
-and secret, accepts text messages only from configured open IDs, and dispatches `feishu-task` to
-GitHub. It needs no public callback URL. Deployment and environment configuration live in
+and secret, accepts text messages only from configured open IDs, and dispatches the unified
+`linonward-bot` GitHub Actions workflow. It needs no public callback URL. Deployment and environment configuration live in
 [the app README](../apps/feishu/README.md).
 
 ## TypeScript
