@@ -15,7 +15,8 @@ pnpm --filter @linonward/www dev
 ```
 
 The website runs at http://localhost:3000, the API at http://localhost:3001, and the
-internal console at http://localhost:3002.
+internal console at http://localhost:3002. The command above starts only the website; run
+`pnpm dev` for all apps or start the API separately when exercising the contact form.
 The API is a Hono modular monolith; see [`apps/api/README.md`](./apps/api/README.md).
 Those defaults line up, so the site's contact form reaches the API with no `.env` at
 all — point it elsewhere with `NEXT_PUBLIC_API_URL` (see
