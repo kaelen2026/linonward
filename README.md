@@ -33,6 +33,7 @@ The Feishu long-connection client requires its own environment configuration; se
 │   ├── web/                    # Internal console — Next.js 16 App Router
 │   └── www/                    # Official website — Next.js App Router
 ├── packages/
+│   ├── db/                     # Drizzle schema, relations, client, migrations
 │   └── typescript-config/      # Shared tsconfig presets
 ├── docs/                       # Project documentation
 ├── biome.json                  # Lint + format
@@ -49,6 +50,9 @@ The Feishu long-connection client requires its own environment configuration; se
 | `pnpm typecheck` | Type-check every workspace |
 | `pnpm test` | Run Vitest across every workspace |
 | `pnpm test:e2e` | Run Playwright end-to-end against a production build |
+| `pnpm db:generate` | Generate a migration after changing `packages/db/src/schema` |
+| `pnpm db:check` | Validate the Drizzle migration snapshots |
+| `pnpm db:studio` | Open Drizzle Studio against `DATABASE_URL` |
 | `pnpm lint` | Biome lint + format check |
 | `pnpm lint:fix` | Biome autofix |
 | `pnpm format` | Biome format only |

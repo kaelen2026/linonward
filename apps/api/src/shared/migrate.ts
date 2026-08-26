@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
-import type { Sql } from "./postgres.js";
+import type { Sql } from "@linonward/db";
 
 /**
  * The migrations that still have to run, in filename order. Numeric prefixes

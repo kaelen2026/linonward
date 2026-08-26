@@ -19,12 +19,12 @@ src/
 ├── composition.ts           # the mount table and the real dependencies
 ├── app.ts                   # composition root: request id, CORS, error envelope
 ├── config.ts                # environment → ApiConfig
-├── migrate.ts               # applies migrations/*.sql, then exits
+├── migrate.ts               # applies @linonward/db migrations, then exits
 ├── shared/                  # the shared kernel — the only thing modules may import
 │   ├── api-error.ts         # ApiError + the one error body every failure uses
 │   ├── migrate.ts           # the migration runner
 │   ├── module.ts            # the ApiModule contract, AppEnv, mountModules
-│   ├── postgres.ts          # connection + ping
+│   ├── database.ts          # module-safe exports from @linonward/db
 │   ├── rate-limit.ts        # the RateLimiter port, in-memory adapter, middleware
 │   └── redis.ts             # connection + the Redis RateLimiter adapter
 └── modules/
@@ -33,7 +33,7 @@ src/
     │   ├── index.ts         # the module's only public export: createHealthModule
     │   ├── routes.ts        # HTTP edge
     │   └── service.ts       # domain logic
-    ├── auth/                # Better Auth, Drizzle schema, Resend OTP delivery
+    ├── auth/                # Better Auth handler and Resend OTP delivery
     └── contact/
         ├── index.ts         # createContactModule
         ├── routes.ts        # HTTP edge + zod validation
@@ -94,14 +94,14 @@ Both are optional, and both are *required in production* — `loadApiConfig` ref
 zero-setup defaults, and the footgun (deploy, lose every inquiry to a restart) cannot reach a
 real environment.
 
-Authentication uses the same `postgres.js` connection through `drizzle-orm/postgres-js`; it does
-not open a second pool. The normal SQL migration runner creates Better Auth's `user`, `session`,
-`account`, and `verification` tables. Email OTPs are delivered by Resend, expire after ten
+Authentication and inquiries use the typed Drizzle client from `@linonward/db` and share its
+single `postgres.js` pool. The database package owns the `user`, `session`, `account`,
+`verification`, and `inquiries` schemas and relations. Email OTPs are delivered by Resend, expire after ten
 minutes, allow five attempts, and are stored as hashes. Google OAuth is optional.
 
 | | `DATABASE_URL` set | unset |
 | --- | --- | --- |
-| Inquiries | `inquiries` table via postgres.js | a `Map`, gone on restart |
+| Inquiries | `inquiries` table via Drizzle | a `Map`, gone on restart |
 
 | | `REDIS_URL` set | unset |
 | --- | --- | --- |
@@ -120,8 +120,8 @@ same behaviour as the in-memory one.
 
 ### Migrations
 
-Plain `.sql` in [`migrations/`](./migrations), applied in filename order in one
-transaction-scoped advisory lock, recorded in `schema_migrations`:
+Migrations live in [`packages/db`](../../packages/db). The API first applies retained legacy SQL
+in filename order under one transaction-scoped advisory lock, then runs Drizzle migrations:
 
 ```bash
 DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
@@ -130,6 +130,9 @@ DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
 
 Under Compose the app container runs `node dist/migrate.js && node dist/index.js`, so there is
 never a window where the code is newer than the schema.
+
+After changing `packages/db/src/schema`, run `pnpm db:generate` and `pnpm db:check`; never hand-edit
+a generated migration that has already been deployed.
 
 ## Run
 

@@ -1,0 +1,3 @@
+-- Drizzle Kit baseline for the schema already created by migrations/legacy.
+-- This intentionally performs no DDL. Its snapshot is the source for future
+-- generated migrations, while existing deployments keep their migration history.
