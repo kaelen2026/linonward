@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+ * A deliberately small slice of the brand system.
+ *
+ * The full ramp, its sampling from the logo, and the contrast table live in
+ * `apps/www/src/app/globals.css` and docs/design-system.md. This app only needs
+ * a surface, a text colour, a muted pair, a border and the brand accent, so it
+ * carries those and nothing else. Growing a second consumer of the full system
+ * is the point at which to extract a shared package rather than copy it again.
+ *
+ * As in www there is no `@custom-variant dark` override: Tailwind v4's built-in
+ * `dark:` variant is `@media (prefers-color-scheme: dark)`, which is what the
+ * token block below is keyed on.
+ * ------------------------------------------------------------------------- */
+@theme {
+  --color-navy-50: oklch(0.975 0.01 253.54);
+  --color-navy-200: oklch(0.895 0.032 253.54);
+  --color-navy-400: oklch(0.76 0.066 253.54);
+  --color-navy-700: oklch(0.5 0.076 253.54);
+  --color-navy-800: oklch(0.39 0.073 253.54);
+  --color-navy-900: oklch(0.273 0.081 253.54);
+  --color-navy-950: oklch(0.18 0.066 253.54);
+
+  --color-teal-500: oklch(0.692 0.117 195.52);
+}
+
+@theme inline {
+  /* No `next/font` here: this app ships no latin display face, so the stack is
+   * declared once, in CSS, with the same system CJK fallback www appends. */
+  --font-sans:
+    ui-sans-serif, system-ui, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+}
+
+:root {
+  /* Lets the UA theme scrollbars, form controls and the canvas to match. */
+  color-scheme: light dark;
+
+  --background: oklch(1 0 0);
+  --foreground: var(--color-navy-900);
+  --muted: var(--color-navy-50);
+  --muted-foreground: var(--color-navy-700);
+  --border: var(--color-navy-200);
+  /* teal-500 is 2.61:1 on white — a surface, never text on a light background.
+   * Its label is navy-900, the pairing the logo itself uses (5.73:1). */
+  --brand: var(--color-teal-500);
+  --brand-foreground: var(--color-navy-900);
+  --radius: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--color-navy-950);
+    --foreground: var(--color-navy-50);
+    --muted: var(--color-navy-800);
+    --muted-foreground: var(--color-navy-400);
+    --border: oklch(1 0 0 / 12%);
+    --brand: var(--color-teal-500);
+    --brand-foreground: var(--color-navy-950);
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}

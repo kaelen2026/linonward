@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | `apps/api` | `@linonward/api` | Backend HTTP API. Hono, laid out as a modular monolith. |
 | `apps/feishu` | `@linonward/feishu` | Feishu event relay. Validates an authorized text message and emits a GitHub `repository_dispatch`. |
+| `apps/web` | `@linonward/web` | Internal console. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
 | `packages/typescript-config` | `@linonward/typescript-config` | Shared `tsconfig` presets consumed via `extends`. |
 
@@ -104,6 +105,29 @@ optional locally — absent, the in-memory adapters take over — and both are r
 `apps/api/compose.yml` runs the three containers together; migrations are plain SQL applied by
 `dist/migrate.js` before the server starts. Endpoints, the error body, and configuration live in
 [the app README](../apps/api/README.md).
+
+## `apps/web`
+
+`apps/web` is the internal console: a second Next.js 16 App Router app, single-language
+(`zh-CN`), `noindex`, served on port 3002 so it can run alongside `www` (3000) and `api`
+(3001). It reads `apps/api` and writes nothing.
+
+```
+apps/web/
+├── src/app/
+│   ├── layout.tsx           # root layout — metadata, globals.css
+│   ├── page.tsx             # /
+│   ├── status/page.tsx      # /status — GET /health, force-dynamic
+│   └── globals.css          # Tailwind v4, a subset of the brand tokens
+├── src/components/site/     # app shell
+└── src/lib/                 # api origin, health fetch, cn()
+```
+
+It carries no shadcn/ui registry and no Playwright suite — end-to-end coverage stays on
+`www`, the app with routing and crawler-visible output worth a browser. Its design tokens
+are a deliberate subset of www's; a third consumer is the point to extract a shared
+package instead of copying the ramp again. Details in
+[the app README](../apps/web/README.md).
 
 ## `apps/feishu`
 

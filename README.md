@@ -14,7 +14,8 @@ pnpm install
 pnpm --filter @linonward/www dev
 ```
 
-The website runs at http://localhost:3000 and the API at http://localhost:3001.
+The website runs at http://localhost:3000, the API at http://localhost:3001, and the
+internal console at http://localhost:3002.
 The API is a Hono modular monolith; see [`apps/api/README.md`](./apps/api/README.md).
 Those defaults line up, so the site's contact form reaches the API with no `.env` at
 all — point it elsewhere with `NEXT_PUBLIC_API_URL` (see
@@ -29,6 +30,7 @@ The Feishu long-connection client requires its own environment configuration; se
 ├── apps/
 │   ├── api/                    # Backend — Hono modular monolith, Postgres + Redis
 │   ├── feishu/                 # Feishu-to-GitHub task relay
+│   ├── web/                    # Internal console — Next.js 16 App Router
 │   └── www/                    # Official website — Next.js App Router
 ├── packages/
 │   └── typescript-config/      # Shared tsconfig presets
@@ -56,6 +58,7 @@ Target a single workspace with `--filter`:
 
 ```bash
 pnpm --filter @linonward/www dev
+pnpm --filter @linonward/web dev
 pnpm --filter @linonward/api dev
 pnpm --filter @linonward/feishu dev
 ```
