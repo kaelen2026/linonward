@@ -4,6 +4,10 @@ This service maintains a Feishu long connection and turns an authorized text mes
 `feishu-task` GitHub `repository_dispatch` event consumed by
 [`.github/workflows/feishu-task.yml`](../../.github/workflows/feishu-task.yml).
 
+It immediately acknowledges every accepted request under its Feishu topic. That reply opens a
+topic for a main-stream message; follow-ups in the same topic share one Claude Code session while
+unrelated messages receive independent sessions.
+
 ## Security model
 
 - The Feishu SDK authenticates the long connection with the application's ID and secret.
@@ -68,4 +72,6 @@ docker compose -f apps/feishu/compose.yml down
 
 For the first live check, send an innocuous message from an allowlisted account, such as
 `只说明仓库当前默认分支和最新提交，不修改文件`. GitHub Actions starts the `Feishu task` run, and
-the workflow replies to the original Feishu message with the run URL.
+the relay immediately replies `收到，正在处理。` in that message's topic. When the task finishes,
+the workflow replies there again with the run URL. Send a follow-up in the same topic to continue
+the Claude Code session.

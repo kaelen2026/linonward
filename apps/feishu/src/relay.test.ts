@@ -10,6 +10,7 @@ const config: RelayConfig = {
 describe("handleFeishuMessage", () => {
   it("dispatches a text message from an authorized sender", async () => {
     const dispatch = vi.fn().mockResolvedValue(undefined);
+    const reply = vi.fn().mockResolvedValue(undefined);
 
     await expect(
       handleFeishuMessage(
@@ -19,11 +20,13 @@ describe("handleFeishuMessage", () => {
             content: JSON.stringify({ text: "  summarize the latest commit  " }),
             message_id: "om_message",
             message_type: "text",
+            thread_id: "omt_topic",
           },
           sender: { sender_id: { open_id: "ou_authorized" } },
         },
         config,
         dispatch,
+        reply,
       ),
     ).resolves.toEqual({ status: "dispatched" });
 
@@ -31,7 +34,40 @@ describe("handleFeishuMessage", () => {
       chatId: "oc_chat",
       messageId: "om_message",
       text: "summarize the latest commit",
+      threadKey: "omt_topic",
     });
+    expect(reply).toHaveBeenCalledWith(
+      {
+        chatId: "oc_chat",
+        messageId: "om_message",
+        text: "summarize the latest commit",
+        threadKey: "omt_topic",
+      },
+      "收到，正在处理。",
+    );
+  });
+
+  it("uses the root message as the topic key when Feishu omits thread_id", async () => {
+    const dispatch = vi.fn().mockResolvedValue(undefined);
+    const reply = vi.fn().mockResolvedValue(undefined);
+
+    await handleFeishuMessage(
+      {
+        message: {
+          chat_id: "oc_chat",
+          content: JSON.stringify({ text: "follow up" }),
+          message_id: "om_reply",
+          message_type: "text",
+          root_id: "om_root",
+        },
+        sender: { sender_id: { open_id: "ou_authorized" } },
+      },
+      config,
+      dispatch,
+      reply,
+    );
+
+    expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ threadKey: "om_root" }));
   });
 
   it("ignores a message from an unauthorized sender", async () => {
