@@ -11,8 +11,7 @@ This service maintains a Feishu long connection and turns an authorized text mes
 - Only senders listed in `FEISHU_ALLOWED_OPEN_IDS` can trigger a task. Use open IDs, not
   display names, and keep the allowlist deliberately small.
 - The GitHub dispatch token is only used by this service and is never passed to a workflow.
-- Requests are limited to 1 MB and task text defaults to 6,000 characters (set
-  `MAX_TASK_LENGTH` to lower it, if needed).
+- Task text defaults to 6,000 characters (set `MAX_TASK_LENGTH` to lower it, if needed).
 
 Long connection mode does not expose a callback URL or an inbound HTTP endpoint. It must run as
 one long-lived process with outbound access to Feishu and GitHub.
@@ -48,6 +47,23 @@ Build and run the production artifact with:
 ```bash
 pnpm --filter @linonward/feishu build
 pnpm --filter @linonward/feishu start
+```
+
+## Run with Docker Compose
+
+Docker needs no published ports because the application establishes an outbound long connection.
+
+```bash
+cp apps/feishu/.env.example apps/feishu/.env
+# Edit apps/feishu/.env with real credentials before starting.
+docker compose -f apps/feishu/compose.yml up --build -d
+docker compose -f apps/feishu/compose.yml logs -f
+```
+
+Wait for `Feishu long connection established` in the logs. To stop the service, run:
+
+```bash
+docker compose -f apps/feishu/compose.yml down
 ```
 
 For the first live check, send an innocuous message from an allowlisted account, such as
