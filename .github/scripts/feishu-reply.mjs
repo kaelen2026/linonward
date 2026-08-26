@@ -1,0 +1,88 @@
+// biome-ignore-all lint/suspicious/noUndeclaredEnvVars: GitHub Actions supplies these only at runtime.
+import { readFile } from "node:fs/promises";
+
+import { extractResultText, parseMessages } from "./execution-result.mjs";
+
+const appId = process.env.LARKSUITE_CLI_APP_ID;
+const appSecret = process.env.LARKSUITE_CLI_APP_SECRET;
+const messageId = process.env.MESSAGE_ID;
+const executionFile = process.env.EXECUTION_FILE;
+const runUrl = process.env.RUN_URL;
+const maxReplyLength = 4_000;
+
+if (!appId || !appSecret) {
+  throw new Error("LARKSUITE_CLI_APP_ID and LARKSUITE_CLI_APP_SECRET are required");
+}
+if (!messageId) {
+  console.log("MESSAGE_ID is missing; skipping Feishu reply");
+  process.exit(0);
+}
+
+const replyText = await readReplyText();
+const token = await getTenantAccessToken();
+await replyToFeishu(token, messageId, replyText);
+
+console.log(`Replied with Claude output to Feishu message ${messageId.slice(0, 8)}…`);
+
+async function readReplyText() {
+  if (executionFile) {
+    try {
+      const content = await readFile(executionFile, "utf8");
+      const result = extractResultText(parseMessages(content));
+      if (result) return truncate(result);
+    } catch (error) {
+      console.warn("Unable to read Claude execution output", error);
+    }
+  }
+
+  return runUrl
+    ? `任务已结束，但未能提取 Claude 的回复。请查看运行日志：${runUrl}`
+    : "任务已结束，但未能提取 Claude 的回复。";
+}
+
+function truncate(text) {
+  if (text.length <= maxReplyLength) return text;
+  return `${text.slice(0, maxReplyLength)}\n\n…（回复过长，已截断）`;
+}
+
+async function getTenantAccessToken() {
+  const response = await fetch(
+    "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+    {
+      body: JSON.stringify({ app_id: appId, app_secret: appSecret }),
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      method: "POST",
+    },
+  );
+  const payload = await response.json();
+  if (!response.ok || payload.code !== 0 || typeof payload.tenant_access_token !== "string") {
+    throw new Error(`Unable to obtain Feishu tenant token (status ${response.status})`);
+  }
+  return payload.tenant_access_token;
+}
+
+async function replyToFeishu(token, id, text) {
+  const card = {
+    body: { elements: [{ content: text, tag: "markdown" }] },
+    schema: "2.0",
+  };
+  const response = await fetch(
+    `https://open.feishu.cn/open-apis/im/v1/messages/${encodeURIComponent(id)}/reply`,
+    {
+      body: JSON.stringify({
+        content: JSON.stringify(card),
+        msg_type: "interactive",
+        reply_in_thread: true,
+      }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      method: "POST",
+    },
+  );
+  const payload = await response.json();
+  if (!response.ok || payload.code !== 0) {
+    throw new Error(`Unable to reply to Feishu (status ${response.status})`);
+  }
+}
