@@ -39,8 +39,8 @@ function contract(name: string, open: () => Promise<InquiryRepository>) {
 
 contract("in-memory", () => Promise.resolve(createInMemoryInquiryRepository()));
 
-// Runs only where a database is reachable: `docker compose -f apps/api/compose.yml
-// up -d postgres`, then DATABASE_URL=… pnpm --filter @linonward/api test. CI has
+// Runs only where a database is reachable: `docker compose up -d postgres`, then
+// DATABASE_URL=… pnpm --filter @linonward/api test. CI has
 // no service containers, so it exercises the in-memory contract above only.
 const databaseUrl = process.env.DATABASE_URL;
 const migrations = migrationDirectories().legacy;

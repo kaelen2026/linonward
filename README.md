@@ -36,6 +36,7 @@ The Feishu long-connection client requires its own environment configuration; se
 │   ├── db/                     # Drizzle schema, relations, client, migrations
 │   └── typescript-config/      # Shared tsconfig presets
 ├── docs/                       # Project documentation
+├── compose.yml                # Local Postgres, Redis, and API orchestration
 ├── biome.json                  # Lint + format
 ├── turbo.json                  # Task graph
 └── pnpm-workspace.yaml
@@ -53,6 +54,10 @@ The Feishu long-connection client requires its own environment configuration; se
 | `pnpm db:generate` | Generate a migration after changing `packages/db/src/schema` |
 | `pnpm db:check` | Validate the Drizzle migration snapshots |
 | `pnpm db:studio` | Open Drizzle Studio against `DATABASE_URL` |
+| `pnpm infra:up` | Start local PostgreSQL and Redis containers |
+| `pnpm infra:down` | Stop the local Compose stack |
+| `pnpm infra:status` | Show local PostgreSQL and Redis container status |
+| `pnpm infra:logs` | Follow local PostgreSQL and Redis logs |
 | `pnpm lint` | Biome lint + format check |
 | `pnpm lint:fix` | Biome autofix |
 | `pnpm format` | Biome format only |
@@ -65,6 +70,12 @@ pnpm --filter @linonward/www dev
 pnpm --filter @linonward/web dev
 pnpm --filter @linonward/api dev
 pnpm --filter @linonward/feishu dev
+```
+
+Start only the shared local infrastructure from the repository root:
+
+```bash
+docker compose up -d postgres redis
 ```
 
 ## Documentation

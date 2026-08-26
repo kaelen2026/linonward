@@ -165,9 +165,9 @@ Brings up Postgres 18, Redis 8, and the API, with the app waiting on both health
 
 ```bash
 cp apps/api/.env.example apps/api/.env
-docker compose -f apps/api/compose.yml up --build -d
+docker compose up --build -d
 curl localhost:3001/health/ready
-docker compose -f apps/api/compose.yml down          # add -v to drop the data volume
+docker compose down          # add -v to drop the data volume
 ```
 
 Postgres keeps a named volume. Redis deliberately has none — rate-limit counters are disposable,
@@ -204,7 +204,7 @@ The Postgres half of the repository contract is skipped unless `DATABASE_URL` is
 service containers, so it runs the in-memory half only. To run both:
 
 ```bash
-docker compose -f apps/api/compose.yml up -d postgres
+docker compose up -d postgres
 DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
   pnpm --filter @linonward/api test
 ```

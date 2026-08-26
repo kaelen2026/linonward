@@ -104,7 +104,7 @@ limit, but `composition.ts` is the only file that knows either exists: modules s
 optional locally — absent, the in-memory adapters take over — and both are refused under
 `NODE_ENV=production`, so no deploy can quietly lose its data to a restart.
 
-`apps/api/compose.yml` runs the three containers together; migrations owned by `packages/db` are
+The root `compose.yml` runs the three containers together; migrations owned by `packages/db` are
 applied by `dist/migrate.js` before the server starts. Endpoints, the error body, and configuration live in
 [the app README](../apps/api/README.md).
 
