@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createGitHubDispatcher } from "./github.js";
+import { sessionIdForTopic } from "./session.js";
 
 describe("createGitHubDispatcher", () => {
   it("sends the Feishu task as a repository dispatch", async () => {
@@ -15,7 +16,12 @@ describe("createGitHubDispatcher", () => {
     );
 
     await expect(
-      dispatch({ chatId: "oc_chat", messageId: "om_message", text: "summarize the latest commit" }),
+      dispatch({
+        chatId: "oc_chat",
+        messageId: "om_message",
+        text: "summarize the latest commit",
+        threadKey: "omt_topic",
+      }),
     ).resolves.toBeUndefined();
 
     expect(fetcher).toHaveBeenCalledWith(
@@ -25,7 +31,9 @@ describe("createGitHubDispatcher", () => {
           client_payload: {
             chat_id: "oc_chat",
             message_id: "om_message",
+            session_uuid: sessionIdForTopic("omt_topic"),
             text: "summarize the latest commit",
+            thread_key: "omt_topic",
           },
           event_type: "feishu-task",
         }),
@@ -49,7 +57,12 @@ describe("createGitHubDispatcher", () => {
     );
 
     await expect(
-      dispatch({ chatId: "oc_chat", messageId: "om_message", text: "run task" }),
+      dispatch({
+        chatId: "oc_chat",
+        messageId: "om_message",
+        text: "run task",
+        threadKey: "om_task",
+      }),
     ).rejects.toThrow("GitHub repository dispatch failed with 401");
   });
 });

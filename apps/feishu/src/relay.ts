@@ -2,6 +2,7 @@ export type Task = {
   chatId: string;
   messageId: string;
   text: string;
+  threadKey: string;
 };
 
 export type RelayConfig = {
@@ -10,6 +11,7 @@ export type RelayConfig = {
 };
 
 export type DispatchTask = (task: Task) => Promise<void>;
+export type ReplyTask = (task: Task, text: string) => Promise<void>;
 
 export type FeishuMessageEvent = {
   message: {
@@ -17,6 +19,8 @@ export type FeishuMessageEvent = {
     content: string;
     message_id: string;
     message_type: string;
+    root_id?: string;
+    thread_id?: string;
   };
   sender: {
     sender_id?: {
@@ -29,6 +33,7 @@ export async function handleFeishuMessage(
   event: FeishuMessageEvent,
   config: RelayConfig,
   dispatch: DispatchTask,
+  reply: ReplyTask = async () => undefined,
 ): Promise<{ status: "dispatched" | "ignored" }> {
   if (event.message.message_type !== "text") {
     return { status: "ignored" };
@@ -42,6 +47,12 @@ export async function handleFeishuMessage(
   const task = getTask(event.message, config.maxTaskLength);
   if (!task) {
     return { status: "ignored" };
+  }
+
+  try {
+    await reply(task, "收到，正在处理。");
+  } catch (error) {
+    console.error("Unable to acknowledge Feishu message", error);
   }
 
   await dispatch(task);
@@ -59,7 +70,12 @@ function getTask(message: FeishuMessageEvent["message"], maxTaskLength: number):
     return undefined;
   }
 
-  return { chatId: message.chat_id, messageId: message.message_id, text };
+  return {
+    chatId: message.chat_id,
+    messageId: message.message_id,
+    text,
+    threadKey: message.thread_id ?? message.root_id ?? message.message_id,
+  };
 }
 
 function parseTextContent(content: string): string | undefined {

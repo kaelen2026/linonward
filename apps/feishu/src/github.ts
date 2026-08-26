@@ -1,4 +1,5 @@
 import type { DispatchTask } from "./relay.js";
+import { sessionIdForTopic } from "./session.js";
 
 export type GitHubConfig = {
   apiUrl: string;
@@ -20,7 +21,9 @@ export function createGitHubDispatcher(
         client_payload: {
           chat_id: task.chatId,
           message_id: task.messageId,
+          session_uuid: sessionIdForTopic(task.threadKey),
           text: task.text,
+          thread_key: task.threadKey,
         },
         event_type: "feishu-task",
       }),

@@ -12,7 +12,7 @@ on:
 # One task per conversation, queued rather than cancelled: each message is its
 # own request, so cancelling loses work instead of superseding it.
 concurrency:
-  group: feishu-${{ github.event.client_payload.chat_id }}
+  group: feishu-${{ github.event.client_payload.thread_key || github.event.client_payload.message_id }}
   cancel-in-progress: false
 
 permissions:
@@ -48,6 +48,30 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # A Feishu topic maps to one deterministic Claude session. Cache entries are
+      # immutable, so every run saves under its own run ID; restore-keys gets the
+      # most recent transcript for that topic on the next message.
+      - name: Restore Feishu topic session
+        id: restore-session
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.claude
+          key: feishu-session-${{ github.event.client_payload.thread_key }}-${{ github.run_id }}
+          restore-keys: |
+            feishu-session-${{ github.event.client_payload.thread_key }}-
+
+      - name: Decide Claude session mode
+        id: session-mode
+        env:
+          SESSION_UUID: ${{ github.event.client_payload.session_uuid }}
+        run: |
+          set -euo pipefail
+          if compgen -G "$HOME/.claude/projects/*/${SESSION_UUID}.jsonl" > /dev/null; then
+            echo "claude_session_arg=--resume ${SESSION_UUID}" >> "$GITHUB_OUTPUT"
+          else
+            echo "claude_session_arg=--session-id ${SESSION_UUID}" >> "$GITHUB_OUTPUT"
+          fi
+
       # The message body reaches Claude through a `with:` input, never a `run:`
       # block. GitHub parses the YAML before evaluating expressions, so a value
       # substituted into `with:` cannot break out of it; the same string in a
@@ -57,7 +81,9 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: --max-turns 30
+          claude_args: >-
+            --max-turns 30
+            ${{ steps.session-mode.outputs.claude_session_arg }}
           prompt: |
             你是这个仓库的 CI agent。<task> 里是同事通过飞书发来的请求。
 
@@ -70,12 +96,21 @@ jobs:
             ${{ github.event.client_payload.text }}
             </task>
 
+            这是同一飞书话题中的一条连续消息。若当前会话已恢复，请在已有上下文上继续处理。
+
             规则:
             - 遵守 CLAUDE.md 与 .claude/rules/git.md。
             - 绝不推送到 main。任何改动都开分支提 PR。
             - 提交前跑 pnpm lint、pnpm typecheck 和 pnpm test,失败就修,
               或如实说明失败。
             - 最后输出一段中文总结:做了什么、验证结果、PR 链接(若有)。
+
+      - name: Save Feishu topic session
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.claude
+          key: feishu-session-${{ github.event.client_payload.thread_key }}-${{ github.run_id }}
 
       # A separate step on purpose: the Feishu credentials must not exist in the
       # environment of the step above, where a successful prompt injection could
