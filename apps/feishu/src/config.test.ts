@@ -8,6 +8,7 @@ const environment = {
   FEISHU_APP_SECRET: "app-secret",
   GITHUB_DISPATCH_TOKEN: "github-token",
   GITHUB_REPOSITORY: "kaelen2026/linonward",
+  HERMES_API_KEY: "hermes-api-key",
 };
 
 describe("loadServiceConfig", () => {
@@ -22,11 +23,26 @@ describe("loadServiceConfig", () => {
         repository: "kaelen2026/linonward",
         token: "github-token",
       },
+      hermes: {
+        apiKey: "hermes-api-key",
+        apiUrl: "http://host.docker.internal:8642/v1",
+        model: "contentchief",
+      },
       relay: {
         allowedOpenIds: new Set(["ou_first", "ou_second"]),
         maxTaskLength: 6_000,
       },
     });
+  });
+
+  it("requires a Hermes API key when a Hermes API URL is configured", () => {
+    expect(() =>
+      loadServiceConfig({
+        ...environment,
+        HERMES_API_KEY: undefined,
+        HERMES_API_URL: "http://host.docker.internal:8642/v1",
+      }),
+    ).toThrow("HERMES_API_URL and HERMES_API_KEY must be configured together");
   });
 
   it("requires an allowlist instead of accepting messages from every user", () => {

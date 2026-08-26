@@ -33,6 +33,7 @@ describe("handleFeishuMessage", () => {
     expect(dispatch).toHaveBeenCalledWith({
       chatId: "oc_chat",
       messageId: "om_message",
+      route: "github",
       text: "summarize the latest commit",
       threadKey: "omt_topic",
     });
@@ -40,11 +41,42 @@ describe("handleFeishuMessage", () => {
       {
         chatId: "oc_chat",
         messageId: "om_message",
+        route: "github",
         text: "summarize the latest commit",
         threadKey: "omt_topic",
       },
       "收到，正在处理。",
     );
+  });
+
+  it("routes a /内容 command to the local content producer", async () => {
+    const dispatch = vi.fn().mockResolvedValue({ reply: "这是成稿。" });
+    const reply = vi.fn().mockResolvedValue(undefined);
+
+    await handleFeishuMessage(
+      {
+        message: {
+          chat_id: "oc_chat",
+          content: JSON.stringify({ text: "/内容 写一篇产品介绍" }),
+          message_id: "om_message",
+          message_type: "text",
+          thread_id: "omt_topic",
+        },
+        sender: { sender_id: { open_id: "ou_authorized" } },
+      },
+      config,
+      dispatch,
+      reply,
+    );
+
+    expect(dispatch).toHaveBeenCalledWith({
+      chatId: "oc_chat",
+      messageId: "om_message",
+      route: "hermes",
+      text: "写一篇产品介绍",
+      threadKey: "omt_topic",
+    });
+    expect(reply).toHaveBeenLastCalledWith(expect.anything(), "这是成稿。");
   });
 
   it("uses the root message as the topic key when Feishu omits thread_id", async () => {

@@ -1,6 +1,7 @@
 export type Task = {
   chatId: string;
   messageId: string;
+  route: "github" | "hermes";
   text: string;
   threadKey: string;
 };
@@ -10,7 +11,11 @@ export type RelayConfig = {
   maxTaskLength: number;
 };
 
-export type DispatchTask = (task: Task) => Promise<void>;
+export type DispatchResult = {
+  reply?: string;
+};
+
+export type DispatchTask = (task: Task) => Promise<DispatchResult | undefined>;
 export type ReplyTask = (task: Task, text: string) => Promise<void>;
 
 export type FeishuMessageEvent = {
@@ -55,7 +60,15 @@ export async function handleFeishuMessage(
     console.error("Unable to acknowledge Feishu message", error);
   }
 
-  await dispatch(task);
+  try {
+    const result = await dispatch(task);
+    if (result?.reply) {
+      await reply(task, result.reply);
+    }
+  } catch (error) {
+    console.error("Unable to process Feishu message", error);
+    await reply(task, "处理失败，请稍后重试。");
+  }
   return { status: "dispatched" };
 }
 
@@ -70,10 +83,13 @@ function getTask(message: FeishuMessageEvent["message"], maxTaskLength: number):
     return undefined;
   }
 
+  const contentTask = text.match(/^\/(?:content|内容)\s+(.+)$/isu);
+
   return {
     chatId: message.chat_id,
     messageId: message.message_id,
-    text,
+    route: contentTask ? "hermes" : "github",
+    text: contentTask?.[1]?.trim() ?? text,
     threadKey: message.thread_id ?? message.root_id ?? message.message_id,
   };
 }

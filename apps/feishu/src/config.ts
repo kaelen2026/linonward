@@ -2,6 +2,8 @@ import type { GitHubConfig } from "./github.js";
 import type { RelayConfig } from "./relay.js";
 
 const defaultTaskLength = 6_000;
+const defaultHermesApiUrl = "http://host.docker.internal:8642/v1";
+const defaultHermesModel = "contentchief";
 
 export type FeishuConfig = {
   appId: string;
@@ -11,7 +13,14 @@ export type FeishuConfig = {
 export type ServiceConfig = {
   feishu: FeishuConfig;
   github: GitHubConfig;
+  hermes?: HermesConfig;
   relay: RelayConfig;
+};
+
+export type HermesConfig = {
+  apiKey: string;
+  apiUrl: string;
+  model: string;
 };
 
 export function loadServiceConfig(environment: Record<string, string | undefined>): ServiceConfig {
@@ -37,10 +46,36 @@ export function loadServiceConfig(environment: Record<string, string | undefined
       repository: readRepository(readRequired(environment, "GITHUB_REPOSITORY")),
       token: readRequired(environment, "GITHUB_DISPATCH_TOKEN"),
     },
+    hermes: loadHermesConfig(environment),
     relay: {
       allowedOpenIds,
       maxTaskLength,
     },
+  };
+}
+
+function loadHermesConfig(
+  environment: Record<string, string | undefined>,
+): HermesConfig | undefined {
+  const apiUrl = environment.HERMES_API_URL?.trim();
+  const apiKey = environment.HERMES_API_KEY?.trim();
+
+  if (apiUrl && !apiKey) {
+    throw new Error("HERMES_API_URL and HERMES_API_KEY must be configured together");
+  }
+  if (!apiKey) {
+    return undefined;
+  }
+
+  const url = new URL(apiUrl || defaultHermesApiUrl);
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error("HERMES_API_URL must use http or https");
+  }
+
+  return {
+    apiKey,
+    apiUrl: url.toString().replace(/\/$/, ""),
+    model: environment.HERMES_MODEL?.trim() || defaultHermesModel,
   };
 }
 

@@ -5,6 +5,8 @@ services:
       dockerfile: apps/feishu/Dockerfile
     env_file:
       - .env
+    extra_hosts:
+      - host.docker.internal:host-gateway
     image: linonward-feishu:local
     init: true
     restart: unless-stopped
