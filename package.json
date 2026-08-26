@@ -20,6 +20,10 @@
     "db:generate": "pnpm --filter @linonward/db db:generate",
     "db:check": "pnpm --filter @linonward/db db:check",
     "db:studio": "pnpm --filter @linonward/db db:studio",
+    "infra:up": "docker compose up -d postgres redis",
+    "infra:down": "docker compose down",
+    "infra:status": "docker compose ps postgres redis",
+    "infra:logs": "docker compose logs -f postgres redis",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
     "prepare": "husky"
   },

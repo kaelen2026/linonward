@@ -1,7 +1,9 @@
+name: linonward
+
 services:
   api:
     build:
-      context: ../..
+      context: .
       dockerfile: apps/api/Dockerfile
     depends_on:
       postgres:
@@ -9,10 +11,11 @@ services:
       redis:
         condition: service_healthy
     env_file:
-      - .env
+      - path: ./apps/api/.env
+        required: false
     environment:
-      # Inside the network the services answer to their compose names, whatever
-      # .env says for a host-side run.
+      # Inside the network the services answer to their Compose names, whatever
+      # apps/api/.env says for a host-side run.
       DATABASE_URL: postgres://linonward:${POSTGRES_PASSWORD:-linonward}@postgres:5432/linonward
       REDIS_URL: redis://redis:6379
       HOST: 0.0.0.0
@@ -64,3 +67,4 @@ services:
 
 volumes:
   postgres-data:
+    name: linonward-postgres-data
