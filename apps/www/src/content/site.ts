@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import type { InquiryField, InquiryIssue } from "@/lib/inquiry";
 
 /**
  * Every string on the marketing site, per locale.
@@ -49,9 +50,33 @@ export type SiteContent = {
   closing: {
     heading: string;
     body: string;
-    primaryCta: string;
+    /** Label on the email fallback under the form. */
     secondaryCta: string;
+    /** Subject line on that fallback, so a reply lands in the right thread. */
     demoSubject: string;
+  };
+  /**
+   * The contact form. `issues` is keyed by `InquiryIssue`, so a new validation
+   * code added in `src/lib/inquiry.ts` fails to compile until both locales can
+   * phrase it.
+   */
+  contactForm: {
+    heading: string;
+    intro: string;
+    /** Suffix on the one field the API does not require. */
+    optional: string;
+    submit: string;
+    submitting: string;
+    fields: Record<InquiryField, { label: string; placeholder: string }>;
+    issues: Record<InquiryIssue, string>;
+    status: {
+      invalid: string;
+      rateLimited: string;
+      failed: string;
+      successTitle: string;
+      successBody: string;
+      reference: string;
+    };
   };
   footer: { blurb: string; rights: string; languageLabel: string };
 };
@@ -181,9 +206,39 @@ const zh: SiteContent = {
   closing: {
     heading: "先从一条曲线开始",
     body: "接一个数据源，定义一个指标，看看它和你现在手工算出来的数字差多少。这一步不需要立项。",
-    primaryCta: "预约演示",
     secondaryCta: "或者直接写信：",
     demoSubject: "预约 Linonward 演示",
+  },
+  contactForm: {
+    heading: "说说你现在怎么算增长",
+    intro: "留个联系方式，我们看过你的场景再回信，不群发资料。",
+    optional: "选填",
+    submit: "发送",
+    submitting: "发送中",
+    fields: {
+      name: { label: "你的名字", placeholder: "林望" },
+      email: { label: "工作邮箱", placeholder: "lin@company.com" },
+      company: { label: "公司", placeholder: "公司名称" },
+      message: {
+        label: "想聊什么",
+        placeholder: "现在用什么工具算增长，卡在哪一步？",
+      },
+    },
+    issues: {
+      required: "这一项要填。",
+      invalidEmail: "这个邮箱地址看起来不对。",
+      tooShort: "再多写几句，我们才好提前准备。",
+      tooLong: "太长了，请精简一下。",
+      invalid: "这一项填写有误。",
+    },
+    status: {
+      invalid: "有几项还需要修改。",
+      rateLimited: "提交太频繁了。请过几分钟再试，或者直接写信给我们。",
+      failed: "没能送出去。请稍后重试，或者直接写信给我们。",
+      successTitle: "收到了",
+      successBody: "我们会在一个工作日内回信。",
+      reference: "受理编号",
+    },
   },
   footer: {
     blurb: "Linonward 是面向 B2B 团队的增长度量与分析平台。",
@@ -331,9 +386,39 @@ const en: SiteContent = {
   closing: {
     heading: "Start with a single curve",
     body: "Connect one source, define one metric, and see how far it lands from the number you calculate by hand today. That doesn't need a project plan.",
-    primaryCta: "Book a demo",
     secondaryCta: "Or just write to us:",
     demoSubject: "Linonward demo request",
+  },
+  contactForm: {
+    heading: "Tell us how you measure growth today",
+    intro: "Leave a way to reach you. We read the context before replying — no drip campaign.",
+    optional: "optional",
+    submit: "Send",
+    submitting: "Sending",
+    fields: {
+      name: { label: "Your name", placeholder: "Lin Wang" },
+      email: { label: "Work email", placeholder: "lin@company.com" },
+      company: { label: "Company", placeholder: "Company name" },
+      message: {
+        label: "What would you like to cover",
+        placeholder: "What do you use to measure growth today, and where does it break down?",
+      },
+    },
+    issues: {
+      required: "This one is required.",
+      invalidEmail: "That doesn't look like a valid address.",
+      tooShort: "A couple more sentences will help us prepare.",
+      tooLong: "That's too long — please shorten it.",
+      invalid: "This one isn't valid.",
+    },
+    status: {
+      invalid: "A few fields still need fixing.",
+      rateLimited: "That's a lot of submissions. Give it a few minutes, or just email us.",
+      failed: "That didn't send. Try again shortly, or just email us.",
+      successTitle: "Got it",
+      successBody: "We'll reply within one business day.",
+      reference: "Reference",
+    },
   },
   footer: {
     blurb: "Linonward is a growth measurement and analytics platform for B2B teams.",

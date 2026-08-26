@@ -1,14 +1,16 @@
 import { ArrowRight, Check, Mail } from "lucide-react";
 import { notFound } from "next/navigation";
 
+import { ContactForm } from "@/components/site/contact-form";
 import { Eyebrow } from "@/components/site/eyebrow";
 import { GrowthChart } from "@/components/site/growth-chart";
 import { FeatureIcon } from "@/components/site/icon";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { contactEmail, siteContent } from "@/content/site";
+import { apiBaseUrl } from "@/lib/api";
 import { isLocale } from "@/lib/i18n";
 
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
@@ -16,7 +18,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   if (!isLocale(locale)) notFound();
 
   const content = siteContent[locale];
-  const { hero, friction, features, how, audience, closing } = content;
+  const { hero, friction, features, how, audience, closing, contactForm } = content;
 
   return (
     <>
@@ -183,26 +185,27 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground text-pretty">
               {closing.body}
             </p>
-            <div className="mt-8 flex flex-col items-center gap-5">
-              <Button
-                nativeButton={false}
-                render={
-                  <a
-                    href={`mailto:${contactEmail}?subject=${encodeURIComponent(closing.demoSubject)}`}
-                  />
-                }
-                size="lg"
-                variant="brand"
-              >
-                {closing.primaryCta}
-                <ArrowRight data-icon="inline-end" />
-              </Button>
+            <div className="mt-10 space-y-6">
+              <Card className="[--card-spacing:--spacing(6)]">
+                <CardHeader>
+                  {/* biome-ignore lint/a11y/useHeadingContent: the <h3> is a render template — useRender injects the heading text as its children, and the rendered DOM has content. */}
+                  <CardTitle className="font-heading text-left text-lg" render={<h3 />}>
+                    {contactForm.heading}
+                  </CardTitle>
+                  <CardDescription className="text-left">{contactForm.intro}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ContactForm apiBaseUrl={apiBaseUrl} content={contactForm} locale={locale} />
+                </CardContent>
+              </Card>
+              {/* The form is the path we want, but it needs a live API. This
+                  works even when that is down, so it stays. */}
               <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Mail aria-hidden="true" className="size-4" />
                 {closing.secondaryCta}
                 <a
                   className="font-mono text-foreground underline decoration-brand decoration-2 underline-offset-4"
-                  href={`mailto:${contactEmail}`}
+                  href={`mailto:${contactEmail}?subject=${encodeURIComponent(closing.demoSubject)}`}
                 >
                   {contactEmail}
                 </a>

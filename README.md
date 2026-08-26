@@ -16,6 +16,9 @@ pnpm --filter @linonward/www dev
 
 The website runs at http://localhost:3000 and the API at http://localhost:3001.
 The API is a Hono modular monolith; see [`apps/api/README.md`](./apps/api/README.md).
+Those defaults line up, so the site's contact form reaches the API with no `.env` at
+all — point it elsewhere with `NEXT_PUBLIC_API_URL` (see
+[`apps/www/.env.example`](./apps/www/.env.example)).
 The Feishu long-connection client requires its own environment configuration; see
 [`apps/feishu/README.md`](./apps/feishu/README.md).
 

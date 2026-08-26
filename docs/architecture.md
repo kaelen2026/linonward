@@ -56,6 +56,22 @@ in `:root` and `.dark`. Fonts are wired by naming the `next/font` CSS variables
 `--font-sans` and `--font-mono` on `<html>`, which is exactly what the theme
 block reads.
 
+### The one write path
+
+The site is otherwise static; the contact form in the closing section is the only
+thing that sends data anywhere. It posts to `apps/api`'s `POST /contact/inquiries`
+**straight from the browser**, not through a Next route handler — the API's rate
+limiter keys on the client address, so a server-side hop would collapse every
+visitor into one budget and let a single submitter spend the whole site's. That is
+what `CORS_ALLOWED_ORIGINS` on the API and `NEXT_PUBLIC_API_URL` here are: the two
+sides of one handshake.
+
+`src/lib/inquiry.ts` mirrors the API's zod schema so a mistake is caught before a
+request is spent, and deliberately is not a second source of truth — the server
+revalidates and wins, and a disagreement surfaces as `invalid` on the field the
+server named. The mailto link below the form stays as the fallback for when the
+API is down.
+
 ## `apps/api`
 
 A Hono service on Node, structured as a **modular monolith**: one process and one deployable,
