@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { ApiError } from "../../shared/api-error.js";
 import { createInMemoryInquiryRepository } from "./repository.js";
 import { createInquiryService } from "./service.js";
 
@@ -39,31 +38,5 @@ describe("createInquiryService", () => {
     const inquiry = await service.submit(input);
 
     expect(inquiry.email).toBe("lin.wang@example.com");
-  });
-
-  it("reads a submitted inquiry back by id", async () => {
-    const service = serviceWithIds("inq_1");
-    const submitted = await service.submit(input);
-
-    await expect(service.get("inq_1")).resolves.toEqual(submitted);
-  });
-
-  it("reports an unknown id as a client-visible 404 rather than undefined", async () => {
-    const service = serviceWithIds();
-
-    await expect(service.get("inq_missing")).rejects.toThrow(ApiError);
-    await expect(service.get("inq_missing")).rejects.toMatchObject({
-      status: 404,
-      code: "inquiry_not_found",
-    });
-  });
-
-  it("keeps inquiries apart instead of overwriting the first", async () => {
-    const service = serviceWithIds("inq_1", "inq_2");
-    await service.submit(input);
-    await service.submit({ ...input, name: "Wang Lin" });
-
-    await expect(service.get("inq_1")).resolves.toMatchObject({ name: "林望" });
-    await expect(service.get("inq_2")).resolves.toMatchObject({ name: "Wang Lin" });
   });
 });

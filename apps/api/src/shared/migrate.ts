@@ -16,32 +16,36 @@ export function pendingMigrations(available: string[], applied: string[]): strin
 }
 
 /**
- * Applies every pending migration, each in its own transaction, and records it.
+ * Applies every pending migration and records it in one locked transaction.
  * Small enough to read in one sitting, which is the point — a migration tool is
  * the last place to want a black box.
  */
 export async function migrate(sql: Sql, directory: string): Promise<string[]> {
-  await sql`
-    create table if not exists schema_migrations (
-      name text primary key,
-      applied_at timestamptz not null default now()
-    )
-  `;
+  const available = await readdir(directory);
 
-  const recorded = await sql<{ name: string }[]>`select name from schema_migrations`;
-  const pending = pendingMigrations(
-    await readdir(directory),
-    recorded.map((row) => row.name),
-  );
+  return sql.begin(async (tx) => {
+    // The transaction-scoped lock serialises migrations across replicas. It is
+    // released automatically on rollback as well as commit.
+    await tx`select pg_advisory_xact_lock(hashtext('linonward:schema-migrations'))`;
+    await tx`
+      create table if not exists schema_migrations (
+        name text primary key,
+        applied_at timestamptz not null default now()
+      )
+    `;
 
-  for (const name of pending) {
-    const statements = await readFile(path.join(directory, name), "utf8");
+    const recorded = await tx<{ name: string }[]>`select name from schema_migrations`;
+    const pending = pendingMigrations(
+      available,
+      recorded.map((row) => row.name),
+    );
 
-    await sql.begin(async (tx) => {
+    for (const name of pending) {
+      const statements = await readFile(path.join(directory, name), "utf8");
       await tx.unsafe(statements);
       await tx`insert into schema_migrations ${tx({ name })}`;
-    });
-  }
+    }
 
-  return pending;
+    return pending;
+  });
 }

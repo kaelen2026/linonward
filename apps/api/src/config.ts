@@ -1,3 +1,5 @@
+import { isIP } from "node:net";
+
 const defaultPort = 3001;
 const defaultVersion = "0.0.0";
 const defaultRateLimit = 5;
@@ -13,6 +15,8 @@ export type ApiConfig = {
   port: number;
   /** Absent falls back to a per-process limiter, which is refused in production. */
   redisUrl: string | undefined;
+  /** Socket peers allowed to supply the client address through X-Forwarded-For. */
+  trustedProxyIps: readonly string[];
   /** Reported by `GET /health`, so a running deploy can be identified. */
   version: string;
 };
@@ -50,8 +54,22 @@ export function loadApiConfig(environment: Record<string, string | undefined>): 
     },
     port: readPort(environment.PORT),
     redisUrl,
+    trustedProxyIps: readTrustedProxyIps(environment.TRUSTED_PROXY_IPS),
     version: environment.API_VERSION?.trim() || defaultVersion,
   };
+}
+
+function readTrustedProxyIps(value: string | undefined): readonly string[] {
+  return (value ?? "")
+    .split(",")
+    .map((ip) => ip.trim())
+    .filter(Boolean)
+    .map((ip) => {
+      if (isIP(ip) === 0) {
+        throw new Error("TRUSTED_PROXY_IPS must list IP addresses");
+      }
+      return ip;
+    });
 }
 
 function readAllowedOrigins(value: string | undefined): readonly string[] {

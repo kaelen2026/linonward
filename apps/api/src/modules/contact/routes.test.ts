@@ -40,11 +40,11 @@ function post(path: string, payload: unknown) {
 }
 
 describe("contact routes", () => {
-  it("accepts an inquiry and points at where it can be read back", async () => {
+  it("accepts an inquiry without publishing a PII retrieval URL", async () => {
     const response = await post("/contact/inquiries", body);
 
     expect(response.status).toBe(201);
-    expect(response.headers.get("location")).toBe("/contact/inquiries/inq_1");
+    expect(response.headers.get("location")).toBeNull();
     expect(await response.json()).toMatchObject({ id: "inq_1", name: "林望" });
   });
 
@@ -74,25 +74,9 @@ describe("contact routes", () => {
     expect(response.status).toBe(400);
   });
 
-  it("reads an inquiry back after it was accepted", async () => {
-    const app = appWithContact();
-    await app.request("/contact/inquiries", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    const response = await app.request("/contact/inquiries/inq_1");
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ id: "inq_1", email: "lin.wang@example.com" });
-  });
-
-  it("answers an unknown inquiry id with 404 and not an empty 200", async () => {
-    const response = await appWithContact().request("/contact/inquiries/inq_missing");
-
+  it("does not expose a public inquiry read endpoint", async () => {
+    const response = await appWithContact().request("/contact/inquiries/inq_1");
     expect(response.status).toBe(404);
-    expect(await response.json()).toMatchObject({ error: { code: "inquiry_not_found" } });
   });
 
   it("throttles a client that submits past its budget", async () => {
@@ -109,19 +93,5 @@ describe("contact routes", () => {
 
     expect(response.status).toBe(429);
     expect(await response.json()).toMatchObject({ error: { code: "rate_limited" } });
-  });
-
-  it("does not spend the submission budget on reading an inquiry back", async () => {
-    const app = appWithContact(1);
-    await app.request("/contact/inquiries", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    await app.request("/contact/inquiries/inq_1");
-    const response = await app.request("/contact/inquiries/inq_1");
-
-    expect(response.status).toBe(200);
   });
 });

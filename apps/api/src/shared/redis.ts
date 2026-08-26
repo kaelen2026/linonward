@@ -7,9 +7,7 @@ import type { RateLimiter, RateLimitOptions } from "./rate-limit.js";
  * than the whole client is what lets the limiter below be tested with a fake.
  */
 export type RedisClient = {
-  incr(key: string): Promise<number>;
-  expire(key: string, seconds: number): Promise<boolean | number>;
-  ttl(key: string): Promise<number>;
+  eval(script: string, options: { arguments: string[]; keys: string[] }): Promise<unknown>;
   ping(): Promise<string>;
 };
 
@@ -25,9 +23,7 @@ export async function connectRedis(url: string): Promise<RedisConnection> {
   await client.connect();
 
   return {
-    incr: (key) => client.incr(key),
-    expire: (key, seconds) => client.expire(key, seconds),
-    ttl: (key) => client.ttl(key),
+    eval: (script, options) => client.eval(script, options),
     ping: () => client.ping(),
     close: async () => {
       await client.close();
@@ -43,22 +39,37 @@ export function createRedisRateLimiter(
   return {
     async consume(key) {
       const counter = `ratelimit:${key}`;
-      const count = await client.incr(counter);
-
-      // Only the hit that opened the window sets the expiry. Refreshing it on
-      // every hit would let a steady stream hold the window open forever.
-      if (count === 1) {
-        await client.expire(counter, windowSeconds);
-      }
-
-      const ttl = await client.ttl(counter);
+      const result = await client.eval(
+        [
+          "local count = redis.call('INCR', KEYS[1])",
+          "local ttl = redis.call('TTL', KEYS[1])",
+          "if count == 1 or ttl == -1 then",
+          "  redis.call('EXPIRE', KEYS[1], ARGV[1])",
+          "  ttl = redis.call('TTL', KEYS[1])",
+          "end",
+          "return { count, ttl }",
+        ].join("\n"),
+        { arguments: [String(windowSeconds)], keys: [counter] },
+      );
+      const [count, ttl] = readCounterResult(result);
 
       return {
         allowed: count <= limit,
         limit,
         remaining: Math.max(0, limit - count),
-        retryAfterSeconds: ttl > 0 ? ttl : windowSeconds,
+        retryAfterSeconds: ttl > 0 ? ttl : 1,
       };
     },
   };
+}
+
+function readCounterResult(result: unknown): [number, number] {
+  if (
+    !Array.isArray(result) ||
+    result.length !== 2 ||
+    !result.every((value) => typeof value === "number")
+  ) {
+    throw new Error("Redis rate-limit script returned an invalid result");
+  }
+  return [result[0]!, result[1]!];
 }
