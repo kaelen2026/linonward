@@ -1,8 +1,12 @@
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+
+import * as authSchema from "../modules/auth/schema.js";
 
 export type Sql = postgres.Sql;
 
 export type PostgresConnection = {
+  db: PostgresJsDatabase<typeof authSchema>;
   sql: Sql;
   ping(): Promise<void>;
   close(): Promise<void>;
@@ -25,6 +29,7 @@ export function connectPostgres(url: string): PostgresConnection {
   });
 
   return {
+    db: drizzle(sql, { schema: authSchema }),
     sql,
     async ping() {
       await sql`select 1`;

@@ -2,11 +2,13 @@ import Link from "next/link";
 
 import { SiteHeader } from "@/components/site/site-header";
 import { apiBaseUrl } from "@/lib/api";
+import { requireSession } from "@/lib/session";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await requireSession();
   return (
     <>
-      <SiteHeader pathname="/" />
+      <SiteHeader pathname="/" userEmail={session.user.email} />
 
       <main className="mx-auto max-w-5xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight">LinOnward Web</h1>

@@ -1,9 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { getConnInfo } from "@hono/node-server/conninfo";
 import type { Context, Hono } from "hono";
+import { Resend } from "resend";
 
 import { createApp } from "./app.js";
 import type { ApiConfig } from "./config.js";
+import { createAuthHandler } from "./modules/auth/auth.js";
+import { type AuthHandler, createAuthModule } from "./modules/auth/index.js";
 import { createContactModule } from "./modules/contact/index.js";
 import { createPostgresInquiryRepository } from "./modules/contact/postgres-repository.js";
 import {
@@ -31,6 +34,7 @@ export type ApiDependencies = {
   inquiries: InquiryRepository;
   inquiryRateLimiter: RateLimiter;
   probes: DependencyProbes;
+  authHandler?: AuthHandler;
   trustedProxyIps: readonly string[];
   /** Closed on shutdown; empty when everything is in-memory. */
   close: () => Promise<void>;
@@ -72,6 +76,10 @@ export async function createDefaultDependencies(config: ApiConfig): Promise<ApiD
     inquiryRateLimiter: redis
       ? createRedisRateLimiter(redis, config.inquiryRateLimit)
       : createInMemoryRateLimiter(config.inquiryRateLimit, clock),
+    authHandler:
+      postgres && config.auth
+        ? createAuthHandler(config.auth, postgres.db, new Resend(config.auth.resendApiKey))
+        : undefined,
     probes,
     trustedProxyIps: config.trustedProxyIps,
     close: async () => {
@@ -96,7 +104,7 @@ function clientKey(c: Context<AppEnv>, trustedProxyIps: readonly string[]): stri
 
 /** The mount table. Adding a module to the monolith means adding a line here. */
 export function createApiModules(dependencies: ApiDependencies): ApiModule[] {
-  return [
+  const modules: ApiModule[] = [
     createHealthModule({
       version: dependencies.version,
       startedAt: dependencies.startedAt,
@@ -112,6 +120,9 @@ export function createApiModules(dependencies: ApiDependencies): ApiModule[] {
       ),
     }),
   ];
+  if (dependencies.authHandler)
+    modules.push(createAuthModule({ handler: dependencies.authHandler }));
+  return modules;
 }
 
 export function createApiApp(config: ApiConfig, dependencies: ApiDependencies): Hono<AppEnv> {
