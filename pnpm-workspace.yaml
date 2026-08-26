@@ -2,9 +2,14 @@ packages:
   - "apps/*"
   - "packages/*"
 
+allowBuilds:
+  protobufjs: true
+
 # Build scripts allowed to run on install (pnpm blocks the rest by default).
 onlyBuiltDependencies:
   - "@biomejs/biome"
   - "@tailwindcss/oxide"
+  - "esbuild"
+  - "protobufjs"
   - "sharp"
   - "unrs-resolver"

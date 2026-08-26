@@ -11,16 +11,19 @@ Turborepo monorepo powered by a pnpm workspace.
 
 ```bash
 pnpm install
-pnpm dev
+pnpm --filter @linonward/www dev
 ```
 
 The website runs at http://localhost:3000.
+The Feishu long-connection client requires its own environment configuration; see
+[`apps/feishu/README.md`](./apps/feishu/README.md).
 
 ## Workspace layout
 
 ```
 .
 ├── apps/
+│   ├── feishu/                 # Feishu-to-GitHub task relay
 │   └── www/                    # Official website — Next.js App Router
 ├── packages/
 │   └── typescript-config/      # Shared tsconfig presets
@@ -48,6 +51,7 @@ Target a single workspace with `--filter`:
 
 ```bash
 pnpm --filter @linonward/www dev
+pnpm --filter @linonward/feishu dev
 ```
 
 ## Documentation

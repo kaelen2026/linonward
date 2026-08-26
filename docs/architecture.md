@@ -6,6 +6,7 @@
 
 | Workspace | Package name | Role |
 | --- | --- | --- |
+| `apps/feishu` | `@linonward/feishu` | Feishu event relay. Validates an authorized text message and emits a GitHub `repository_dispatch`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
 | `packages/typescript-config` | `@linonward/typescript-config` | Shared `tsconfig` presets consumed via `extends`. |
 
@@ -53,6 +54,13 @@ Tailwind v4 has no `tailwind.config.js`. Theme tokens live in
 in `:root` and `.dark`. Fonts are wired by naming the `next/font` CSS variables
 `--font-sans` and `--font-mono` on `<html>`, which is exactly what the theme
 block reads.
+
+## `apps/feishu`
+
+`apps/feishu` is a Node.js long-connection client. It authenticates with Feishu using the app ID
+and secret, accepts text messages only from configured open IDs, and dispatches `feishu-task` to
+GitHub. It needs no public callback URL. Deployment and environment configuration live in
+[the app README](../apps/feishu/README.md).
 
 ## TypeScript
 
