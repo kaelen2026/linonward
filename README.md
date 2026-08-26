@@ -14,7 +14,8 @@ pnpm install
 pnpm --filter @linonward/www dev
 ```
 
-The website runs at http://localhost:3000.
+The website runs at http://localhost:3000 and the API at http://localhost:3001.
+The API is a Hono modular monolith; see [`apps/api/README.md`](./apps/api/README.md).
 The Feishu long-connection client requires its own environment configuration; see
 [`apps/feishu/README.md`](./apps/feishu/README.md).
 
@@ -23,6 +24,7 @@ The Feishu long-connection client requires its own environment configuration; se
 ```
 .
 ├── apps/
+│   ├── api/                    # Backend — Hono modular monolith
 │   ├── feishu/                 # Feishu-to-GitHub task relay
 │   └── www/                    # Official website — Next.js App Router
 ├── packages/
@@ -51,6 +53,7 @@ Target a single workspace with `--filter`:
 
 ```bash
 pnpm --filter @linonward/www dev
+pnpm --filter @linonward/api dev
 pnpm --filter @linonward/feishu dev
 ```
 
