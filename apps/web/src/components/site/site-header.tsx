@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import { SignOut } from "@/components/auth/sign-out";
 import { cn } from "@/lib/utils";
 
 export const navItems = [
@@ -12,7 +12,7 @@ export const navItems = [
  * stays a server component: every page here knows its own route at build time,
  * and a client boundary in the layout would cost a bundle to learn nothing.
  */
-export function SiteHeader({ pathname }: { pathname: string }) {
+export function SiteHeader({ pathname, userEmail }: { pathname: string; userEmail?: string }) {
   return (
     <header className="border-b border-border">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-6 px-6">
@@ -40,6 +40,7 @@ export function SiteHeader({ pathname }: { pathname: string }) {
             );
           })}
         </nav>
+        {userEmail ? <SignOut email={userEmail} /> : null}
       </div>
     </header>
   );

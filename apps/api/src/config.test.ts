@@ -100,3 +100,45 @@ describe("loadApiConfig infrastructure", () => {
     );
   });
 });
+
+describe("loadApiConfig authentication", () => {
+  it("keeps authentication disabled in zero-configuration local development", () => {
+    expect(loadApiConfig({}).auth).toBeUndefined();
+  });
+
+  it("loads Better Auth, Resend, and Google credentials as one auth configuration", () => {
+    expect(
+      loadApiConfig({
+        BETTER_AUTH_SECRET: "a-secret-that-is-at-least-thirty-two-characters",
+        BETTER_AUTH_URL: "http://localhost:3002",
+        DATABASE_URL: "postgres://user:pw@db:5432/linonward",
+        GOOGLE_CLIENT_ID: "google-client",
+        GOOGLE_CLIENT_SECRET: "google-secret",
+        RESEND_API_KEY: "re_test",
+        AUTH_EMAIL_FROM: "LinOnward <login@example.com>",
+      }).auth,
+    ).toEqual({
+      baseUrl: "http://localhost:3002",
+      emailFrom: "LinOnward <login@example.com>",
+      google: { clientId: "google-client", clientSecret: "google-secret" },
+      resendApiKey: "re_test",
+      secret: "a-secret-that-is-at-least-thirty-two-characters",
+    });
+  });
+
+  it("rejects a partially configured Google provider", () => {
+    expect(() => loadApiConfig({ GOOGLE_CLIENT_ID: "only-an-id" })).toThrow(
+      "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be configured together",
+    );
+  });
+
+  it("refuses production without the credentials needed to deliver email OTPs", () => {
+    expect(() =>
+      loadApiConfig({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgres://db:5432/linonward",
+        REDIS_URL: "redis://cache:6379",
+      }),
+    ).toThrow("BETTER_AUTH_SECRET is required when NODE_ENV=production");
+  });
+});

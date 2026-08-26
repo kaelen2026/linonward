@@ -111,18 +111,24 @@ optional locally — absent, the in-memory adapters take over — and both are r
 
 `apps/web` is the internal console: a second Next.js 16 App Router app, single-language
 (`zh-CN`), `noindex`, served on port 3002 so it can run alongside `www` (3000) and `api`
-(3001). It reads `apps/api` and writes nothing.
+(3001). It reads operational data from `apps/api`; authentication is its only write path.
 
 ```
 apps/web/
 ├── src/app/
 │   ├── layout.tsx           # root layout — metadata, globals.css
 │   ├── page.tsx             # /
+│   ├── login/page.tsx       # /login — Better Auth email OTP / Google
 │   ├── status/page.tsx      # /status — GET /health, force-dynamic
 │   └── globals.css          # Tailwind v4, a subset of the brand tokens
 ├── src/components/site/     # app shell
-└── src/lib/                 # api origin, health fetch, cn()
+└── src/lib/                 # auth client/session, API origin, health fetch, cn()
 ```
+
+Better Auth runs inside Hono and stores users, accounts, sessions, and OTP verification records
+in Postgres through Drizzle ORM. Email OTP delivery uses Resend; Google OAuth is optional. Web
+proxies `/api/auth/*` to Hono so browser cookies remain first-party, while protected Server
+Components forward the cookie to `GET /api/auth/get-session` before rendering.
 
 It carries no shadcn/ui registry and no Playwright suite — end-to-end coverage stays on
 `www`, the app with routing and crawler-visible output worth a browser. Its design tokens

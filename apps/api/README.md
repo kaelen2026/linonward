@@ -33,6 +33,7 @@ src/
     │   ├── index.ts         # the module's only public export: createHealthModule
     │   ├── routes.ts        # HTTP edge
     │   └── service.ts       # domain logic
+    ├── auth/                # Better Auth, Drizzle schema, Resend OTP delivery
     └── contact/
         ├── index.ts         # createContactModule
         ├── routes.ts        # HTTP edge + zod validation
@@ -67,6 +68,7 @@ testable without a server, a clock, or a database. That is why the suite runs in
 | `GET` | `/health` | Liveness, running version, uptime — touches no dependency |
 | `GET` | `/health/ready` | Readiness; `200` ready, `503` degraded, naming what failed |
 | `POST` | `/contact/inquiries` | Submit a contact-form inquiry |
+| `*` | `/api/auth/*` | Email OTP, Google OAuth, and session lifecycle |
 
 Every failure — validation, unknown route, unexpected crash — uses one envelope:
 
@@ -91,6 +93,11 @@ Both are optional, and both are *required in production* — `loadApiConfig` ref
 `NODE_ENV=production` and either one missing. That is the whole safety story: locally you get
 zero-setup defaults, and the footgun (deploy, lose every inquiry to a restart) cannot reach a
 real environment.
+
+Authentication uses the same `postgres.js` connection through `drizzle-orm/postgres-js`; it does
+not open a second pool. The normal SQL migration runner creates Better Auth's `user`, `session`,
+`account`, and `verification` tables. Email OTPs are delivered by Resend, expire after ten
+minutes, allow five attempts, and are stored as hashes. Google OAuth is optional.
 
 | | `DATABASE_URL` set | unset |
 | --- | --- | --- |
@@ -175,6 +182,10 @@ deployment, and configure each proxy to overwrite or append `X-Forwarded-For`.
 The caller that needs it is [`apps/www`](../www): its contact form posts here from the browser, so
 the site's origin has to be listed. The other half of that handshake is `NEXT_PUBLIC_API_URL` in
 [`apps/www/.env.example`](../www/.env.example) — change one and change the other.
+
+For the internal console, `BETTER_AUTH_URL` is the browser-visible Web origin (locally
+`http://localhost:3002`). Register `${BETTER_AUTH_URL}/api/auth/callback/google` as the Google
+OAuth redirect URI. Web proxies `/api/auth/*` here so session cookies remain first-party.
 
 ## Test
 

@@ -27,6 +27,7 @@ export function createApp({ modules, allowedOrigins }: AppOptions): Hono<AppEnv>
         origin: [...allowedOrigins],
         allowHeaders: ["Content-Type"],
         allowMethods: ["GET", "POST", "OPTIONS"],
+        credentials: true,
         maxAge: 600,
       }),
     );

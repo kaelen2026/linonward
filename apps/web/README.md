@@ -3,7 +3,7 @@
 Internal console. Next.js 16 App Router, Tailwind CSS v4, TypeScript.
 
 Distinct from [`apps/www`](../www), which is the public bilingual website. This app is
-single-language (`zh-CN`), not indexed, and exists to read from
+single-language (`zh-CN`), not indexed, and exists to authenticate against and read from
 [`apps/api`](../api).
 
 ## Run it
@@ -19,6 +19,11 @@ The status page calls the API's `GET /health`. With no configuration it targets
 `NEXT_PUBLIC_API_URL` (see [`.env.example`](./.env.example)). The page renders either way:
 an unreachable API is reported, not thrown.
 
+The console requires a Better Auth session. `/login` supports a Resend-delivered email OTP and,
+when enabled, Google OAuth. `next.config.ts` rewrites `/api/auth/*` to `apps/api`, keeping browser
+requests and session cookies first-party. Set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` only when
+the matching Google credentials are configured on the API.
+
 ## Layout
 
 ```
@@ -26,10 +31,11 @@ apps/web/
 ├── src/app/
 │   ├── layout.tsx           # root layout — metadata, fonts, globals.css
 │   ├── page.tsx             # /
+│   ├── login/page.tsx       # /login — email OTP + optional Google OAuth
 │   ├── status/page.tsx      # /status — reads GET /health
 │   └── globals.css          # Tailwind v4 + a small slice of the brand tokens
 ├── src/components/site/     # app shell
-└── src/lib/                 # api origin, health fetch, cn()
+└── src/lib/                 # auth client/session, API origin, health fetch, cn()
 ```
 
 ## Scripts

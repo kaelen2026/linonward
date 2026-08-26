@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
 import { apiBaseUrl } from "@/lib/api";
 import { fetchApiHealth } from "@/lib/health";
+import { requireSession } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "状态",
@@ -13,11 +14,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function StatusPage() {
-  const health = await fetchApiHealth();
+  const [session, health] = await Promise.all([requireSession(), fetchApiHealth()]);
 
   return (
     <>
-      <SiteHeader pathname="/status" />
+      <SiteHeader pathname="/status" userEmail={session.user.email} />
 
       <main className="mx-auto max-w-5xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight">后端状态</h1>
