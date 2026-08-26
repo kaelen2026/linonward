@@ -23,6 +23,7 @@ them from disk instead of resolving them from the registry.
 | `start` | `build` | no | `persistent: true` |
 | `typecheck` | `^build` | yes | No outputs; the cache stores the pass/fail result |
 | `test` | `^build` | yes | Vitest; same deal — the cache stores the result |
+| `test:e2e` | `build` | no | Playwright; needs this workspace's own build to serve |
 | `clean` | — | no | |
 
 `^build` means "build every dependency of this workspace first". Because

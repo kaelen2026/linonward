@@ -79,11 +79,27 @@ Only `src/**/*.test.{ts,tsx}` is collected. `vitest.config.mts` and
 `@testing-library/jest-dom` matchers and runs `cleanup` after each test, so
 tests do not need to do either.
 
+## Unit tests or end-to-end?
+
+Two runners, and picking the wrong one is how suites get slow and flaky:
+
+- **Vitest** (`src/**/*.test.{ts,tsx}`) — logic and a single component's
+  contract, in jsdom, in milliseconds. The default.
+- **Playwright** (`e2e/**/*.spec.ts`) — behaviour that only exists once the real
+  app is built and served: routing and redirects, the `<head>` a crawler sees,
+  keyboard journeys across a whole page, and how a layout responds to viewport
+  width.
+
+If jsdom can answer the question, it is not an E2E test. Do not port a component
+assertion into Playwright because it is easier to write there — it costs a
+browser and a production build every run.
+
 ## Commands
 
 | Command | Use |
 | --- | --- |
-| `pnpm test` | Every workspace, through Turborepo. What CI runs. |
+| `pnpm test` | Vitest across every workspace, through Turborepo. What CI runs. |
+| `pnpm test:e2e` | Playwright. Builds first, then serves and drives Chromium. |
 | `pnpm --filter @linonward/www test` | One workspace, once. |
 | `pnpm --filter @linonward/www test:watch` | The TDD loop. |
 | `pnpm --filter @linonward/www exec vitest run src/lib/i18n.test.ts` | One file. |
@@ -92,12 +108,20 @@ tests do not need to do either.
 Turborepo caches `test`, so an unchanged workspace replays its result. When a
 pass looks impossibly fast, it was cached — `--force` to actually run it. The
 cache is shared across worktrees, so a stale pass can come from another one.
+`test:e2e` is deliberately **not** cached: a green run says the app worked, not
+that the inputs matched.
+
+Playwright locators must be scoped. The header and the footer both carry a nav
+and a language switcher, so a bare `getByRole("link", { name: "English" })`
+matches two elements and fails on strict mode. Reach through the landmark:
+`page.getByRole("banner").getByRole(…)`.
 
 ## Where tests run
 
 The `pre-commit` hook does **not** run tests — only Biome on staged files, so
-committing stays fast. CI is the gate: `pnpm test` runs there between typecheck
-and build, and a red test fails the build.
+committing stays fast. CI is the gate, in two jobs that run in parallel:
+`verify` (lint, typecheck, Vitest, build) and `e2e` (Playwright against a
+production build). Either one red fails the PR.
 
 That split means you own the loop locally. Run the suite before you say work is
 done, and report the real output — `pnpm lint`, `pnpm typecheck`, `pnpm test`.

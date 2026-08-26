@@ -1,8 +1,19 @@
 # Testing
 
-Vitest with Testing Library, in `apps/www`. The agent-facing rules are in
-[`.claude/rules/tdd.md`](../.claude/rules/tdd.md); this page is the human
-reference for how the setup works and why it is shaped this way.
+Two runners in `apps/www`: **Vitest** with Testing Library for logic and single
+components, **Playwright** for end-to-end journeys against a production build.
+The agent-facing rules are in [`.claude/rules/tdd.md`](../.claude/rules/tdd.md);
+this page is the human reference for how the setup works and why.
+
+| | Vitest | Playwright |
+| --- | --- | --- |
+| Files | `src/**/*.test.{ts,tsx}` | `e2e/**/*.spec.ts` |
+| Environment | jsdom | real Chromium, `next start` |
+| Speed | milliseconds | seconds, plus a build |
+| Cached by Turborepo | yes | no |
+| Answers | "does this function/component behave?" | "does the built site work?" |
+
+If jsdom can answer the question, it is not an E2E test.
 
 ## Running
 
@@ -79,8 +90,61 @@ function, test that, and let the build verify the rendering.
 
 `next/link` renders in jsdom without a mock.
 
+## End-to-end
+
+```bash
+pnpm test:e2e                                     # build, serve, drive Chromium
+pnpm --filter @linonward/www test:e2e:ui          # the Playwright UI, for debugging
+pnpm --filter @linonward/www exec playwright test e2e/i18n.spec.ts
+pnpm --filter @linonward/www exec playwright test --project=mobile
+```
+
+Two projects run every spec: `desktop` (Desktop Chrome) and `mobile` (Pixel 7).
+One engine, two viewports — for a static marketing site the real risk is the
+responsive layout, not cross-engine differences. A spec that only makes sense at
+one width skips itself with `test.skip(testInfo.project.name === "mobile", …)`.
+
+Playwright serves the **production** build: `test:e2e` is a Turborepo task that
+`dependsOn: ["build"]`, so `next start` has something to serve and the config
+never rebuilds on its own. It is not cached — a green run proves the app worked,
+not that the inputs matched. Locally, an already-running server on port 3100 is
+reused; in CI it always starts fresh.
+
+Before the first local run, fetch the browser once:
+
+```bash
+pnpm --filter @linonward/www exec playwright install chromium
+```
+
+### Scope every locator
+
+The header and the footer both contain a nav *and* a language switcher, and both
+navs carry the brand tagline as their accessible name. A bare
+`getByRole("link", { name: "English" })` matches two elements and fails Playwright's
+strict mode. Reach through the landmark instead:
+
+```ts
+page.getByRole("banner").getByRole("link", { name: localeLabels.en });
+page.getByRole("contentinfo").getByRole("navigation", { name: tagline });
+```
+
+### What the specs cover
+
+- `routing.spec.ts` — `/` redirects to `/zh`, each locale sets `<html lang>` and
+  its own title, the hreflang set is complete (including `x-default`), and an
+  unknown language 404s instead of guessing.
+- `i18n.spec.ts` — switching language from either switcher, and `aria-current`
+  marking the language on screen.
+- `navigation.spec.ts` — the skip link under keyboard focus, every nav item
+  resolving to a section that exists, anchor scrolling, the header nav following
+  the `md` breakpoint while the footer nav stays reachable, and the contact CTA's
+  prefilled `mailto:`.
+
 ## Where tests run
 
 `pre-commit` runs Biome on staged files only — no tests, so committing stays
-fast. CI runs `pnpm test` between typecheck and build, and a failure fails the
-build. Running the suite locally before calling work done is on you.
+fast. CI is the gate, in two parallel jobs: `verify` (lint, typecheck, Vitest,
+build) and `e2e` (Playwright). The browser binary is cached on its Playwright
+version, and the HTML report uploads as an artifact on every run.
+
+Running both suites locally before calling work done is on you.

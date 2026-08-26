@@ -3,8 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
+  # Every pull request, whatever its base — a PR stacked on another branch
+  # needs the same gate as one targeting main.
   pull_request:
-    branches: [main]
 
 # A new push to a PR cancels the run still in flight; pushes to main all run.
 concurrency:
@@ -61,3 +62,56 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve Playwright version
+        id: playwright
+        run: |
+          version=$(pnpm --filter @linonward/www exec playwright --version | awk '{print $2}')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # Keyed on the version so a Playwright bump re-downloads rather than
+      # running new code against last release's browser.
+      - name: Restore browser cache
+        id: browser-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install Chromium
+        if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @linonward/www exec playwright install --with-deps chromium
+
+      # A cache hit restores the browser but not the system libraries it links
+      # against, which live outside the cached path.
+      - name: Install system dependencies
+        if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @linonward/www exec playwright install-deps chromium
+
+      - name: End-to-end tests
+        run: pnpm test:e2e
+
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: apps/www/playwright-report/
+          retention-days: 7
