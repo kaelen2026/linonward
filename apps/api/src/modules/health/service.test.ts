@@ -21,3 +21,40 @@ describe("createHealthService", () => {
     expect(service.check().uptimeSeconds).toBe(41);
   });
 });
+
+describe("readiness", () => {
+  const base = { version: "1.4.0", startedAt, clock: () => startedAt };
+
+  it("is ready when every dependency answers", async () => {
+    const service = createHealthService({
+      ...base,
+      probes: { postgres: () => Promise.resolve(), redis: () => Promise.resolve() },
+    });
+
+    await expect(service.readiness()).resolves.toEqual({
+      status: "ready",
+      checks: { postgres: "ok", redis: "ok" },
+    });
+  });
+
+  it("names the dependency that failed instead of reporting a bare outage", async () => {
+    const service = createHealthService({
+      ...base,
+      probes: {
+        postgres: () => Promise.resolve(),
+        redis: () => Promise.reject(new Error("ECONNREFUSED")),
+      },
+    });
+
+    await expect(service.readiness()).resolves.toEqual({
+      status: "degraded",
+      checks: { postgres: "ok", redis: "failed" },
+    });
+  });
+
+  it("is ready with nothing to probe, so an in-memory deploy still starts", async () => {
+    await expect(createHealthService(base).readiness()).resolves.toMatchObject({
+      status: "ready",
+    });
+  });
+});
