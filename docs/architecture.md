@@ -6,6 +6,7 @@
 
 | Workspace | Package name | Role |
 | --- | --- | --- |
+| `apps/api` | `@linonward/api` | Backend HTTP API. Hono, laid out as a modular monolith. |
 | `apps/feishu` | `@linonward/feishu` | Feishu event relay. Validates an authorized text message and emits a GitHub `repository_dispatch`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
 | `packages/typescript-config` | `@linonward/typescript-config` | Shared `tsconfig` presets consumed via `extends`. |
@@ -54,6 +55,32 @@ Tailwind v4 has no `tailwind.config.js`. Theme tokens live in
 in `:root` and `.dark`. Fonts are wired by naming the `next/font` CSS variables
 `--font-sans` and `--font-mono` on `<html>`, which is exactly what the theme
 block reads.
+
+## `apps/api`
+
+A Hono service on Node, structured as a **modular monolith**: one process and one deployable,
+with the internal seams a service split would have given, minus the network hop.
+
+```
+apps/api/src/
+├── index.ts        # config → app → listen
+├── composition.ts  # the mount table; where the real clock, ids, and storage are chosen
+├── app.ts          # request id, CORS, and the one error envelope
+├── shared/         # the shared kernel: ApiError, the ApiModule contract, mountModules
+└── modules/        # health/ and contact/, each a vertical routes → service → repository slice
+```
+
+Three rules hold it together: a module is a vertical slice; a module imports only itself and
+`src/shared`; a module exposes exactly one function, `create<Name>Module(deps): ApiModule`. The
+first is a layout convention, but the second is a *fitness function* —
+`src/modules/boundaries.test.ts` walks the sources and fails the build on a cross-module import,
+naming the file and the specifier. Anything shared between modules goes through `composition.ts`
+instead, which is what keeps a later extraction cheap.
+
+Dependencies are injected rather than reached for (`clock`, `nextId`, `repository`), so modules
+test without a socket or a database. Inquiry storage is an in-memory `Map` behind an
+`InquiryRepository` port — deliberate, and the seam to replace first. Endpoints, the error body,
+and configuration live in [the app README](../apps/api/README.md).
 
 ## `apps/feishu`
 
