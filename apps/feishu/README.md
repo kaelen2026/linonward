@@ -1,12 +1,23 @@
 # Feishu relay
 
-This service maintains a Feishu long connection and turns an authorized text message into the
-`feishu-task` GitHub `repository_dispatch` event consumed by
-[`.github/workflows/feishu-task.yml`](../../.github/workflows/feishu-task.yml).
+This service is the single Feishu long-connection owner. It turns authorized text messages into
+either the `feishu-task` GitHub `repository_dispatch` event consumed by
+[`.github/workflows/feishu-task.yml`](../../.github/workflows/feishu-task.yml), or a local
+Hermes content-production request.
 
 It immediately acknowledges every accepted request under its Feishu topic. That reply opens a
 topic for a main-stream message; follow-ups in the same topic share one Claude Code session while
 unrelated messages receive independent sessions.
+
+## Routes
+
+| Message | Destination | Context |
+| --- | --- | --- |
+| Any normal text | GitHub Actions / Claude Code | The Feishu topic maps to one Claude session. |
+| `/内容 <需求>` or `/content <request>` | Local Hermes `contentchief` API | The Feishu topic maps to one Hermes conversation. |
+
+Hermes is never configured as a second Feishu bot. The relay receives and replies to all Feishu
+events, so there is only one long connection and every reply uses the same Bot identity.
 
 ## Security model
 
@@ -15,6 +26,8 @@ unrelated messages receive independent sessions.
 - Only senders listed in `FEISHU_ALLOWED_OPEN_IDS` can trigger a task. Use open IDs, not
   display names, and keep the allowlist deliberately small.
 - The GitHub dispatch token is only used by this service and is never passed to a workflow.
+- Hermes is addressed through its loopback-only API server with a bearer key; it is not exposed to
+  Feishu or the public network. The Docker service reaches it through `host.docker.internal`.
 - Task text defaults to 6,000 characters (set `MAX_TASK_LENGTH` to lower it, if needed).
 
 Long connection mode does not expose a callback URL or an inbound HTTP endpoint. It must run as
@@ -35,6 +48,35 @@ one long-lived process with outbound access to Feishu and GitHub.
 
 `repository_dispatch` only reads workflows from the repository's default branch. Merge
 `feishu-task.yml` into `main` before running an end-to-end test.
+
+### Add local Hermes content production
+
+Use the existing `contentchief` profile as an API service and explicitly disable its Feishu
+platform. That profile must not operate a Feishu gateway after this integration: this relay is the
+sole Bot connection.
+
+```bash
+# Run these locally; choose a high-entropy value for the API key.
+hermes -p contentchief config set gateway.api_server.enabled true
+hermes -p contentchief config set gateway.api_server.port 8642
+hermes -p contentchief config set gateway.api_server.host 127.0.0.1
+hermes -p contentchief config set gateway.api_server.key '<local-api-key>'
+hermes -p contentchief config set platforms.feishu.enabled false
+hermes -p contentchief gateway restart
+```
+
+Set the corresponding values in `apps/feishu/.env` (never commit that file):
+
+```dotenv
+HERMES_API_URL=http://host.docker.internal:8642/v1
+HERMES_API_KEY=<local-api-key>
+HERMES_MODEL=contentchief
+```
+
+Verify Hermes without printing the key by calling its local health endpoint, then start the relay.
+Send `/内容 写一篇产品介绍` to the existing Feishu Bot. It immediately acknowledges the message,
+then writes the generated content into the same topic. A follow-up `/内容 ...` in that topic uses
+the same Hermes conversation.
 
 ## Run and verify
 

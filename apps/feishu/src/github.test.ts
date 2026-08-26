@@ -19,6 +19,7 @@ describe("createGitHubDispatcher", () => {
       dispatch({
         chatId: "oc_chat",
         messageId: "om_message",
+        route: "github",
         text: "summarize the latest commit",
         threadKey: "omt_topic",
       }),
@@ -60,6 +61,7 @@ describe("createGitHubDispatcher", () => {
       dispatch({
         chatId: "oc_chat",
         messageId: "om_message",
+        route: "github",
         text: "run task",
         threadKey: "om_task",
       }),

@@ -39,5 +39,7 @@ export function createGitHubDispatcher(
     if (!response.ok) {
       throw new Error(`GitHub repository dispatch failed with ${response.status}`);
     }
+
+    return undefined;
   };
 }
