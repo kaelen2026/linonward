@@ -7,7 +7,7 @@
 | Workspace | Package name | Role |
 | --- | --- | --- |
 | `apps/api` | `@linonward/api` | Backend HTTP API. Hono, laid out as a modular monolith. |
-| `apps/feishu` | `@linonward/feishu` | Feishu event relay. Validates an authorized text message and emits a GitHub `repository_dispatch`. |
+| `apps/feishu` | `@linonward/feishu` | Feishu event relay. Routes authorized text to a GitHub Actions `workflow_dispatch` or local Hermes. |
 | `apps/web` | `@linonward/web` | Internal console. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
 | `packages/db` | `@linonward/db` | Backend database boundary: Drizzle schema, relations, client, and migrations. |
@@ -30,9 +30,9 @@ them from disk instead of resolving them from the registry.
 | `test:e2e` | `build` | no | Playwright; needs this workspace's own build to serve |
 | `clean` | — | no | |
 
-`^build` means "build every dependency of this workspace first". Because
-`@linonward/www` depends on `@linonward/typescript-config`, Turborepo orders
-them correctly without any manual wiring.
+`^build` means "build every dependency of this workspace first". The concrete case today is
+`apps/api`: its `@linonward/db` dependency is built before the API is built, type-checked, or
+tested. Configuration-only packages without a `build` script do not add a task to that chain.
 
 Lint and format are *not* Turborepo tasks. Biome is a single fast binary that
 walks the whole repo in one pass, so running it from the root is cheaper than
@@ -43,20 +43,26 @@ scheduling one process per workspace.
 ```
 apps/www/
 ├── src/
-│   ├── app/            # App Router: layout.tsx, page.tsx, globals.css
-│   ├── components/ui/  # shadcn/ui components (owned in-repo, safe to edit)
-│   └── lib/utils.ts    # cn() — clsx + tailwind-merge
+│   ├── app/
+│   │   ├── [locale]/   # the root layout and page; every route is locale-prefixed
+│   │   └── globals.css # Tailwind v4 theme and global component utilities
+│   ├── components/
+│   │   ├── site/       # site-specific sections and interactive components
+│   │   └── ui/         # shadcn/ui primitives (owned in-repo, safe to edit)
+│   ├── content/site.ts # typed Chinese and English copy
+│   └── lib/            # locale, inquiry, API URL, and class-name helpers
+├── e2e/                # Playwright journeys
 ├── components.json     # shadcn/ui CLI config
 ├── next.config.ts
 ├── postcss.config.mjs  # @tailwindcss/postcss
 └── tsconfig.json       # extends @linonward/typescript-config/nextjs.json
 ```
 
-Tailwind v4 has no `tailwind.config.js`. Theme tokens live in
-`src/app/globals.css` inside `@theme inline`, backed by CSS custom properties
-in `:root` and `.dark`. Fonts are wired by naming the `next/font` CSS variables
-`--font-sans` and `--font-mono` on `<html>`, which is exactly what the theme
-block reads.
+Tailwind v4 has no `tailwind.config.js`. `src/app/globals.css` has a static brand ramp in
+`@theme`, semantic tokens in `:root` plus a `prefers-color-scheme: dark` media query, and an
+`@theme inline` bridge that exposes them to Tailwind. There is no `.dark` class or theme toggle.
+The locale layout publishes `--font-geist-sans` and `--font-geist-mono`; the theme layer builds
+`--font-sans` and `--font-mono` from those variables and appends the CJK fallback stack.
 
 ### The one write path
 
@@ -87,7 +93,10 @@ apps/api/src/
 ├── app.ts          # request id, CORS, and the one error envelope
 ├── migrate.ts      # applies @linonward/db migrations, then exits
 ├── shared/         # the shared kernel: ApiError, module/database contracts, Redis
-└── modules/        # health/ and contact/, each a vertical routes → service → repository slice
+└── modules/
+    ├── auth/       # Better Auth handler, email OTP delivery, optional Google OAuth
+    ├── contact/    # inquiry routes, service, and storage adapters
+    └── health/     # liveness and dependency readiness
 ```
 
 Three rules hold it together: a module is a vertical slice; a module imports only itself and
@@ -153,9 +162,11 @@ package instead of copying the ramp again. Details in
 ## `apps/feishu`
 
 `apps/feishu` is a Node.js long-connection client. It authenticates with Feishu using the app ID
-and secret, accepts text messages only from configured open IDs, and dispatches the unified
-`linonward-bot` GitHub Actions workflow. It needs no public callback URL. Deployment and environment configuration live in
-[the app README](../apps/feishu/README.md).
+and secret, accepts text messages only from configured open IDs, and owns the only Bot connection.
+Normal text invokes the unified `linonward-bot` workflow through GitHub Actions
+`workflow_dispatch`; `/内容` and `/content` requests go to an optional loopback-only Hermes API.
+Topics map to stable sessions on either route. It needs no public callback URL. Deployment and
+environment configuration live in [the app README](../apps/feishu/README.md).
 
 ## TypeScript
 

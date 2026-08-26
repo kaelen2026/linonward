@@ -7,4 +7,4 @@
 | [conventions.md](./conventions.md) | Code style, commit format, the pre-commit pipeline |
 | [design-system.md](./design-system.md) | The logo-derived palette, semantic tokens, contrast rules, typography |
 | [testing.md](./testing.md) | Vitest and Playwright, what is worth testing, the RSC limitation |
-| [deployment.md](./deployment.md) | Building and deploying `apps/www` |
+| [deployment.md](./deployment.md) | Build artifacts and deployment boundaries for every runtime |

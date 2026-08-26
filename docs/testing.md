@@ -15,9 +15,11 @@ this page is the human reference for how the setup works and why.
 
 If jsdom can answer the question, it is not an E2E test.
 
-`apps/api` and `apps/web` run Vitest only, with the same file convention. Playwright
-stays on `apps/www` — it is the app with routing, redirects and crawler-visible output
-worth the cost of a browser and a production build on every run.
+`apps/api`, `apps/feishu`, `apps/web`, and `packages/db` run Vitest only, with tests beside the
+source they cover. The Node workspaces use Vitest's Node environment; both Next apps use jsdom
+and Testing Library for components. Playwright stays on `apps/www` — it is the app with routing,
+redirects and crawler-visible output worth the cost of a browser and a production build on every
+run.
 
 ## Running
 
@@ -25,6 +27,7 @@ worth the cost of a browser and a production build on every run.
 pnpm test                                  # every workspace, via Turborepo — what CI runs
 pnpm --filter @linonward/www test          # one workspace, once
 pnpm --filter @linonward/www test:watch    # the TDD loop
+pnpm --filter @linonward/api test:watch    # API TDD loop
 ```
 
 Narrow it down while iterating:
@@ -56,6 +59,12 @@ replaced the `vite-tsconfig-paths` plugin, which Vite now supports natively.
 Tests sit beside the code they cover — `src/lib/i18n.ts` next to
 `src/lib/i18n.test.ts` — rather than in a mirrored `__tests__` tree. Moving a
 module moves its test with it.
+
+The API suite normally uses its in-memory inquiry repository and rate limiter. Its Postgres
+repository contract is skipped unless `DATABASE_URL` is present; CI currently has no service
+containers, so it exercises the in-memory half. Start `postgres` and pass `DATABASE_URL` to the
+filtered API test command when validating the durable adapter. The exact command is in
+[`apps/api/README.md`](../apps/api/README.md#test).
 
 ## What is worth testing here
 
@@ -143,6 +152,8 @@ page.getByRole("contentinfo").getByRole("navigation", { name: tagline });
   resolving to a section that exists, anchor scrolling, the header nav following
   the `md` breakpoint while the footer nav stays reachable, and the contact CTA's
   prefilled `mailto:`.
+- `contact-form.spec.ts` — the hydrated form rejects an empty draft without a request, and a
+  completed form sends the expected cross-origin payload and renders the returned reference.
 
 ## Where tests run
 

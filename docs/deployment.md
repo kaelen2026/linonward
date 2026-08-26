@@ -1,43 +1,87 @@
 # Deployment
 
-## Build
+## Runtime inventory
+
+The repository produces four independent runtimes. `packages/db` is built code consumed by the
+API, not a separately deployed service.
+
+| Runtime | Artifact / command | State and external dependencies |
+| --- | --- | --- |
+| `apps/www` | `.next/`; `pnpm --filter @linonward/www start` | Stateless; browser calls `apps/api` directly |
+| `apps/web` | `.next/`; `pnpm --filter @linonward/web start` | Stateless; server and auth proxy call `apps/api` |
+| `apps/api` | `dist/`; `pnpm --filter @linonward/api start` | PostgreSQL and Redis are mandatory in production |
+| `apps/feishu` | `dist/`; `pnpm --filter @linonward/feishu start` | One long-lived process with outbound Feishu and GitHub access |
+
+Build everything from the repository root with `pnpm build`, or build one deployable with its
+filtered command. The API build automatically builds `@linonward/db` first through both its
+`prebuild` script and the Turborepo dependency graph.
+
+## Public website and internal console
+
+Both frontend apps are standard Next.js server builds and require Node.js 24. They are separate
+deployments: `www` serves the bilingual public site on port 3000 by default, while `web` serves
+the authenticated internal console on port 3002.
+
+`NEXT_PUBLIC_API_URL` is inlined by `next build` in both apps. Set it for the target environment
+at build time; changing it after the build does not retarget an existing artifact. For `www`, add
+the deployed site origin to the API's `CORS_ALLOWED_ORIGINS`, because the contact form calls the
+API from the visitor's browser. `web` rewrites `/api/auth/*` to the same API origin so session
+cookies stay first-party.
+
+For a managed Next.js platform such as Vercel, create one project per frontend app and select the
+corresponding app directory. Installation still has to run against the pnpm workspace, with files
+outside that app directory available. Use the filtered build command for that app:
 
 ```bash
-pnpm build                            # every workspace
-pnpm --filter @linonward/www build    # website only
+pnpm --filter @linonward/www build
+pnpm --filter @linonward/web build
 ```
 
-Output is a standard `.next/` build in `apps/www`. Serve it with
-`pnpm --filter @linonward/www start`.
+The repository does not currently enable Next.js `output: "standalone"` and does not contain
+frontend Dockerfiles. A self-hosted container therefore needs either the full production
+workspace installation, or an explicit standalone-output change plus an image that copies the
+standalone server, static assets, and `apps/www/public` where applicable.
 
-## Vercel
+## API
 
-Point the project at this repository and set:
+[`apps/api/Dockerfile`](../apps/api/Dockerfile) is the production image definition. The root
+[`compose.yml`](../compose.yml) is the local reference topology: API, PostgreSQL 18, and Redis 8,
+with the API waiting for both health checks. Its container command runs migrations before the
+server:
 
-| Setting | Value |
-| --- | --- |
-| Root Directory | `apps/www` |
-| Framework Preset | Next.js |
-| Build Command | `cd ../.. && pnpm --filter @linonward/www build` |
-| Install Command | `pnpm install` |
-| Node.js Version | 24.x |
+```text
+node dist/migrate.js && node dist/index.js
+```
 
-Enable **Include files outside the root directory** so the workspace packages
-are available at build time.
+In production, `NODE_ENV=production` makes the API reject missing PostgreSQL, Redis, Better Auth,
+or Resend configuration instead of silently selecting in-memory adapters or omitting
+authentication. In local development, authentication is mounted only when its complete
+configuration and `DATABASE_URL` are present. Review
+[`apps/api/.env.example`](../apps/api/.env.example) and the security notes in
+[`apps/api/README.md`](../apps/api/README.md) before deploying.
 
-## Docker / self-hosted
+When the API sits behind a proxy, list only controlled literal socket peers in
+`TRUSTED_PROXY_IPS`, and configure each proxy to overwrite or append `X-Forwarded-For`. Readiness
+is available at `GET /health/ready`; liveness at `GET /health` deliberately touches no dependency.
 
-Add `output: "standalone"` to `apps/www/next.config.ts`, then copy
-`.next/standalone`, `.next/static`, and `public/` into the runtime image and
-start it with `node server.js`.
+## Feishu relay
 
-## CI
+The relay is not an HTTP service and exposes no port. Run exactly one long-lived instance: it
+owns the Feishu long connection and dispatches normal messages to the `linonward-bot` GitHub
+Actions workflow. Its standalone Compose definition is
+[`apps/feishu/compose.yml`](../apps/feishu/compose.yml), with setup and live verification in
+[`apps/feishu/README.md`](../apps/feishu/README.md).
 
-[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push to
-`main` and on every pull request regardless of its base — a PR stacked on
-another branch gets the same gate. Two jobs, in parallel.
+If the optional Hermes route is enabled, Hermes remains bound to loopback on the host. The relay
+container reaches it through `host.docker.internal`; do not expose that API publicly or configure
+Hermes as a second Feishu gateway.
 
-`verify`:
+## CI gate
+
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push to `main` and every
+pull request, regardless of its base. Its two jobs run in parallel.
+
+`verify` runs:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -48,22 +92,16 @@ pnpm test
 pnpm build
 ```
 
-`e2e` installs Chromium — cached on the resolved Playwright version, with
-`playwright install-deps` still run on a cache hit because the system libraries
-live outside the cached path — then runs `pnpm test:e2e` against a production
-build. The HTML report uploads as an artifact on every run, kept 7 days.
+`e2e` installs Chromium and runs `pnpm test:e2e` against the production `apps/www` build. The
+browser cache is keyed by the resolved Playwright version; system dependencies are still installed
+on cache hits. The HTML report uploads on every non-cancelled run and is retained for seven days.
 
-pnpm comes from `pnpm/action-setup`, which reads the pinned version out of
-`packageManager`; Node comes from `.nvmrc`. The pnpm store is cached by
-`actions/setup-node`. A new push to a PR cancels the run still in flight.
-
-The commitlint step is the backstop for the `commit-msg` hook, which a local
-`--no-verify` can skip. It needs full history, hence `fetch-depth: 0`.
+pnpm comes from `pnpm/action-setup`, which reads `packageManager`; Node comes from `.nvmrc`. A new
+push cancels an in-flight pull-request run, but pushes to `main` are not cancelled.
 
 ### Remote caching
 
-The workflow already passes `TURBO_TOKEN` and `TURBO_TEAM` through; both are
-optional, and Turborepo falls back to a cold local cache when they are unset. To
-turn remote caching on, run `npx turbo login && npx turbo link`, then add
-`TURBO_TOKEN` as a repository **secret** and `TURBO_TEAM` as a repository
-**variable**. Fork pull requests cannot read secrets and will keep building cold.
+CI already passes optional `TURBO_TOKEN` and `TURBO_TEAM` values. Turborepo uses a cold local cache
+when they are absent. To enable remote caching, link the repository to the cache provider, add
+`TURBO_TOKEN` as a repository secret, and add `TURBO_TEAM` as a repository variable. Fork pull
+requests cannot read the secret and therefore build without the remote cache.
