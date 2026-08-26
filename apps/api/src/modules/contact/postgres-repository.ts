@@ -1,4 +1,4 @@
-import type { Sql } from "../../shared/postgres.js";
+import { type Database, inquiries } from "../../shared/database.js";
 import type { InquiryRepository } from "./repository.js";
 
 /**
@@ -6,16 +6,14 @@ import type { InquiryRepository } from "./repository.js";
  * module that knows SQL exists; the service and the routes cannot tell which
  * adapter they were handed.
  */
-export function createPostgresInquiryRepository(sql: Sql): InquiryRepository {
+export function createPostgresInquiryRepository(database: Database): InquiryRepository {
   return {
     async save(inquiry) {
-      await sql`
-        insert into inquiries (id, name, email, company, message, locale, received_at)
-        values (
-          ${inquiry.id}, ${inquiry.name}, ${inquiry.email}, ${inquiry.company ?? null},
-          ${inquiry.message}, ${inquiry.locale}, ${inquiry.receivedAt}
-        )
-      `;
+      await database.insert(inquiries).values({
+        ...inquiry,
+        company: inquiry.company ?? null,
+        receivedAt: new Date(inquiry.receivedAt),
+      });
     },
   };
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { getConnInfo } from "@hono/node-server/conninfo";
+import { connectDatabase, type DatabaseConnection } from "@linonward/db";
 import type { Context, Hono } from "hono";
 import { Resend } from "resend";
 
@@ -17,7 +18,6 @@ import { createHealthModule } from "./modules/health/index.js";
 import type { DependencyProbes } from "./modules/health/service.js";
 import { clientIp } from "./shared/client-ip.js";
 import type { ApiModule, AppEnv } from "./shared/module.js";
-import { connectPostgres, type PostgresConnection } from "./shared/postgres.js";
 import { createInMemoryRateLimiter, type RateLimiter, rateLimit } from "./shared/rate-limit.js";
 import { connectRedis, createRedisRateLimiter, type RedisConnection } from "./shared/redis.js";
 
@@ -49,9 +49,9 @@ export async function createDefaultDependencies(config: ApiConfig): Promise<ApiD
   const probes: DependencyProbes = {};
   const closers: (() => Promise<void>)[] = [];
 
-  let postgres: PostgresConnection | undefined;
+  let postgres: DatabaseConnection | undefined;
   if (config.databaseUrl) {
-    postgres = connectPostgres(config.databaseUrl);
+    postgres = connectDatabase(config.databaseUrl);
     probes.postgres = () => postgres?.ping() ?? Promise.resolve();
     closers.push(() => postgres?.close() ?? Promise.resolve());
   }
@@ -71,7 +71,7 @@ export async function createDefaultDependencies(config: ApiConfig): Promise<ApiD
     clock,
     nextId: () => `inq_${randomUUID()}`,
     inquiries: postgres
-      ? createPostgresInquiryRepository(postgres.sql)
+      ? createPostgresInquiryRepository(postgres.db)
       : createInMemoryInquiryRepository(),
     inquiryRateLimiter: redis
       ? createRedisRateLimiter(redis, config.inquiryRateLimit)

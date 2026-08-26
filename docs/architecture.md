@@ -10,6 +10,7 @@
 | `apps/feishu` | `@linonward/feishu` | Feishu event relay. Validates an authorized text message and emits a GitHub `repository_dispatch`. |
 | `apps/web` | `@linonward/web` | Internal console. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
+| `packages/db` | `@linonward/db` | Backend database boundary: Drizzle schema, relations, client, and migrations. |
 | `packages/typescript-config` | `@linonward/typescript-config` | Shared `tsconfig` presets consumed via `extends`. |
 
 Internal packages are referenced with the `workspace:*` protocol, so pnpm links
@@ -84,8 +85,8 @@ apps/api/src/
 ├── index.ts        # config → app → listen
 ├── composition.ts  # the mount table; where the real clock, ids, and storage are chosen
 ├── app.ts          # request id, CORS, and the one error envelope
-├── migrate.ts      # applies migrations/*.sql, then exits
-├── shared/         # the shared kernel: ApiError, the ApiModule contract, Postgres, Redis
+├── migrate.ts      # applies @linonward/db migrations, then exits
+├── shared/         # the shared kernel: ApiError, module/database contracts, Redis
 └── modules/        # health/ and contact/, each a vertical routes → service → repository slice
 ```
 
@@ -103,9 +104,22 @@ limit, but `composition.ts` is the only file that knows either exists: modules s
 optional locally — absent, the in-memory adapters take over — and both are refused under
 `NODE_ENV=production`, so no deploy can quietly lose its data to a restart.
 
-`apps/api/compose.yml` runs the three containers together; migrations are plain SQL applied by
-`dist/migrate.js` before the server starts. Endpoints, the error body, and configuration live in
+`apps/api/compose.yml` runs the three containers together; migrations owned by `packages/db` are
+applied by `dist/migrate.js` before the server starts. Endpoints, the error body, and configuration live in
 [the app README](../apps/api/README.md).
+
+## `packages/db`
+
+`@linonward/db` is backend infrastructure, not a frontend data-access layer. It owns the single
+`postgres.js` pool factory, the typed Drizzle client, every Postgres table and relation, and the
+migration history. `apps/api` consumes it through `workspace:*`; `apps/web` and `apps/www` still
+cross the HTTP boundary and never import it.
+
+Current tables are split by domain under `src/schema/`, then composed once in `schema/index.ts`.
+Drizzle Kit reads that same object, preventing runtime queries and migration generation from
+drifting onto separate definitions. Existing idempotent migrations remain in `migrations/legacy`;
+the no-op Drizzle `0000` baseline captures their resulting schema, and all future changes are
+generated into `migrations/drizzle`.
 
 ## `apps/web`
 

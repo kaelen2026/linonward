@@ -23,6 +23,9 @@ pnpm test                            # Vitest, every workspace
 pnpm test:e2e                        # Playwright, against a production build
 pnpm lint                            # check only
 pnpm lint:fix                        # apply safe fixes
+pnpm db:generate                     # generate SQL after a Drizzle schema change
+pnpm db:check                        # validate Drizzle migration snapshots
+pnpm db:studio                       # inspect DATABASE_URL with Drizzle Studio
 ```
 
 Testing has its own page: [testing.md](./testing.md).
@@ -32,6 +35,18 @@ replays from cache in milliseconds. Force a fresh run with `--force`:
 
 ```bash
 pnpm build --force
+```
+
+## Changing the database
+
+All tables and relations live in `packages/db/src/schema`. Edit them there, run
+`pnpm db:generate`, review the generated SQL under `packages/db/migrations/drizzle`, then run
+`pnpm db:check`. Apply it locally through the API migration entry point; it runs the retained
+legacy migrations first and Drizzle migrations second:
+
+```bash
+DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
+  pnpm --filter @linonward/api migrate
 ```
 
 ## Adding a shadcn/ui component

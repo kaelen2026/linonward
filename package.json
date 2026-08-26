@@ -17,6 +17,9 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
+    "db:generate": "pnpm --filter @linonward/db db:generate",
+    "db:check": "pnpm --filter @linonward/db db:check",
+    "db:studio": "pnpm --filter @linonward/db db:studio",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
     "prepare": "husky"
   },

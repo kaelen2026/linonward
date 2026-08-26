@@ -1,18 +1,16 @@
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
 import { emailOTP } from "better-auth/plugins";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-
 import type { AuthConfig } from "../../shared/auth-config.js";
+import { authSchema, type Database } from "../../shared/database.js";
 import { createEmailOtpSender } from "./email.js";
 import type { AuthHandler } from "./index.js";
-import * as schema from "./schema.js";
 
 type EmailClient = Parameters<typeof createEmailOtpSender>[0];
 
 export function createAuthHandler(
   config: AuthConfig,
-  database: PostgresJsDatabase<typeof schema>,
+  database: Database,
   email: EmailClient,
 ): AuthHandler {
   const auth = betterAuth({
@@ -20,7 +18,7 @@ export function createAuthHandler(
     baseURL: config.baseUrl,
     database: drizzleAdapter(database, {
       provider: "pg",
-      schema,
+      schema: authSchema,
       transaction: true,
     }),
     secret: config.secret,

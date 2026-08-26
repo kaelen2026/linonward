@@ -1,9 +1,7 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { connectDatabase, migrationDirectories } from "@linonward/db";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { migrate } from "../../shared/migrate.js";
-import { connectPostgres } from "../../shared/postgres.js";
 import { createPostgresInquiryRepository } from "./postgres-repository.js";
 import {
   createInMemoryInquiryRepository,
@@ -45,13 +43,10 @@ contract("in-memory", () => Promise.resolve(createInMemoryInquiryRepository()));
 // up -d postgres`, then DATABASE_URL=… pnpm --filter @linonward/api test. CI has
 // no service containers, so it exercises the in-memory contract above only.
 const databaseUrl = process.env.DATABASE_URL;
-const migrations = path.resolve(
-  fileURLToPath(new URL(".", import.meta.url)),
-  "../../../migrations",
-);
+const migrations = migrationDirectories().legacy;
 
 describe.skipIf(!databaseUrl)("postgres", () => {
-  const postgres = connectPostgres(databaseUrl ?? "");
+  const postgres = connectDatabase(databaseUrl ?? "");
 
   afterAll(async () => {
     await postgres.close();
@@ -60,6 +55,6 @@ describe.skipIf(!databaseUrl)("postgres", () => {
   contract("postgres", async () => {
     await migrate(postgres.sql, migrations);
     await postgres.sql`truncate table inquiries`;
-    return createPostgresInquiryRepository(postgres.sql);
+    return createPostgresInquiryRepository(postgres.db);
   });
 });
