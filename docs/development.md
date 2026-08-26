@@ -13,7 +13,9 @@ Node 24 is required. With nvm: `nvm use` picks up `.nvmrc`.
 
 ```bash
 pnpm dev                             # all apps
-pnpm --filter @linonward/www dev     # just the website
+pnpm --filter @linonward/www dev     # just the website        (3000)
+pnpm --filter @linonward/api dev     # backend API             (3001)
+pnpm --filter @linonward/web dev     # internal console        (3002)
 pnpm --filter @linonward/feishu dev  # Feishu event relay (requires apps/feishu/.env)
 pnpm build
 pnpm typecheck

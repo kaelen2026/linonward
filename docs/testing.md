@@ -15,6 +15,10 @@ this page is the human reference for how the setup works and why.
 
 If jsdom can answer the question, it is not an E2E test.
 
+`apps/api` and `apps/web` run Vitest only, with the same file convention. Playwright
+stays on `apps/www` — it is the app with routing, redirects and crawler-visible output
+worth the cost of a browser and a production build on every run.
+
 ## Running
 
 ```bash
