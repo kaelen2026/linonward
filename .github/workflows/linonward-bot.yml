@@ -66,20 +66,37 @@ jobs:
       TURBO_TELEMETRY_DISABLED: 1
       DO_NOT_TRACK: 1
     steps:
+      # Checkout must precede every run step, including the failure handler that
+      # sends a reply to Feishu.  It intentionally uses GITHUB_TOKEN: the App
+      # token below is used only for bot-authored GitHub mutations.
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
       # The private key is the only GitHub App credential kept as a secret. The
       # client ID is intentionally a repository variable because it is public.
+      - name: Validate linonward-bot App configuration
+        env:
+          APP_CLIENT_ID: ${{ vars.LINONWARD_BOT_CLIENT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.LINONWARD_BOT_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$APP_CLIENT_ID" ]; then
+            echo "Missing repository variable LINONWARD_BOT_CLIENT_ID." >&2
+            exit 1
+          fi
+          if [ -z "$APP_PRIVATE_KEY" ]; then
+            echo "Missing repository secret LINONWARD_BOT_PRIVATE_KEY." >&2
+            exit 1
+          fi
+
       - name: Generate linonward-bot app token
         id: app-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ vars.LINONWARD_BOT_CLIENT_ID }}
           private-key: ${{ secrets.LINONWARD_BOT_PRIVATE_KEY }}
-
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          token: ${{ steps.app-token.outputs.token }}
 
       - uses: pnpm/action-setup@v6
 
