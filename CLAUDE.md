@@ -16,8 +16,12 @@ things that will bite an agent.
 
 Delegate frontend implementation in `apps/www` or `apps/web` to the project subagent
 `frontend-engineer` when a focused context is useful. It preloads the `implement-frontend`
-skill and follows the path-scoped rules in `.claude/rules/frontend.md`. Keep API, database,
-and external-integration changes with the main agent until dedicated domain agents exist.
+skill and follows the path-scoped rules in `.claude/rules/frontend.md`.
+
+Delegate backend implementation in `apps/api`, `apps/feishu`, or `packages/db` to the project
+subagent `backend-engineer` when a focused context is useful. It preloads the `implement-backend`
+skill and follows the path-scoped rules in `.claude/rules/backend.md`. Keep cross-domain contract
+changes with the main agent unless both sides are explicitly delegated.
 
 Delegate SwiftUI implementation in `apps/ios` to the project subagent `ios-engineer` when a
 focused iOS context is useful. It preloads the `implement-ios` skill and follows the path-scoped
