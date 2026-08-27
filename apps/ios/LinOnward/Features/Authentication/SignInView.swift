@@ -3,6 +3,7 @@ import SwiftUI
 /// Email address, then the six-digit code sent to it.
 struct SignInView: View {
   @Bindable var model: AuthenticationModel
+  @Environment(\.webAuthenticationSession) private var webAuthenticationSession
   @FocusState private var focus: Field?
 
   private enum Field: Hashable {
@@ -140,7 +141,41 @@ struct SignInView: View {
           .disabled(model.state.isBusy)
           .accessibilityIdentifier("signIn.changeEmail")
       }
+
+      // Only alongside the email step. On the code step a second route out
+      // would abandon a code that has already been sent and paid for.
+      if model.state.step == .email && model.isGoogleAvailable { google }
     }
+  }
+
+  @ViewBuilder private var google: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack(spacing: 12) {
+        rule
+        Text("signIn.or")
+          .font(.footnote)
+          .foregroundStyle(.secondary)
+        rule
+      }
+      // One separator drawn as three views is decoration, and reading it out
+      // would put "or" between two anonymous images.
+      .accessibilityHidden(true)
+
+      Button(action: signInWithGoogle) {
+        Text("signIn.google")
+          .frame(maxWidth: .infinity, minHeight: 24)
+      }
+      .buttonStyle(.bordered)
+      .controlSize(.large)
+      .disabled(model.state.isBusy)
+      .accessibilityIdentifier("signIn.google")
+    }
+  }
+
+  private var rule: some View {
+    Rectangle()
+      .frame(height: 1)
+      .foregroundStyle(.quaternary)
   }
 
   private func submit() {
@@ -152,11 +187,22 @@ struct SignInView: View {
       }
     }
   }
+
+  private func signInWithGoogle() {
+    let browser = SystemWebAuthenticationBrowser(session: webAuthenticationSession)
+    Task { await model.signInWithGoogle(presentedBy: browser) }
+  }
 }
 
 #Preview("Email") {
   NavigationStack {
     SignInView(model: .previewAwaitingEmail())
+  }
+}
+
+#Preview("Email · no Google in this build") {
+  NavigationStack {
+    SignInView(model: .previewAwaitingEmail(google: false))
   }
 }
 

@@ -120,7 +120,11 @@ describe("loadApiConfig authentication", () => {
     ).toEqual({
       baseUrl: "http://localhost:3002",
       emailFrom: "LinOnward <login@example.com>",
-      google: { clientId: "google-client", clientSecret: "google-secret" },
+      google: {
+        clientId: "google-client",
+        clientSecret: "google-secret",
+        iosClientId: undefined,
+      },
       resendApiKey: "re_test",
       secret: "a-secret-that-is-at-least-thirty-two-characters",
     });
@@ -129,6 +133,31 @@ describe("loadApiConfig authentication", () => {
   it("rejects a partially configured Google provider", () => {
     expect(() => loadApiConfig({ GOOGLE_CLIENT_ID: "only-an-id" })).toThrow(
       "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be configured together",
+    );
+  });
+
+  it("loads the iOS OAuth client as a second accepted id-token audience", () => {
+    expect(
+      loadApiConfig({
+        BETTER_AUTH_SECRET: "a-secret-that-is-at-least-thirty-two-characters",
+        BETTER_AUTH_URL: "http://localhost:3002",
+        DATABASE_URL: "postgres://user:pw@db:5432/linonward",
+        GOOGLE_CLIENT_ID: "google-client",
+        GOOGLE_CLIENT_SECRET: "google-secret",
+        GOOGLE_IOS_CLIENT_ID: "ios-client",
+        RESEND_API_KEY: "re_test",
+        AUTH_EMAIL_FROM: "LinOnward <login@example.com>",
+      }).auth?.google,
+    ).toEqual({
+      clientId: "google-client",
+      clientSecret: "google-secret",
+      iosClientId: "ios-client",
+    });
+  });
+
+  it("refuses an iOS client with no browser client behind it", () => {
+    expect(() => loadApiConfig({ GOOGLE_IOS_CLIENT_ID: "ios-client" })).toThrow(
+      "GOOGLE_IOS_CLIENT_ID requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET",
     );
   });
 

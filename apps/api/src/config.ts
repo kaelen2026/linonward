@@ -100,10 +100,17 @@ function readAuthConfig(
 function readGoogleConfig(environment: Record<string, string | undefined>): AuthConfig["google"] {
   const clientId = environment.GOOGLE_CLIENT_ID?.trim();
   const clientSecret = environment.GOOGLE_CLIENT_SECRET?.trim();
+  const iosClientId = environment.GOOGLE_IOS_CLIENT_ID?.trim() || undefined;
   if (Boolean(clientId) !== Boolean(clientSecret)) {
     throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be configured together");
   }
-  return clientId && clientSecret ? { clientId, clientSecret } : undefined;
+  // The iOS client only widens which id-token audiences are accepted; it is not
+  // a provider of its own. Alone it would configure Google with no credentials
+  // for the browser flow, and fail later and further away than here.
+  if (iosClientId && !clientId) {
+    throw new Error("GOOGLE_IOS_CLIENT_ID requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET");
+  }
+  return clientId && clientSecret ? { clientId, clientSecret, iosClientId } : undefined;
 }
 
 function requireValue(value: string | undefined, name: string): string {

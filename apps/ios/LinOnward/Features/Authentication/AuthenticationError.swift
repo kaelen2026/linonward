@@ -17,6 +17,9 @@ enum AuthenticationError: Error, Equatable, Sendable {
   case expiredCode
   /// Too many wrong codes; this one needs a fresh send.
   case tooManyAttempts
+  /// Google sign-in could not be completed. Email still can be, which is what
+  /// the message says.
+  case googleUnavailable
   /// The API answered, but not with anything the app can use.
   case unavailable
 }
@@ -35,6 +38,12 @@ extension AuthenticationError {
       self = .expiredCode
     case "TOO_MANY_ATTEMPTS":
       self = .tooManyAttempts
+    case "PROVIDER_NOT_FOUND", "ID_TOKEN_NOT_SUPPORTED", "INVALID_TOKEN",
+      "FAILED_TO_GET_USER_INFO":
+      // The API's side of Google sign-in: this deployment configures no Google
+      // provider, or it refused the id token. The person did nothing wrong and
+      // the email code still works, so say that rather than "unavailable".
+      self = .googleUnavailable
     default:
       // 429 has no plugin code — it is the API's own rate limiter — and reads
       // to a person exactly like having burned their attempts.
@@ -55,6 +64,7 @@ extension AuthenticationError {
     case .invalidCode: "auth.error.invalidCode"
     case .expiredCode: "auth.error.expiredCode"
     case .tooManyAttempts: "auth.error.tooManyAttempts"
+    case .googleUnavailable: "auth.error.googleUnavailable"
     case .unavailable: "auth.error.unavailable"
     }
   }

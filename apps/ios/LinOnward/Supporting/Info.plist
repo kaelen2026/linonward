@@ -20,6 +20,14 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LinOnwardAPIBaseURL</key>
 	<string>$(LINONWARD_API_BASE_URL)</string>
+	<!-- The app's own Google OAuth client; empty hides the Google button. Not a
+	     secret: a native OAuth client is a public client, which is exactly why
+	     the flow proves itself with PKCE and holds no client secret. No
+	     CFBundleURLTypes entry belongs with it — ASWebAuthenticationSession
+	     intercepts the reversed-client-id redirect itself rather than reopening
+	     the app through the URL scheme. -->
+	<key>LinOnwardGoogleClientID</key>
+	<string>$(LINONWARD_GOOGLE_CLIENT_ID)</string>
 	<!-- Lets a Simulator build reach the API over plain HTTP on localhost.
 	     NSAllowsLocalNetworking is scoped to loopback and .local addresses, so
 	     App Transport Security still applies in full to every internet host —

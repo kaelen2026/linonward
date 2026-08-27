@@ -8,6 +8,29 @@ import type { AuthHandler } from "./index.js";
 
 type EmailClient = Parameters<typeof createEmailOtpSender>[0];
 
+type GoogleConfig = NonNullable<AuthConfig["google"]>;
+
+/**
+ * Google as both a browser provider and an id-token verifier.
+ *
+ * `apps/web` sends a person to Google and gets them back on
+ * `/api/auth/callback/google`; `apps/ios` cannot, because Google will not
+ * redirect a *web* OAuth client to a custom URL scheme. The app therefore
+ * carries its own iOS client, completes the flow itself, and posts the
+ * resulting id token to `/api/auth/sign-in/social` — where the audience is that
+ * iOS client, not this one.
+ *
+ * Better Auth reads the *first* client id for every browser-flow purpose
+ * (authorization URL, code exchange) and uses the whole list only as the set of
+ * accepted id-token audiences, so listing the app second widens verification
+ * without moving the browser flow off the web client. Both clients live in the
+ * same Google project, so `sub` — and therefore the linked account — is the
+ * same person either way.
+ */
+export function googleProvider({ clientId, clientSecret, iosClientId }: GoogleConfig) {
+  return { clientId: iosClientId ? [clientId, iosClientId] : clientId, clientSecret };
+}
+
 export function createAuthHandler(
   config: AuthConfig,
   database: Database,
@@ -22,7 +45,7 @@ export function createAuthHandler(
       transaction: true,
     }),
     secret: config.secret,
-    socialProviders: config.google ? { google: config.google } : undefined,
+    socialProviders: config.google ? { google: googleProvider(config.google) } : undefined,
     trustedOrigins: [config.baseUrl],
     plugins: [
       // `apps/ios` has no cookie jar and sends no `Origin`, so it authenticates

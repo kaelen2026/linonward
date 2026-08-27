@@ -15,18 +15,29 @@ final class AuthenticationModel {
   /// `nil` when the build carries no API origin. Every action then reports
   /// `.notConfigured` rather than failing silently or crashing on launch.
   private let service: (any AuthenticationService)?
+  /// `nil` when the build carries no Google client, which hides the button.
+  private let google: (any GoogleIdentityProvider)?
   private let tokens: any SessionTokenStore
 
-  init(service: (any AuthenticationService)?, tokens: any SessionTokenStore) {
+  init(
+    service: (any AuthenticationService)?,
+    google: (any GoogleIdentityProvider)? = nil,
+    tokens: any SessionTokenStore
+  ) {
     self.service = service
+    self.google = google
     self.tokens = tokens
   }
 
-  /// Reads the API origin from the build and assembles the live stack.
+  /// Reads the build's configuration and assembles the live stack.
   convenience init(configuration: APIConfiguration = .fromBundle()) {
     let service = configuration.requests.map { LiveAuthenticationService(requests: $0) }
-    self.init(service: service, tokens: KeychainSessionTokenStore())
+    let google = configuration.googleClient.map { LiveGoogleIdentityProvider(client: $0) }
+    self.init(service: service, google: google, tokens: KeychainSessionTokenStore())
   }
+
+  /// Whether this build can offer Google at all.
+  var isGoogleAvailable: Bool { google != nil }
 
   var email: String {
     get { state.email }
@@ -98,6 +109,40 @@ final class AuthenticationModel {
     }
   }
 
+  /// Google first, then the API: the browser proves to Google who this is, and
+  /// the id token that comes back is what the API turns into a session of ours.
+  ///
+  /// The browser arrives as an argument because it comes from the SwiftUI
+  /// environment, which only the view can reach — the model is built at launch,
+  /// long before there is a scene to present anything in.
+  func signInWithGoogle(presentedBy browser: any WebAuthenticationBrowser) async {
+    guard let service, let google else {
+      state.failed(.notConfigured)
+      return
+    }
+    state.beginRequest()
+
+    let identity: GoogleIdentity
+    switch await google.identity(presentedBy: browser) {
+    case .identity(let value):
+      identity = value
+    case .declined:
+      state.declined()
+      return
+    case .failed(let failure):
+      state.failed(failure)
+      return
+    }
+
+    switch await service.signIn(google: identity) {
+    case .success(let session):
+      tokens.write(session.token)
+      state.signedIn(session.user)
+    case .failure(let failure):
+      state.failed(failure)
+    }
+  }
+
   func editEmail() {
     state.editEmail()
   }
@@ -124,9 +169,10 @@ final class AuthenticationModel {
   /// reach each screen through the real transitions — a preview that set the
   /// step directly could show a combination the app can never produce.
   extension AuthenticationModel {
-    static func previewAwaitingEmail() -> AuthenticationModel {
+    static func previewAwaitingEmail(google: Bool = true) -> AuthenticationModel {
       let model = AuthenticationModel(
         service: StubAuthenticationService(),
+        google: google ? StubGoogleIdentityProvider() : nil,
         tokens: InMemoryTokenStore()
       )
       model.state.signedOut()

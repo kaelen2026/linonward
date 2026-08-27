@@ -67,6 +67,14 @@ struct AuthenticationState: Equatable, Sendable {
     }
   }
 
+  /// A request the person walked away from — the Google browser closed without
+  /// a decision. The spinner stops and nothing else moves: there is no failure
+  /// to report, and no step to advance to.
+  mutating func declined() {
+    isBusy = false
+    error = nil
+  }
+
   mutating func codeSent() {
     isBusy = false
     error = nil

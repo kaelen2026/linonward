@@ -33,6 +33,22 @@
         }
       }
     },
+    "auth.error.googleUnavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google sign-in is unavailable right now. Use an email code instead."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google 登录暂时不可用，请改用邮箱验证码。"
+          }
+        }
+      }
+    },
     "auth.error.invalidCode" : {
       "localizations" : {
         "en" : {
@@ -333,6 +349,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "you@example.com"
+          }
+        }
+      }
+    },
+    "signIn.google" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue with Google"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Google 登录"
+          }
+        }
+      }
+    },
+    "signIn.or" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "or"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "或"
           }
         }
       }
