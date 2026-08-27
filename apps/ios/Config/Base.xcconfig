@@ -10,3 +10,10 @@ SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES
 
 CODE_SIGN_STYLE = Automatic
 ENABLE_USER_SCRIPT_SANDBOXING = YES
+
+// Origin of `apps/api`, baked into Info.plist at build time — the same
+// contract as NEXT_PUBLIC_API_URL in the web workspaces. `//` starts a comment
+// in an xcconfig, so the scheme separator has to be broken up with `$()`.
+// The default matches the API's own default port, so a Simulator build talks
+// to `pnpm --filter @linonward/api dev` with no configuration at all.
+LINONWARD_API_BASE_URL = http:/$()/localhost:3001

@@ -18,6 +18,17 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LinOnwardAPIBaseURL</key>
+	<string>$(LINONWARD_API_BASE_URL)</string>
+	<!-- Lets a Simulator build reach the API over plain HTTP on localhost.
+	     NSAllowsLocalNetworking is scoped to loopback and .local addresses, so
+	     App Transport Security still applies in full to every internet host —
+	     unlike NSAllowsArbitraryLoads, which would disable it everywhere. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

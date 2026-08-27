@@ -1,6 +1,6 @@
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
-import { emailOTP } from "better-auth/plugins";
+import { bearer, emailOTP } from "better-auth/plugins";
 import type { AuthConfig } from "../../shared/auth-config.js";
 import { authSchema, type Database } from "../../shared/database.js";
 import { createEmailOtpSender } from "./email.js";
@@ -25,6 +25,15 @@ export function createAuthHandler(
     socialProviders: config.google ? { google: config.google } : undefined,
     trustedOrigins: [config.baseUrl],
     plugins: [
+      // `apps/ios` has no cookie jar and sends no `Origin`, so it authenticates
+      // with `Authorization: Bearer <token>` read from the `set-auth-token`
+      // response header. Better Auth's CSRF check only runs on requests that
+      // carry a `Cookie` header, and this plugin injects the session cookie
+      // into a copy of the headers rather than the original request — so a
+      // bearer call stays exempt. The browser console is unaffected: it keeps
+      // using first-party cookies through the Web proxy, and a cross-site page
+      // cannot attach an `Authorization` header without a CORS preflight.
+      bearer(),
       emailOTP({
         allowedAttempts: 5,
         expiresIn: 600,

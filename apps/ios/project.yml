@@ -31,6 +31,22 @@ targets:
         INFOPLIST_FILE: LinOnward/Supporting/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.linonward.app
 
+  LinOnwardTests:
+    type: bundle.unit-test
+    platform: iOS
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    sources:
+      - path: LinOnwardTests
+    dependencies:
+      - target: LinOnward
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.linonward.app.tests
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/LinOnward.app/LinOnward
+        BUNDLE_LOADER: $(TEST_HOST)
+
   LinOnwardUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -51,6 +67,7 @@ schemes:
     build:
       targets:
         LinOnward: all
+        LinOnwardTests: [test]
         LinOnwardUITests: [test]
     run:
       config: Debug
@@ -58,6 +75,7 @@ schemes:
       config: Debug
       gatherCoverageData: true
       targets:
+        - LinOnwardTests
         - LinOnwardUITests
     archive:
       config: Release

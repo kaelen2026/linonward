@@ -1,6 +1,11 @@
 import SwiftUI
 
 struct HomeView: View {
+  let user: AuthenticatedUser
+  let signOut: () async -> Void
+
+  @State private var isSigningOut = false
+
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 28) {
@@ -21,12 +26,13 @@ struct HomeView: View {
             .foregroundStyle(.secondary)
         }
 
-        Label("home.status", systemImage: "checkmark.circle.fill")
+        Label("home.greeting \(user.name)", systemImage: "checkmark.circle.fill")
           .font(.callout.weight(.medium))
           .foregroundStyle(.secondary)
           .padding(.horizontal, 16)
           .padding(.vertical, 12)
           .background(.thinMaterial, in: .rect(cornerRadius: 14))
+          .accessibilityIdentifier("home.greeting")
       }
       .frame(maxWidth: 560, alignment: .leading)
       .padding(.horizontal, 24)
@@ -42,11 +48,46 @@ struct HomeView: View {
     }
     .navigationTitle("app.name")
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .topBarTrailing) {
+        // A menu rather than a bare button: signing out is destructive enough
+        // that it should not sit one mistap from the navigation bar, and the
+        // menu is also where the signed-in address belongs.
+        Menu {
+          Section(user.email) {
+            Button("home.signOut", role: .destructive) {
+              isSigningOut = true
+            }
+          }
+        } label: {
+          Label("home.account", systemImage: "person.crop.circle")
+        }
+        .accessibilityIdentifier("home.account")
+      }
+    }
+    .confirmationDialog(
+      "home.signOut.confirm",
+      isPresented: $isSigningOut,
+      titleVisibility: .visible
+    ) {
+      Button("home.signOut", role: .destructive) {
+        Task { await signOut() }
+      }
+      Button("common.cancel", role: .cancel) {}
+    }
   }
 }
 
 #Preview("Home") {
   NavigationStack {
-    HomeView()
+    HomeView(user: .preview) {}
   }
+}
+
+#Preview("简体中文 · Dark") {
+  NavigationStack {
+    HomeView(user: .preview) {}
+  }
+  .environment(\.locale, Locale(identifier: "zh-Hans"))
+  .preferredColorScheme(.dark)
 }
