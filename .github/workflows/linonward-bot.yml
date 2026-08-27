@@ -151,6 +151,7 @@ jobs:
             cat .github/prompts/linonward-bot.md
             if [ "$SESSION_MODE" = "resume" ]; then
               printf '\n这是同一飞书话题的延续，已恢复已有会话。不要重新自我介绍或复述上次结论，直接接着处理新消息。\n'
+              printf '当前运行在全新的 GitHub Actions Runner；只恢复了 Claude 会话，没有恢复上次 Runner 的工作目录或未提交改动。继续前必须检查 git status、远端分支和相关文件的当前内容；若上次运行中断，重新完成未落入远端提交的修改，禁止假设历史工具调用的文件状态仍然存在。\n'
             elif [ "$SESSION_MODE" = "fresh" ]; then
               printf '\n这是本话题的首次会话；同一话题的后续消息会自动接续本次上下文。\n'
             fi
