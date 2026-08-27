@@ -1,12 +1,20 @@
 // biome-ignore-all lint/suspicious/noUndeclaredEnvVars: GitHub Actions supplies these only at runtime.
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
-import { formatExecutionReply, parseMessages } from "./execution-result.mjs";
+import {
+  formatExecutionReply,
+  formatInterruptedReply,
+  parseMessages,
+} from "./execution-result.mjs";
 
 const appId = process.env.LARKSUITE_CLI_APP_ID;
 const appSecret = process.env.LARKSUITE_CLI_APP_SECRET;
 const messageId = process.env.MESSAGE_ID;
 const executionFile = process.env.EXECUTION_FILE;
+const claudeOutcome = process.env.CLAUDE_OUTCOME;
+const sessionUuid = process.env.SESSION_UUID;
 const runUrl = process.env.RUN_URL;
 const maxReplyLength = 4_000;
 
@@ -25,10 +33,16 @@ await replyToFeishu(token, messageId, replyText);
 console.log(`Replied with Claude output to Feishu message ${messageId.slice(0, 8)}…`);
 
 async function readReplyText() {
-  if (executionFile) {
+  const candidateFiles = [executionFile, ...(await findSessionFiles(sessionUuid))].filter(Boolean);
+
+  for (const candidateFile of candidateFiles) {
     try {
-      const content = await readFile(executionFile, "utf8");
-      const result = formatExecutionReply(parseMessages(content), runUrl);
+      const content = await readFile(candidateFile, "utf8");
+      const messages = parseMessages(content);
+      const result =
+        claudeOutcome === "cancelled"
+          ? formatInterruptedReply(messages, runUrl, "timeout")
+          : formatExecutionReply(messages, runUrl);
       if (result) return truncate(result);
     } catch (error) {
       console.warn("Unable to read Claude execution output", error);
@@ -38,6 +52,19 @@ async function readReplyText() {
   return runUrl
     ? `任务已结束，但未能提取 Claude 的回复。请查看运行日志：${runUrl}`
     : "任务已结束，但未能提取 Claude 的回复。";
+}
+
+async function findSessionFiles(uuid) {
+  if (!uuid) return [];
+  const projectsDir = join(homedir(), ".claude", "projects");
+  try {
+    const projects = await readdir(projectsDir, { withFileTypes: true });
+    return projects
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(projectsDir, entry.name, `${uuid}.jsonl`));
+  } catch {
+    return [];
+  }
 }
 
 function truncate(text) {

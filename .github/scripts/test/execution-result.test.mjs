@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { extractResultText, formatExecutionReply, parseMessages } from "../execution-result.mjs";
+import {
+  extractResultText,
+  formatExecutionReply,
+  formatInterruptedReply,
+  parseMessages,
+} from "../execution-result.mjs";
 
 test("uses the final result text from the Claude execution file", () => {
   const messages = parseMessages(
@@ -47,6 +52,27 @@ test("explains a turn-limit failure and preserves the latest progress", () => {
       "",
       "请在当前话题回复“继续”以恢复会话并继续处理。",
       "运行日志：https://github.com/example/repo/actions/runs/1",
+    ].join("\n"),
+  );
+});
+
+test("explains a timeout and preserves progress from the cached session", () => {
+  const messages = parseMessages(
+    JSON.stringify([
+      { type: "assistant", content: [{ type: "text", text: "正在补充认证配置。" }] },
+      { type: "assistant", content: [{ type: "tool_use", name: "Edit" }] },
+    ]),
+  );
+
+  assert.equal(
+    formatInterruptedReply(messages, "https://github.com/example/repo/actions/runs/2", "timeout"),
+    [
+      "任务未完成：运行超过时间上限，已被自动停止。",
+      "",
+      "取消前的最近进度：正在补充认证配置。",
+      "",
+      "本次 runner 中未提交的修改不会进入仓库。请在当前话题回复“继续”以恢复会话。",
+      "运行日志：https://github.com/example/repo/actions/runs/2",
     ].join("\n"),
   );
 });
