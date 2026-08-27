@@ -2,3 +2,10 @@
 
 SWIFT_COMPILATION_MODE = wholemodule
 SWIFT_OPTIMIZATION_LEVEL = -O
+
+// Deliberately empty: a release must be told where the API lives. Inheriting
+// the local default would ship a build that quietly tries to reach localhost
+// on somebody's phone; empty instead surfaces "no server configured" on the
+// sign-in screen. Supply it from the release pipeline, e.g.
+// `xcodebuild … LINONWARD_API_BASE_URL=https:/$()/api.example.com`.
+LINONWARD_API_BASE_URL =
