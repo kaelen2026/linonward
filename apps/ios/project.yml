@@ -43,6 +43,7 @@ targets:
       - target: LinOnward
     settings:
       base:
+        GENERATE_INFOPLIST_FILE: "YES"
         PRODUCT_BUNDLE_IDENTIFIER: com.linonward.app.tests
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/LinOnward.app/LinOnward
         BUNDLE_LOADER: $(TEST_HOST)
@@ -59,6 +60,7 @@ targets:
       - target: LinOnward
     settings:
       base:
+        GENERATE_INFOPLIST_FILE: "YES"
         PRODUCT_BUNDLE_IDENTIFIER: com.linonward.app.ui-tests
         TEST_TARGET_NAME: LinOnward
 
