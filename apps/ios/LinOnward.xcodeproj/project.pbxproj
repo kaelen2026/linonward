@@ -8,17 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		060F9213B9C997A695847F76 /* LinOnwardUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123E324A6E36B03DA29D3097 /* LinOnwardUITests.swift */; };
+		07AABE7F7A469433A2D0AC84 /* WebAuthenticationBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A823299181EEDD1981821382 /* WebAuthenticationBrowser.swift */; };
 		18100FC83D41252F81747FF2 /* AuthenticationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB4CD022FFF05E8731675FC /* AuthenticationModels.swift */; };
 		1A110709F214A317F97EF169 /* LinOnwardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */; };
 		1EC686820AD47A7601E2D5A9 /* AuthenticationPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F94B8FC14FD269F55036BE /* AuthenticationPreviews.swift */; };
 		214CADF45553530EF4109053 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0559573061E32A3863F69F48 /* AuthenticationService.swift */; };
 		24E3D951AF7E94FB8699F988 /* AuthenticationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC88F6E8C8168F445B90BC7 /* AuthenticationState.swift */; };
 		289B7D9934DD76E681BEF251 /* AuthenticationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDBB30A3F6EA2A3981FAAA5 /* AuthenticationModel.swift */; };
+		35E0F314BDCD50FA380B5AC6 /* GoogleSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3816F4D055EB048233285CA5 /* GoogleSignIn.swift */; };
 		3FF3ED0A666112F9F2A01897 /* SessionTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660CF515F8283FDCBAE17CC7 /* SessionTokenStore.swift */; };
 		513D597F7532E79FEFE9B408 /* AuthenticationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148B143CC0783A93F0D423D4 /* AuthenticationError.swift */; };
+		66E3DB77D5D3D82BD8F497F9 /* GoogleIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E709A708423E3C1340C8C26 /* GoogleIdentityProvider.swift */; };
 		78AEFFBCBD64402BAD0A674E /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0E3869DFF9C612F8091281 /* AppView.swift */; };
 		8A96FF81213E3BFFE2F283E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF62723F8002FFD009CA327C /* Assets.xcassets */; };
 		917F5E3502DF57628DF75163 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 099E10639306D3230D7FE0E6 /* Localizable.xcstrings */; };
+		9D3C942B3F9766FD980DB326 /* GoogleSignInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 543BE6E91383901E61E38513 /* GoogleSignInTests.swift */; };
 		A762B68854281BE1A8809DCF /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533E0F68C206549019E9C2AC /* SignInView.swift */; };
 		C2D7FCE89FA9DFE624DA868F /* AuthenticationResponseDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452281C3A2191B19159F8764 /* AuthenticationResponseDecoder.swift */; };
 		C69965A582C8F9485B6E146B /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4DFAF1E282AF077A78399A /* HomeView.swift */; };
@@ -55,16 +59,20 @@
 		148B143CC0783A93F0D423D4 /* AuthenticationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationError.swift; sourceTree = "<group>"; };
 		2C335805138E123B6B086C66 /* BrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandMark.swift; sourceTree = "<group>"; };
 		2C8445C722EF773BD81F5605 /* LinOnward.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LinOnward.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E709A708423E3C1340C8C26 /* GoogleIdentityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleIdentityProvider.swift; sourceTree = "<group>"; };
+		3816F4D055EB048233285CA5 /* GoogleSignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignIn.swift; sourceTree = "<group>"; };
 		3A4DFAF1E282AF077A78399A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		452281C3A2191B19159F8764 /* AuthenticationResponseDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationResponseDecoder.swift; sourceTree = "<group>"; };
 		4E0E3869DFF9C612F8091281 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		4E840CEFA03BB01B4317B783 /* LinOnwardTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LinOnwardTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		533E0F68C206549019E9C2AC /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		543BE6E91383901E61E38513 /* GoogleSignInTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInTests.swift; sourceTree = "<group>"; };
 		5FC88F6E8C8168F445B90BC7 /* AuthenticationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationState.swift; sourceTree = "<group>"; };
 		660CF515F8283FDCBAE17CC7 /* SessionTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTokenStore.swift; sourceTree = "<group>"; };
 		7C3A12A2BA5526DE36206BA0 /* AuthenticationRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationRequest.swift; sourceTree = "<group>"; };
 		89DA051A009A29FA33301267 /* AuthenticationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationTests.swift; sourceTree = "<group>"; };
 		95ABD0995CCC34E526E09B95 /* APIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfiguration.swift; sourceTree = "<group>"; };
+		A823299181EEDD1981821382 /* WebAuthenticationBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticationBrowser.swift; sourceTree = "<group>"; };
 		AAB4CD022FFF05E8731675FC /* AuthenticationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModels.swift; sourceTree = "<group>"; };
 		DCDBB30A3F6EA2A3981FAAA5 /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
 		EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinOnwardApp.swift; sourceTree = "<group>"; };
@@ -87,8 +95,11 @@
 				452281C3A2191B19159F8764 /* AuthenticationResponseDecoder.swift */,
 				0559573061E32A3863F69F48 /* AuthenticationService.swift */,
 				5FC88F6E8C8168F445B90BC7 /* AuthenticationState.swift */,
+				2E709A708423E3C1340C8C26 /* GoogleIdentityProvider.swift */,
+				3816F4D055EB048233285CA5 /* GoogleSignIn.swift */,
 				660CF515F8283FDCBAE17CC7 /* SessionTokenStore.swift */,
 				533E0F68C206549019E9C2AC /* SignInView.swift */,
+				A823299181EEDD1981821382 /* WebAuthenticationBrowser.swift */,
 			);
 			path = Authentication;
 			sourceTree = "<group>";
@@ -140,6 +151,7 @@
 			children = (
 				F1B3AF6D159ABCA116A18D9C /* AuthenticationStateTests.swift */,
 				89DA051A009A29FA33301267 /* AuthenticationTests.swift */,
+				543BE6E91383901E61E38513 /* GoogleSignInTests.swift */,
 			);
 			path = LinOnwardTests;
 			sourceTree = "<group>";
@@ -318,10 +330,13 @@
 				214CADF45553530EF4109053 /* AuthenticationService.swift in Sources */,
 				24E3D951AF7E94FB8699F988 /* AuthenticationState.swift in Sources */,
 				E7E291780E5A98EB0D07B119 /* BrandMark.swift in Sources */,
+				66E3DB77D5D3D82BD8F497F9 /* GoogleIdentityProvider.swift in Sources */,
+				35E0F314BDCD50FA380B5AC6 /* GoogleSignIn.swift in Sources */,
 				C69965A582C8F9485B6E146B /* HomeView.swift in Sources */,
 				1A110709F214A317F97EF169 /* LinOnwardApp.swift in Sources */,
 				3FF3ED0A666112F9F2A01897 /* SessionTokenStore.swift in Sources */,
 				A762B68854281BE1A8809DCF /* SignInView.swift in Sources */,
+				07AABE7F7A469433A2D0AC84 /* WebAuthenticationBrowser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,6 +346,7 @@
 			files = (
 				CDC49AD57458E181364D0056 /* AuthenticationStateTests.swift in Sources */,
 				D191893291B13F6B26E4BBB5 /* AuthenticationTests.swift in Sources */,
+				9D3C942B3F9766FD980DB326 /* GoogleSignInTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

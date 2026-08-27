@@ -20,6 +20,9 @@
   struct StubAuthenticationService: AuthenticationService {
     var codeRequest: AuthenticationError?
     var signInResult: Result<AuthenticatedSession, AuthenticationError> = .failure(.unavailable)
+    var googleSignInResult: Result<AuthenticatedSession, AuthenticationError> = .failure(
+      .googleUnavailable
+    )
     var sessionResult: Result<AuthenticatedUser?, AuthenticationError> = .success(nil)
 
     func sendVerificationCode(to email: String) async -> AuthenticationError? { codeRequest }
@@ -31,11 +34,28 @@
       signInResult
     }
 
+    func signIn(
+      google identity: GoogleIdentity
+    ) async -> Result<AuthenticatedSession, AuthenticationError> {
+      googleSignInResult
+    }
+
     func currentUser(token: String) async -> Result<AuthenticatedUser?, AuthenticationError> {
       sessionResult
     }
 
     func signOut(token: String) async -> AuthenticationError? { nil }
+  }
+
+  /// A Google flow that never opens a browser. Previews render the button; they
+  /// must not be able to start an OAuth journey from the canvas.
+  @MainActor
+  struct StubGoogleIdentityProvider: GoogleIdentityProvider {
+    var outcome: GoogleSignInOutcome = .declined
+
+    func identity(presentedBy browser: any WebAuthenticationBrowser) async -> GoogleSignInOutcome {
+      outcome
+    }
   }
 
   extension AuthenticatedUser {

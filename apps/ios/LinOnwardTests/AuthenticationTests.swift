@@ -155,7 +155,8 @@ struct AuthenticationResponseDecoderTests {
   @Test("gives every failure its own message to show")
   func mapsEveryCaseToADistinctKey() {
     let cases: [AuthenticationError] = [
-      .notConfigured, .network, .invalidCode, .expiredCode, .tooManyAttempts, .unavailable,
+      .notConfigured, .network, .invalidCode, .expiredCode, .tooManyAttempts, .googleUnavailable,
+      .unavailable,
     ]
     let keys = cases.map(\.messageKey)
 

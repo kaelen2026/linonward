@@ -190,6 +190,14 @@ For the internal console, `BETTER_AUTH_URL` is the browser-visible Web origin (l
 `http://localhost:3002`). Register `${BETTER_AUTH_URL}/api/auth/callback/google` as the Google
 OAuth redirect URI. Web proxies `/api/auth/*` here so session cookies remain first-party.
 
+`apps/ios` cannot use that client: Google refuses to redirect a *web* client to a custom URL
+scheme, which is the only address a phone has. The app carries an **iOS** client of its own from
+the same Google project, completes the flow itself, and posts the id token to
+`/api/auth/sign-in/social`. Name that client in `GOOGLE_IOS_CLIENT_ID` and it becomes a second
+accepted id-token audience — the browser flow stays on the web client, which is the one Better
+Auth reads first. Leave it empty and Google sign-in works in the console and is refused from the
+app. Same project means the same Google `sub`, so both routes land on one account.
+
 ## Test
 
 ```bash

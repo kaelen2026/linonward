@@ -98,6 +98,12 @@ database, or network client. Those boundaries should appear only with the first 
 them. When API access is added, the app stays on the HTTP side of `apps/api` and never imports
 `packages/db` or backend implementation files.
 
+Authentication is the one feature that crosses that boundary today: an email one-time code, and —
+where the build carries a Google client — Google. The app authenticates with `Authorization:
+Bearer` rather than cookies, and runs Google's authorization-code-with-PKCE flow itself before
+handing the id token to `POST /api/auth/sign-in/social`, because Better Auth's browser redirect
+can only return to an `https` origin.
+
 ## `apps/api`
 
 A Hono service on Node, structured as a **modular monolith**: one process and one deployable,

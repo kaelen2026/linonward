@@ -1,6 +1,6 @@
 import Foundation
 
-/// The four calls the app makes against the auth API.
+/// The calls the app makes against the auth API.
 ///
 /// Failures come back as values rather than thrown errors: every one of them is
 /// something the sign-in screen renders, and none is exceptional.
@@ -8,6 +8,10 @@ protocol AuthenticationService: Sendable {
   /// `nil` when the API accepted the request.
   func sendVerificationCode(to email: String) async -> AuthenticationError?
   func signIn(email: String, code: String) async -> Result<AuthenticatedSession, AuthenticationError>
+  /// Trades an id token Google already issued for a session of ours.
+  func signIn(google identity: GoogleIdentity) async -> Result<
+    AuthenticatedSession, AuthenticationError
+  >
   /// `nil` inside `.success` means the token is no longer good for a session.
   func currentUser(token: String) async -> Result<AuthenticatedUser?, AuthenticationError>
   /// `nil` when the session was revoked server-side.
@@ -25,7 +29,7 @@ struct LiveAuthenticationService: AuthenticationService {
   }
 
   func sendVerificationCode(to email: String) async -> AuthenticationError? {
-    guard let reply = await perform(requests.sendVerificationCode(email: email)) else {
+    guard let reply = await session.reply(to: requests.sendVerificationCode(email: email)) else {
       return .network
     }
     return responses.acknowledgement(status: reply.status, data: reply.data)
@@ -35,32 +39,52 @@ struct LiveAuthenticationService: AuthenticationService {
     email: String,
     code: String
   ) async -> Result<AuthenticatedSession, AuthenticationError> {
-    guard let reply = await perform(requests.signIn(email: email, code: code)) else {
+    guard let reply = await session.reply(to: requests.signIn(email: email, code: code)) else {
+      return .failure(.network)
+    }
+    return responses.signIn(status: reply.status, authToken: reply.authToken, data: reply.data)
+  }
+
+  func signIn(
+    google identity: GoogleIdentity
+  ) async -> Result<AuthenticatedSession, AuthenticationError> {
+    guard let reply = await session.reply(to: requests.signIn(google: identity)) else {
       return .failure(.network)
     }
     return responses.signIn(status: reply.status, authToken: reply.authToken, data: reply.data)
   }
 
   func currentUser(token: String) async -> Result<AuthenticatedUser?, AuthenticationError> {
-    guard let reply = await perform(requests.session(token: token)) else { return .failure(.network) }
+    guard let reply = await session.reply(to: requests.session(token: token)) else {
+      return .failure(.network)
+    }
     return responses.session(status: reply.status, data: reply.data)
   }
 
   func signOut(token: String) async -> AuthenticationError? {
-    guard let reply = await perform(requests.signOut(token: token)) else { return .network }
+    guard let reply = await session.reply(to: requests.signOut(token: token)) else {
+      return .network
+    }
     return responses.acknowledgement(status: reply.status, data: reply.data)
   }
+}
 
-  private struct Reply {
-    let status: Int
-    let authToken: String?
-    let data: Data
-  }
+/// One HTTP reply, reduced to the three things any caller here reads.
+struct AuthenticationReply {
+  let status: Int
+  /// The bearer plugin's `set-auth-token` header, when the reply carries one.
+  let authToken: String?
+  let data: Data
+}
 
+extension URLSession {
+  /// Sends a described request.
+  ///
   /// `nil` for anything that never produced an HTTP reply — no connection, a
   /// cancelled task, a TLS refusal — all of which read to a person as "the
-  /// network did not work".
-  private func perform(_ request: AuthenticationRequest?) async -> Reply? {
+  /// network did not work". A `nil` request means the app could not build one,
+  /// which reaches the same dead end.
+  func reply(to request: AuthenticationRequest?) async -> AuthenticationReply? {
     guard let request else { return nil }
 
     var urlRequest = URLRequest(url: request.url)
@@ -70,11 +94,12 @@ struct LiveAuthenticationService: AuthenticationService {
       urlRequest.setValue(value, forHTTPHeaderField: field)
     }
 
-    guard let (data, response) = try? await session.data(for: urlRequest),
+    // Qualified: the tuple being bound here introduces a `data` of its own.
+    guard let (data, response) = try? await self.data(for: urlRequest),
       let http = response as? HTTPURLResponse
     else { return nil }
 
-    return Reply(
+    return AuthenticationReply(
       status: http.statusCode,
       authToken: http.value(forHTTPHeaderField: "set-auth-token"),
       data: data

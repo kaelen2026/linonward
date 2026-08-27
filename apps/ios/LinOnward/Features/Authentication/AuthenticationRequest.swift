@@ -13,7 +13,7 @@ struct AuthenticationRequest: Equatable, Sendable {
   let body: Data?
 }
 
-/// Builds the four requests the app makes against Better Auth, mounted by
+/// Builds the requests the app makes against Better Auth, mounted by
 /// `apps/api` under `/api/auth`.
 struct AuthenticationRequestFactory: Sendable {
   private let baseURL: String
@@ -38,6 +38,18 @@ struct AuthenticationRequestFactory: Sendable {
     post("sign-in/email-otp", body: ["email": email, "otp": code])
   }
 
+  /// The id-token branch of `POST /sign-in/social`.
+  ///
+  /// The other branch answers with a URL to send a *browser* to, which is no
+  /// use here: the app has already completed OAuth with Google itself, so this
+  /// hands over the proof and gets a session straight back.
+  func signIn(google identity: GoogleIdentity) -> AuthenticationRequest? {
+    guard let encoded = try? JSONEncoder().encode(SocialSignInBody(identity: identity)) else {
+      return nil
+    }
+    return post("sign-in/social", json: encoded)
+  }
+
   func session(token: String) -> AuthenticationRequest? {
     guard let url = url(for: "get-session") else { return nil }
     return AuthenticationRequest(
@@ -57,13 +69,20 @@ struct AuthenticationRequestFactory: Sendable {
     body: [String: String],
     token: String? = nil
   ) -> AuthenticationRequest? {
-    guard let url = url(for: path),
-      let encoded = try? JSONEncoder().encode(body)
-    else { return nil }
+    guard let encoded = try? JSONEncoder().encode(body) else { return nil }
+    return post(path, json: encoded, token: token)
+  }
+
+  private func post(
+    _ path: String,
+    json: Data,
+    token: String? = nil
+  ) -> AuthenticationRequest? {
+    guard let url = url(for: path) else { return nil }
 
     var headers = ["Accept": "application/json", "Content-Type": "application/json"]
     if let token { headers["Authorization"] = "Bearer \(token)" }
-    return AuthenticationRequest(url: url, method: "POST", headers: headers, body: encoded)
+    return AuthenticationRequest(url: url, method: "POST", headers: headers, body: json)
   }
 
   /// Joins a path onto the origin with exactly one slash between them.
@@ -74,5 +93,21 @@ struct AuthenticationRequestFactory: Sendable {
   /// `https://example.com/gateway` would lose the `/gateway`.
   private func url(for path: String) -> URL? {
     URL(string: "\(baseURL)/api/auth/\(path)")
+  }
+}
+
+/// The body of `POST /sign-in/social`, which nests where every other call here
+/// is flat — hence its own type rather than the string dictionary above.
+private struct SocialSignInBody: Encodable {
+  struct IdentityToken: Encodable {
+    let token: String
+    let nonce: String
+  }
+
+  let provider = "google"
+  let idToken: IdentityToken
+
+  init(identity: GoogleIdentity) {
+    idToken = IdentityToken(token: identity.idToken, nonce: identity.nonce)
   }
 }
