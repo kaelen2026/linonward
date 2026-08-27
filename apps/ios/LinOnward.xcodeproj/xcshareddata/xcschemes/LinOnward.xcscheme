@@ -29,6 +29,20 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "982D19CE8569E7AA082AAE80"
+               BuildableName = "LinOnwardTests.xctest"
+               BlueprintName = "LinOnwardTests"
+               ReferencedContainer = "container:LinOnward.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "4FB9E01C5A575DB10C3B909E"
                BuildableName = "LinOnwardUITests.xctest"
                BlueprintName = "LinOnwardUITests"
@@ -54,6 +68,17 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "982D19CE8569E7AA082AAE80"
+               BuildableName = "LinOnwardTests.xctest"
+               BlueprintName = "LinOnwardTests"
+               ReferencedContainer = "container:LinOnward.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
          <TestableReference
             skipped = "NO"
             parallelizable = "NO">
