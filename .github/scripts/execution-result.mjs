@@ -59,6 +59,22 @@ export function formatExecutionReply(messages, runUrl) {
   return extractResultText(messages);
 }
 
+export function formatInterruptedReply(messages, runUrl, reason = "cancelled") {
+  const progress = extractLatestAssistantText(messages);
+  const headline =
+    reason === "timeout"
+      ? "任务未完成：运行超过时间上限，已被自动停止。"
+      : "任务未完成：运行已被取消。";
+  const lines = [headline];
+
+  if (progress) lines.push("", `取消前的最近进度：${progress}`);
+
+  lines.push("", "本次 runner 中未提交的修改不会进入仓库。请在当前话题回复“继续”以恢复会话。");
+  if (runUrl) lines.push(`运行日志：${runUrl}`);
+
+  return lines.join("\n").trim();
+}
+
 function findFailure(messages) {
   if (!Array.isArray(messages)) return undefined;
 
