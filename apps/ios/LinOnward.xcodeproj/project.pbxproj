@@ -1,0 +1,441 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		060F9213B9C997A695847F76 /* LinOnwardUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123E324A6E36B03DA29D3097 /* LinOnwardUITests.swift */; };
+		1A110709F214A317F97EF169 /* LinOnwardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */; };
+		78AEFFBCBD64402BAD0A674E /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0E3869DFF9C612F8091281 /* AppView.swift */; };
+		C69965A582C8F9485B6E146B /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4DFAF1E282AF077A78399A /* HomeView.swift */; };
+		E7E291780E5A98EB0D07B119 /* BrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C335805138E123B6B086C66 /* BrandMark.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		03593144B169ECFD4B86B6EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 23C17F4578B275D3A7C42FB2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E7C06C1005E9F3BD516323C9;
+			remoteInfo = LinOnward;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		090649DCC5090CF840F85DE9 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		0C816F3E46C30E3260A7C560 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		123E324A6E36B03DA29D3097 /* LinOnwardUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinOnwardUITests.swift; sourceTree = "<group>"; };
+		2C335805138E123B6B086C66 /* BrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandMark.swift; sourceTree = "<group>"; };
+		2C8445C722EF773BD81F5605 /* LinOnward.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LinOnward.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A4DFAF1E282AF077A78399A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		4E0E3869DFF9C612F8091281 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
+		EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinOnwardApp.swift; sourceTree = "<group>"; };
+		FFEA86E45D5A984019169F84 /* LinOnwardUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LinOnwardUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0916D20AC03FB5BCDFA3679A /* LinOnwardUITests */ = {
+			isa = PBXGroup;
+			children = (
+				123E324A6E36B03DA29D3097 /* LinOnwardUITests.swift */,
+			);
+			path = LinOnwardUITests;
+			sourceTree = "<group>";
+		};
+		596ED23D423CAE8DEA2BD0D9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2C8445C722EF773BD81F5605 /* LinOnward.app */,
+				FFEA86E45D5A984019169F84 /* LinOnwardUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		71C6B563DD0AC469177FBDF0 = {
+			isa = PBXGroup;
+			children = (
+				BCAEAD0CBF66F0676F2B970B /* App */,
+				888C12B0A483CF5F0FE477ED /* Config */,
+				AE0DBB4F3AAEE5FF934768F2 /* DesignSystem */,
+				E4605FE0C21A8278F5512BFC /* Features */,
+				0916D20AC03FB5BCDFA3679A /* LinOnwardUITests */,
+				596ED23D423CAE8DEA2BD0D9 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7FB1533FB46358F4F91419E1 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				3A4DFAF1E282AF077A78399A /* HomeView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		888C12B0A483CF5F0FE477ED /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				0C816F3E46C30E3260A7C560 /* Debug.xcconfig */,
+				090649DCC5090CF840F85DE9 /* Release.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		AE0DBB4F3AAEE5FF934768F2 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				2C335805138E123B6B086C66 /* BrandMark.swift */,
+			);
+			name = DesignSystem;
+			path = LinOnward/DesignSystem;
+			sourceTree = "<group>";
+		};
+		BCAEAD0CBF66F0676F2B970B /* App */ = {
+			isa = PBXGroup;
+			children = (
+				4E0E3869DFF9C612F8091281 /* AppView.swift */,
+				EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */,
+			);
+			name = App;
+			path = LinOnward/App;
+			sourceTree = "<group>";
+		};
+		E4605FE0C21A8278F5512BFC /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				7FB1533FB46358F4F91419E1 /* Home */,
+			);
+			name = Features;
+			path = LinOnward/Features;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4FB9E01C5A575DB10C3B909E /* LinOnwardUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DFA66D8ED0EEF461E6AF28EB /* Build configuration list for PBXNativeTarget "LinOnwardUITests" */;
+			buildPhases = (
+				F5CE2DC2199419CD3ECBE560 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				92F1CC727E03B14B864D827C /* PBXTargetDependency */,
+			);
+			name = LinOnwardUITests;
+			packageProductDependencies = (
+			);
+			productName = LinOnwardUITests;
+			productReference = FFEA86E45D5A984019169F84 /* LinOnwardUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		E7C06C1005E9F3BD516323C9 /* LinOnward */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D92CE2B35B663D787682CF2E /* Build configuration list for PBXNativeTarget "LinOnward" */;
+			buildPhases = (
+				2D02773C7605B153A5ABA408 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LinOnward;
+			packageProductDependencies = (
+			);
+			productName = LinOnward;
+			productReference = 2C8445C722EF773BD81F5605 /* LinOnward.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		23C17F4578B275D3A7C42FB2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					4FB9E01C5A575DB10C3B909E = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = E7C06C1005E9F3BD516323C9;
+					};
+					E7C06C1005E9F3BD516323C9 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 34638669C8E886BFE2B30B83 /* Build configuration list for PBXProject "LinOnward" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 71C6B563DD0AC469177FBDF0;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 596ED23D423CAE8DEA2BD0D9 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E7C06C1005E9F3BD516323C9 /* LinOnward */,
+				4FB9E01C5A575DB10C3B909E /* LinOnwardUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2D02773C7605B153A5ABA408 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78AEFFBCBD64402BAD0A674E /* AppView.swift in Sources */,
+				E7E291780E5A98EB0D07B119 /* BrandMark.swift in Sources */,
+				C69965A582C8F9485B6E146B /* HomeView.swift in Sources */,
+				1A110709F214A317F97EF169 /* LinOnwardApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F5CE2DC2199419CD3ECBE560 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				060F9213B9C997A695847F76 /* LinOnwardUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		92F1CC727E03B14B864D827C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E7C06C1005E9F3BD516323C9 /* LinOnward */;
+			targetProxy = 03593144B169ECFD4B86B6EB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		617D014B2FBA8EB8CDE6CFDE /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 090649DCC5090CF840F85DE9 /* Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LinOnward/Supporting/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.linonward.app;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		63A1BA0AF888FFE48DC94000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		669490B778B41B19A2FEA2A1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0C816F3E46C30E3260A7C560 /* Debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.linonward.app.ui-tests";
+				SDKROOT = iphoneos;
+				TEST_TARGET_NAME = LinOnward;
+			};
+			name = Debug;
+		};
+		9B4690B0F7967D0E9800C5EC /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 090649DCC5090CF840F85DE9 /* Release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.linonward.app.ui-tests";
+				SDKROOT = iphoneos;
+				TEST_TARGET_NAME = LinOnward;
+			};
+			name = Release;
+		};
+		D1ECC3E673F217D335419372 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0C816F3E46C30E3260A7C560 /* Debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LinOnward/Supporting/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.linonward.app;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		D995A57B48DBB6D27213AB5B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		34638669C8E886BFE2B30B83 /* Build configuration list for PBXProject "LinOnward" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D995A57B48DBB6D27213AB5B /* Debug */,
+				63A1BA0AF888FFE48DC94000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D92CE2B35B663D787682CF2E /* Build configuration list for PBXNativeTarget "LinOnward" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D1ECC3E673F217D335419372 /* Debug */,
+				617D014B2FBA8EB8CDE6CFDE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DFA66D8ED0EEF461E6AF28EB /* Build configuration list for PBXNativeTarget "LinOnwardUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				669490B778B41B19A2FEA2A1 /* Debug */,
+				9B4690B0F7967D0E9800C5EC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 23C17F4578B275D3A7C42FB2 /* Project object */;
+}

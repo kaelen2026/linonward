@@ -19,6 +19,11 @@ Delegate frontend implementation in `apps/www` or `apps/web` to the project suba
 skill and follows the path-scoped rules in `.claude/rules/frontend.md`. Keep API, database,
 and external-integration changes with the main agent until dedicated domain agents exist.
 
+Delegate SwiftUI implementation in `apps/ios` to the project subagent `ios-engineer` when a
+focused iOS context is useful. It preloads the `implement-ios` skill and follows the path-scoped
+rules in `.claude/rules/ios.md`. Keep backend contract and release changes with the main agent
+unless both sides are explicitly delegated.
+
 ## Verification
 
 `pnpm lint` + `pnpm typecheck` + `pnpm test`, plus `pnpm build` for anything touching the build.

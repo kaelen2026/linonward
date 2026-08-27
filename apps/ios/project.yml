@@ -1,0 +1,63 @@
+name: LinOnward
+
+options:
+  bundleIdPrefix: com.linonward
+  deploymentTarget:
+    iOS: "18.0"
+  developmentLanguage: en
+  xcodeVersion: "26.0"
+
+configs:
+  Debug: debug
+  Release: release
+
+targets:
+  LinOnward:
+    type: application
+    platform: iOS
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    sources:
+      - path: LinOnward/App
+      - path: LinOnward/DesignSystem
+      - path: LinOnward/Features
+    resources:
+      - path: LinOnward/Resources
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: "NO"
+        INFOPLIST_FILE: LinOnward/Supporting/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.linonward.app
+
+  LinOnwardUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    sources:
+      - path: LinOnwardUITests
+    dependencies:
+      - target: LinOnward
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.linonward.app.ui-tests
+        TEST_TARGET_NAME: LinOnward
+
+schemes:
+  LinOnward:
+    build:
+      targets:
+        LinOnward: all
+        LinOnwardUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - LinOnwardUITests
+    archive:
+      config: Release

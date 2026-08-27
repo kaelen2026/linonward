@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | `apps/api` | `@linonward/api` | Backend HTTP API. Hono, laid out as a modular monolith. |
 | `apps/feishu` | `@linonward/feishu` | Feishu event relay. Routes authorized text to a GitHub Actions `workflow_dispatch` or local Hermes. |
+| `apps/ios` | — | Native SwiftUI application. XcodeGen project, outside the pnpm task graph. |
 | `apps/web` | `@linonward/web` | Internal console. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
 | `packages/db` | `@linonward/db` | Backend database boundary: Drizzle schema, relations, client, and migrations. |
@@ -15,6 +16,10 @@
 
 Internal packages are referenced with the `workspace:*` protocol, so pnpm links
 them from disk instead of resolving them from the registry.
+
+`apps/ios` is colocated under `apps/` but has no `package.json`, so pnpm does not treat it as a
+workspace package. Root `ios:*` scripts invoke XcodeGen and Xcode directly; Turbo continues to own
+only the JavaScript and TypeScript task graph.
 
 ## Turborepo task graph
 
@@ -80,6 +85,18 @@ revalidates and wins, and a disagreement surfaces as `invalid` on the field the
 server named. The mailto link below the form stays as the fallback for when the
 API is down. Contact data is write-only at the public boundary; a future internal
 reader must add authentication rather than re-expose this endpoint.
+
+## `apps/ios`
+
+The native client is a Swift 6 SwiftUI application targeting iOS 18 on iPhone and iPad. XcodeGen's
+`project.yml` is the source of truth, while the generated `LinOnward.xcodeproj` stays checked in so
+the app opens directly in Xcode. Shared build settings live in `Config/`; app composition, design
+primitives, feature code, localized resources, and UI tests remain in separate directories.
+
+The initial shell deliberately has one `NavigationStack` and no global router, view-model layer,
+database, or network client. Those boundaries should appear only with the first behavior that needs
+them. When API access is added, the app stays on the HTTP side of `apps/api` and never imports
+`packages/db` or backend implementation files.
 
 ## `apps/api`
 
