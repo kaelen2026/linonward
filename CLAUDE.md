@@ -11,6 +11,13 @@ Setup, scripts, and workspace layout are in [README.md](./README.md). Long-form 
 [`.claude/rules/tdd.md`](.claude/rules/tdd.md). This file covers only what those don't: the
 things that will bite an agent.
 
+## Domain agents
+
+Delegate frontend implementation in `apps/www` or `apps/web` to the project subagent
+`frontend-engineer` when a focused context is useful. It preloads the `implement-frontend`
+skill and follows the path-scoped rules in `.claude/rules/frontend.md`. Keep API, database,
+and external-integration changes with the main agent until dedicated domain agents exist.
+
 ## Verification
 
 `pnpm lint` + `pnpm typecheck` + `pnpm test`, plus `pnpm build` for anything touching the build.
