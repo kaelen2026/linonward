@@ -7,7 +7,8 @@ Guidance for Claude Code (claude.ai/code) in this repository.
 
 Setup, scripts, and workspace layout are in [README.md](./README.md). Long-form detail is in
 [`docs/`](./docs). Git rules — commit format, hooks, staging, branches — are in
-[`.claude/rules/git.md`](.claude/rules/git.md), and how to write tests is in
+[`.claude/rules/git.md`](.claude/rules/git.md), TypeScript rules are in
+[`.claude/rules/typescript.md`](.claude/rules/typescript.md), and how to write tests is in
 [`.claude/rules/tdd.md`](.claude/rules/tdd.md). This file covers only what those don't: the
 things that will bite an agent.
 
