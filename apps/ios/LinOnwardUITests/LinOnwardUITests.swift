@@ -1,5 +1,6 @@
 import XCTest
 
+@MainActor
 final class LinOnwardUITests: XCTestCase {
   override func setUpWithError() throws {
     continueAfterFailure = false

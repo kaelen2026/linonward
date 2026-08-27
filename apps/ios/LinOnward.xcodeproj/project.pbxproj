@@ -10,6 +10,8 @@
 		060F9213B9C997A695847F76 /* LinOnwardUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123E324A6E36B03DA29D3097 /* LinOnwardUITests.swift */; };
 		1A110709F214A317F97EF169 /* LinOnwardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */; };
 		78AEFFBCBD64402BAD0A674E /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0E3869DFF9C612F8091281 /* AppView.swift */; };
+		8A96FF81213E3BFFE2F283E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF62723F8002FFD009CA327C /* Assets.xcassets */; };
+		917F5E3502DF57628DF75163 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 099E10639306D3230D7FE0E6 /* Localizable.xcstrings */; };
 		C69965A582C8F9485B6E146B /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4DFAF1E282AF077A78399A /* HomeView.swift */; };
 		E7E291780E5A98EB0D07B119 /* BrandMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C335805138E123B6B086C66 /* BrandMark.swift */; };
 /* End PBXBuildFile section */
@@ -26,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		090649DCC5090CF840F85DE9 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		099E10639306D3230D7FE0E6 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		0C816F3E46C30E3260A7C560 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		123E324A6E36B03DA29D3097 /* LinOnwardUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinOnwardUITests.swift; sourceTree = "<group>"; };
 		2C335805138E123B6B086C66 /* BrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandMark.swift; sourceTree = "<group>"; };
@@ -33,6 +36,7 @@
 		3A4DFAF1E282AF077A78399A /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		4E0E3869DFF9C612F8091281 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinOnwardApp.swift; sourceTree = "<group>"; };
+		FF62723F8002FFD009CA327C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FFEA86E45D5A984019169F84 /* LinOnwardUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LinOnwardUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -62,8 +66,19 @@
 				AE0DBB4F3AAEE5FF934768F2 /* DesignSystem */,
 				E4605FE0C21A8278F5512BFC /* Features */,
 				0916D20AC03FB5BCDFA3679A /* LinOnwardUITests */,
+				7E46226AF56E2304F285EBF6 /* Resources */,
 				596ED23D423CAE8DEA2BD0D9 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		7E46226AF56E2304F285EBF6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FF62723F8002FFD009CA327C /* Assets.xcassets */,
+				099E10639306D3230D7FE0E6 /* Localizable.xcstrings */,
+			);
+			name = Resources;
+			path = LinOnward/Resources;
 			sourceTree = "<group>";
 		};
 		7FB1533FB46358F4F91419E1 /* Home */ = {
@@ -137,6 +152,7 @@
 			buildConfigurationList = D92CE2B35B663D787682CF2E /* Build configuration list for PBXNativeTarget "LinOnward" */;
 			buildPhases = (
 				2D02773C7605B153A5ABA408 /* Sources */,
+				595DEB285B7EE23907BC9DE7 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -173,6 +189,7 @@
 			knownRegions = (
 				Base,
 				en,
+				"zh-Hans",
 			);
 			mainGroup = 71C6B563DD0AC469177FBDF0;
 			minimizedProjectReferenceProxies = 1;
@@ -186,6 +203,18 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		595DEB285B7EE23907BC9DE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8A96FF81213E3BFFE2F283E1 /* Assets.xcassets in Resources */,
+				917F5E3502DF57628DF75163 /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2D02773C7605B153A5ABA408 /* Sources */ = {
@@ -222,7 +251,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 090649DCC5090CF840F85DE9 /* Release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = NO;
@@ -328,7 +357,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0C816F3E46C30E3260A7C560 /* Debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = NO;
