@@ -1,0 +1,36 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "LinOnward entry module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "LinOnward"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "LinOnward"
+    },
+    {
+      "name": "home_eyebrow",
+      "value": "Growth measurement & analytics"
+    },
+    {
+      "name": "home_title",
+      "value": "Growth you can trace"
+    },
+    {
+      "name": "home_body",
+      "value": "A native home for growth signals you can trace back to their source."
+    },
+    {
+      "name": "home_api_label",
+      "value": "API endpoint"
+    },
+    {
+      "name": "home_api_missing",
+      "value": "No server configured in this build"
+    }
+  ]
+}

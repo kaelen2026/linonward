@@ -1,0 +1,28 @@
+{
+  "color": [
+    {
+      "name": "page_background",
+      "value": "#00112D"
+    },
+    {
+      "name": "surface",
+      "value": "#03274D"
+    },
+    {
+      "name": "border",
+      "value": "#27466B"
+    },
+    {
+      "name": "text_primary",
+      "value": "#F2F7FE"
+    },
+    {
+      "name": "text_secondary",
+      "value": "#94B4DB"
+    },
+    {
+      "name": "text_accent",
+      "value": "#8FD4D4"
+    }
+  ]
+}

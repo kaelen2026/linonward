@@ -7,6 +7,7 @@ Turborepo monorepo powered by a pnpm workspace.
 - Node.js `>= 24` (see `.nvmrc`)
 - pnpm `11.19.0` (pinned via `packageManager`; run `corepack enable`)
 - Xcode 26+ and XcodeGen 2.46+ for `apps/ios`
+- DevEco Studio 5.0.5+ and HarmonyOS SDK API 12+ for `apps/harmony`
 
 ## Getting started
 
@@ -24,6 +25,9 @@ all — point it elsewhere with `NEXT_PUBLIC_API_URL` (see
 [`apps/www/.env.example`](./apps/www/.env.example)).
 The Feishu long-connection client requires its own environment configuration; see
 [`apps/feishu/README.md`](./apps/feishu/README.md).
+Both native clients build outside pnpm and Turborepo: `apps/ios` through XcodeGen and Xcode,
+`apps/harmony` through DevEco Studio and hvigor. The HarmonyOS app has no CI job, so its build
+and tests are a manual step; see [`apps/harmony/README.md`](./apps/harmony/README.md).
 
 ## Workspace layout
 
@@ -32,6 +36,7 @@ The Feishu long-connection client requires its own environment configuration; se
 ├── apps/
 │   ├── api/                    # Backend — Hono modular monolith, Postgres + Redis
 │   ├── feishu/                 # Feishu-to-GitHub task relay
+│   ├── harmony/                # Native ArkTS application for HarmonyOS
 │   ├── ios/                    # Native SwiftUI application for iPhone and iPad
 │   ├── web/                    # Internal console — Next.js 16 App Router
 │   └── www/                    # Official website — Next.js App Router

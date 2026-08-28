@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | `apps/api` | `@linonward/api` | Backend HTTP API. Hono, laid out as a modular monolith. |
 | `apps/feishu` | `@linonward/feishu` | Feishu event relay. Routes authorized text to a GitHub Actions `workflow_dispatch` or local Hermes. |
+| `apps/harmony` | — | Native ArkTS application for HarmonyOS. DevEco Studio project, outside the pnpm task graph. |
 | `apps/ios` | — | Native SwiftUI application. XcodeGen project, outside the pnpm task graph. |
 | `apps/web` | `@linonward/web` | Internal console. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
@@ -18,9 +19,14 @@
 Internal packages are referenced with the `workspace:*` protocol, so pnpm links
 them from disk instead of resolving them from the registry.
 
-`apps/ios` is colocated under `apps/` but has no `package.json`, so pnpm does not treat it as a
-workspace package. Root `ios:*` scripts invoke XcodeGen and Xcode directly; Turbo continues to own
-only the JavaScript and TypeScript task graph.
+`apps/ios` and `apps/harmony` are colocated under `apps/` but have no `package.json`, so pnpm does
+not treat them as workspace packages. Root `ios:*` scripts invoke XcodeGen and Xcode directly, and
+`apps/harmony` is driven by DevEco Studio and its hvigor wrapper; Turbo continues to own only the
+JavaScript and TypeScript task graph.
+
+The `.ets` and `.json5` files both native projects carry are unknown extensions to Biome, which
+`files.ignoreUnknown` skips. The `.json` resource files and the two `hvigorfile.ts` entries are
+not — Biome formats those like any other file in the repo.
 
 ## Turborepo task graph
 
@@ -105,6 +111,42 @@ where the build carries a Google client — Google. The app authenticates with `
 Bearer` rather than cookies, and runs Google's authorization-code-with-PKCE flow itself before
 handing the id token to `POST /api/auth/sign-in/social`, because Better Auth's browser redirect
 can only return to an `https` origin.
+
+## `apps/harmony`
+
+The HarmonyOS client is a stage-model ArkTS application targeting API 12 on phone, tablet, and
+2-in-1. `build-profile.json5` and `entry/build-profile.json5` are the source of truth for hvigor;
+unlike `apps/ios`, nothing generated is checked in, because DevEco Studio recreates the `hvigorw`
+wrapper and `.hvigor/` on sync.
+
+```
+apps/harmony/
+├── AppScope/                        # bundle identity, app label, app icon
+└── entry/src/
+    ├── main/ets/{config,designsystem,entryability,entrybackupability,pages}/
+    ├── main/resources/              # base (English fallback), zh_CN, dark, media, profiles
+    ├── test/                        # hypium unit tests, host only
+    └── ohosTest/                    # hypium + UiTest, needs a device
+```
+
+Two things carry over from `apps/ios` on purpose. The API origin is a build-time constant, one
+per build — here `arkOptions.buildProfileFields` in `entry/build-profile.json5`, compiled into the
+generated `BuildProfile` class, debug at `localhost:3001` and release deliberately empty. And the
+logic worth testing is kept out of the UI: `config/ApiEndpoint.ets` is pure so `entry/src/test`
+covers it without a device, while `config/ApiConfiguration.ets` is the thin layer that knows
+`BuildProfile` exists.
+
+Color resources mirror the two-layer scheme in `apps/www`: semantic names in
+`resources/base/element/color.json`, flipped by `resources/dark/element/color.json` on the system
+dark color mode.
+
+**No CI job gates it.** GitHub-hosted runners carry no HarmonyOS SDK and the toolchain is not
+publicly downloadable, so unlike the `ios` job there is nothing for `ci.yml` to run. Building and
+testing this app is manual until a self-hosted runner with the SDK exists.
+
+The shell is one page with no router, no view-model layer, and no HTTP client; authentication is
+the largest gap against `apps/ios`. When it is added, the app stays on the HTTP side of `apps/api`
+and never imports `packages/db` or backend implementation files.
 
 ## `apps/api`
 
