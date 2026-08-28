@@ -2,8 +2,7 @@
 
 Two runners in `apps/www`: **Vitest** with Testing Library for logic and single
 components, **Playwright** for end-to-end journeys against a production build.
-The agent-facing rules are in [`.claude/rules/tdd.md`](../.claude/rules/tdd.md);
-this page is the human reference for how the setup works and why.
+This page is the human reference for how the setup works and why.
 
 | | Vitest | Playwright |
 | --- | --- | --- |

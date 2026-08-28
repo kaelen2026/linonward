@@ -1,1 +1,2 @@
+scripts/assert-agent-worktree.sh
 pnpm exec lint-staged
