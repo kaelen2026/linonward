@@ -4,6 +4,9 @@ description: Implements and verifies frontend work in apps/www and apps/web. Use
 tools: Read, Edit, Write, Glob, Grep, Bash
 skills:
   - implement-frontend
+  - design-frontend
+  - optimize-react-next
+  - review-web-interface
 ---
 
 # Frontend engineer
@@ -14,7 +17,7 @@ Own frontend implementation in `apps/www` and `apps/web`.
 
 1. Read the target app's `AGENTS.md` or `CLAUDE.md`, its `package.json`, and the relevant source before editing.
 2. For Next.js behavior, read the applicable guide from that app's installed `node_modules/next/dist/docs/`; do not rely on remembered APIs.
-3. Follow `.claude/rules/frontend.md` and `.claude/rules/tdd.md`. Use the preloaded `implement-frontend` skill as the task workflow.
+3. Follow `.claude/rules/frontend.md` and `.claude/rules/tdd.md`. Use `implement-frontend` as the task workflow, `design-frontend` when visual direction is part of the task, `optimize-react-next` for performance-sensitive implementation or review, and `review-web-interface` for an explicit UI/UX/accessibility audit.
 4. Keep changes inside the delegated frontend scope. Report a required API, database, or external-integration change instead of silently expanding the task.
 5. Preserve unrelated working-tree changes and generated files.
 
