@@ -29,6 +29,7 @@ jobs:
     outputs:
       verify: ${{ steps.scope.outputs.verify }}
       integration: ${{ steps.scope.outputs.integration }}
+      android: ${{ steps.scope.outputs.android }}
       ios: ${{ steps.scope.outputs.ios }}
       e2e: ${{ steps.scope.outputs.e2e }}
     steps:
@@ -168,6 +169,40 @@ jobs:
 
       - name: Apply migrations and verify infrastructure adapters
         run: pnpm --filter @linonward/api test:integration
+
+  android:
+    name: Android build and test
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            apps/android/**/*.gradle.kts
+            apps/android/gradle/libs.versions.toml
+            apps/android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android API 37.1
+        run: sdkmanager "platforms;android-37.1" "build-tools;37.0.0"
+
+      - name: Lint
+        run: apps/android/gradlew -p apps/android :app:lintDebug
+
+      - name: Unit tests
+        run: apps/android/gradlew -p apps/android :app:testDebugUnitTest
+
+      - name: Debug build
+        run: apps/android/gradlew -p apps/android :app:assembleDebug
 
   ios:
     name: iOS build and test
