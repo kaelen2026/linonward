@@ -5,12 +5,12 @@
  */
 @Component
 export struct BrandMark {
-  private size: number = 56;
+  private markSize: number = 56;
 
   build() {
     Image($r('app.media.startIcon'))
-      .width(this.size)
-      .height(this.size)
+      .width(this.markSize)
+      .height(this.markSize)
       .borderRadius(14)
       .accessibilityLevel('no')
   }

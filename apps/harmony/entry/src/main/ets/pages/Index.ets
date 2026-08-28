@@ -44,17 +44,10 @@ struct Index {
             .fontWeight(FontWeight.Medium)
             .fontColor($r('app.color.text_secondary'))
 
-          if (this.isConfigured) {
-            Text(API_BASE_URL)
-              .fontSize(15)
-              .fontColor($r('app.color.text_primary'))
-              .id('home.api')
-          } else {
-            Text($r('app.string.home_api_missing'))
-              .fontSize(15)
-              .fontColor($r('app.color.text_primary'))
-              .id('home.api')
-          }
+          Text(this.isConfigured ? API_BASE_URL : $r('app.string.home_api_missing'))
+            .fontSize(15)
+            .fontColor($r('app.color.text_primary'))
+            .id('home.api')
         }
         .alignItems(HorizontalAlign.Start)
         .width('100%')
