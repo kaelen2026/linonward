@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "prosemirror-view/style/prosemirror.css";
 
 /* ---------------------------------------------------------------------------
  * A deliberately small slice of the brand system.
@@ -78,5 +79,59 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  .rich-text-editor .ProseMirror {
+    min-height: 24rem;
+    padding: 1.5rem;
+    outline: none;
+    line-height: 1.75;
+  }
+
+  .rich-text-editor .ProseMirror > * + * {
+    margin-top: 0.875rem;
+  }
+
+  .rich-text-editor .ProseMirror h1 {
+    font-size: 1.875rem;
+    font-weight: 650;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+  }
+
+  .rich-text-editor .ProseMirror h2 {
+    font-size: 1.375rem;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+
+  .rich-text-editor .ProseMirror blockquote {
+    border-left: 3px solid var(--brand);
+    color: var(--muted-foreground);
+    padding-left: 1rem;
+  }
+
+  .rich-text-editor .ProseMirror mark {
+    @apply rounded-sm bg-amber-200 px-0.5 text-inherit dark:bg-amber-800;
+  }
+
+  .rich-text-editor .ProseMirror ul,
+  .rich-text-editor .ProseMirror ol {
+    padding-left: 1.5rem;
+  }
+
+  .rich-text-editor .ProseMirror ul {
+    list-style: disc;
+  }
+
+  .rich-text-editor .ProseMirror ol {
+    list-style: decimal;
+  }
+
+  .rich-text-editor .ProseMirror-focused {
+    box-shadow: inset 0 0 0 2px color-mix(in oklch, var(--brand), transparent 45%);
   }
 }

@@ -6,6 +6,13 @@ Distinct from [`apps/www`](../www), which is the public bilingual website. This 
 single-language (`zh-CN`), not indexed, and exists to authenticate against and read from
 [`apps/api`](../api).
 
+The authenticated `/editor` route provides a reusable ProseMirror-based rich-text editor. Its
+toolbar covers headings, emphasis, quotes, lists, and history while the document remains structured
+JSON ready for a future API contract; this first capability intentionally adds no persistence. The
+editor accepts ordered, mount-time plugins that can extend its schema, ProseMirror plugin stack,
+key bindings, toolbar, and lifecycle. `src/components/editor/highlight-plugin.ts` is a working
+example.
+
 ## Run it
 
 ```bash
@@ -32,9 +39,11 @@ apps/web/
 │   ├── layout.tsx           # root layout — metadata, fonts, globals.css
 │   ├── page.tsx             # /
 │   ├── login/page.tsx       # /login — email OTP + optional Google OAuth
+│   ├── editor/page.tsx      # /editor — ProseMirror rich-text workbench
 │   ├── status/page.tsx      # /status — reads GET /health
 │   └── globals.css          # Tailwind v4 + a small slice of the brand tokens
 ├── src/components/site/     # app shell
+├── src/components/editor/   # ProseMirror schema, editor boundary and workbench
 └── src/lib/                 # auth client/session, API origin, health fetch, cn()
 ```
 
