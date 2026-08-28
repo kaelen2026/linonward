@@ -83,7 +83,7 @@ Hermes as a second Feishu gateway.
 ## CI gate
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push to `main` and every
-pull request, regardless of its base. Its three jobs run in parallel.
+pull request, regardless of its base. Its jobs run in parallel.
 
 `verify` runs:
 
@@ -105,6 +105,12 @@ history to an empty database, and runs the production adapter contracts against 
 
 `ios` regenerates the Xcode project, confirms the checked-in project is current, then builds and
 tests the iOS app on macOS.
+
+`apps/android` has **no CI job yet**, so nothing in this workflow covers it. Verify it locally with
+`pnpm android:lint`, `pnpm android:test` and `pnpm android:build` before merging a change that
+touches it. The job it needs is an `ubuntu-latest` one running those same three commands after
+`actions/setup-java` (temurin 17) and `gradle/actions/setup-gradle`; no emulator is involved,
+because every Android test is a JVM test by design.
 
 pnpm comes from `pnpm/action-setup`, which reads `packageManager`; Node comes from `.nvmrc`. A new
 push cancels an in-flight pull-request run, but pushes to `main` are not cancelled.

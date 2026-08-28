@@ -26,7 +26,15 @@ pnpm lint:fix                        # apply safe fixes
 pnpm db:generate                     # generate SQL after a Drizzle schema change
 pnpm db:check                        # validate Drizzle migration snapshots
 pnpm db:studio                       # inspect DATABASE_URL with Drizzle Studio
+pnpm android:lint                    # Android Lint, warnings are errors
+pnpm android:test                    # Android JVM unit tests, no emulator
+pnpm android:build                   # Android debug APK
 ```
+
+The `android:*` and `ios:*` scripts shell out to Gradle and Xcode. Those apps are outside the
+Turborepo graph, so `pnpm build` and `pnpm test` do not cover them. Android needs JDK 17 on
+`JAVA_HOME` and an Android SDK on `ANDROID_HOME`; setup and the API-origin contract are in
+[`apps/android/README.md`](../apps/android/README.md).
 
 Testing has its own page: [testing.md](./testing.md).
 
@@ -62,6 +70,10 @@ Components land in `src/components/ui/` and are yours to edit — there is no
 upstream version to keep in sync.
 
 ## Adding a new app
+
+This describes a JavaScript workspace. A native app — `apps/ios`, `apps/android` — deliberately
+carries no `package.json`, stays out of the Turborepo graph, and gets root `<platform>:*` scripts
+plus its own CI job instead.
 
 1. `mkdir -p apps/<name>` and add a `package.json` named `@linonward/<name>`.
 2. Give it `dev`, `build`, and `typecheck` scripts so it joins the task graph.

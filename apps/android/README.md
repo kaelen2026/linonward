@@ -1,0 +1,103 @@
+# LinOnward Android
+
+Native Jetpack Compose application for phones and tablets. `minSdk` is 26, the app targets and
+compiles against Android 37, and Gradle — not Turborepo — owns the build.
+
+## Requirements
+
+- JDK 17 (`JAVA_HOME` must point at it; the toolchain is pinned to 17 in `app/build.gradle.kts`)
+- An Android SDK with platform 37 and `ANDROID_HOME` set, or a `local.properties` naming its path
+- Android Studio is optional. Everything below runs from the command line.
+
+## Build and test
+
+Run from the repository root:
+
+```bash
+pnpm android:lint    # Android Lint, warnings are errors
+pnpm android:test    # JVM unit tests — no emulator, seconds
+pnpm android:build   # debug APK
+```
+
+Each is a thin wrapper over the checked-in Gradle wrapper, so `apps/android/gradlew -p apps/android
+<task>` does the same thing. The release build (`:app:assembleRelease`) additionally runs R8,
+resource shrinking, and `lintVitalRelease`.
+
+## Point the app at an API
+
+The app reads its API origin from `BuildConfig.API_BASE_URL`, filled in at build time from
+`linonward.apiBaseUrl.<buildType>` in `gradle.properties` — the same one-origin-per-build contract
+as `LINONWARD_API_BASE_URL` in `apps/ios` and `NEXT_PUBLIC_API_URL` in the web workspaces.
+
+Debug defaults to `http://10.0.2.2:3001`. That is the emulator's alias for the *host* loopback, not
+the device's own: `localhost` inside an emulator is the emulator. So a Simulator-equivalent build
+reaches `pnpm --filter @linonward/api dev` with no configuration at all. On a physical device, run
+`adb reverse tcp:3001 tcp:3001` and build with `-Plinonward.apiBaseUrl.debug=http://localhost:3001`.
+
+Cleartext HTTP is permitted **only** for those loopback addresses, through
+`res/xml/network_security_config.xml`. Everything else is held to HTTPS; a connection failure
+against a real host is not a reason to widen that file.
+
+Release ships the value **empty** on purpose. A release that inherited the local default would
+quietly try to reach an address on the phone itself; empty instead surfaces "no server configured"
+on the sign-in screen. Supply it from the release pipeline:
+
+```bash
+apps/android/gradlew -p apps/android :app:assembleRelease \
+  -Plinonward.apiBaseUrl.release=https://api.example.com
+```
+
+Signing in additionally needs the API's authentication variables set; see
+[`apps/api/.env.example`](../api/.env.example).
+
+## Authentication
+
+Sign-in is an email one-time code against Better Auth in `apps/api`: request a code, enter the six
+digits, and the app keeps the session token between launches so the next start restores it.
+
+Three details are load-bearing and easy to undo by accident:
+
+- The app authenticates with `Authorization: Bearer`, not cookies, and installs no
+  `java.net.CookieHandler`. Better Auth runs its CSRF origin check only on requests carrying a
+  `Cookie` header, and a native client sends no `Origin` for it to accept — so the moment the
+  session cookie were stored and replayed, every later call would come back `403`.
+- Everything the flow decides lives in `AuthenticationState`, which has no Compose, no Android and
+  no HTTP in it, so the whole flow is covered by JVM tests that need no device.
+- The token is encrypted under an Android Keystore key before it reaches preferences, and both
+  backup manifests exclude it. A Keystore key is never backed up, so a restored copy would be
+  ciphertext the new device cannot read; excluding it lands a restore on the sign-in screen instead
+  of on an unexplained failure.
+
+**Google sign-in is not implemented here yet.** `apps/ios` offers it where the build carries a
+Google client; the Android equivalent is a Custom Tabs authorization-code-with-PKCE flow plus its
+own OAuth client, and it should arrive as its own change rather than as a half-wired button. The
+API-side error codes it would need are deliberately absent from `AuthenticationError` until then.
+
+## Structure
+
+```text
+app/src/main/kotlin/com/linonward/app/
+  app/            Activity and root composition
+  designsystem/   Brand ramp, colour scheme, shared components
+  feature/        Feature-first screens and state
+app/src/main/res/ Localized copy (en, zh) and the resources the manifest needs
+app/src/test/     JVM tests of the flow, the request shapes, and the decoder
+```
+
+Keep the app on the HTTP side of the backend boundary. It must not import `packages/db` or backend
+implementation files.
+
+## Conventions worth knowing
+
+- **AGP 9 has built-in Kotlin support.** Applying `org.jetbrains.kotlin.android` on top of
+  `com.android.application` is now an error, not a redundancy. The Compose and serialization
+  compiler plugins are still applied explicitly.
+- **Warnings are errors**, both in Kotlin (`allWarningsAsErrors`) and in Android Lint
+  (`warningsAsErrors`). A deprecation is a failing build, which is the point.
+- **No Material You dynamic colour.** The palette is the brand ramp shared with `apps/www`, sampled
+  from the logo; repainting it from the device wallpaper would discard exactly what it carries. See
+  [docs/design-system.md](../../docs/design-system.md) for the contrast rules — brand teal is
+  2.61:1 on white and is never text on a light surface.
+- **No navigation library.** The app has one axis, signed in or not, and it is already a value in
+  `AuthenticationState`. A back stack belongs with the first destination that needs one.
+- Versions live in `gradle/libs.versions.toml`; nothing declares a version inline.

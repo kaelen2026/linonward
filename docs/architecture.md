@@ -6,6 +6,7 @@
 
 | Workspace | Package name | Role |
 | --- | --- | --- |
+| `apps/android` | — | Native Jetpack Compose application. Gradle build, outside the pnpm task graph. |
 | `apps/api` | `@linonward/api` | Backend HTTP API. Hono, laid out as a modular monolith. |
 | `apps/feishu` | `@linonward/feishu` | Feishu event relay. Routes authorized text to a GitHub Actions `workflow_dispatch` or local Hermes. |
 | `apps/ios` | — | Native SwiftUI application. XcodeGen project, outside the pnpm task graph. |
@@ -18,9 +19,11 @@
 Internal packages are referenced with the `workspace:*` protocol, so pnpm links
 them from disk instead of resolving them from the registry.
 
-`apps/ios` is colocated under `apps/` but has no `package.json`, so pnpm does not treat it as a
-workspace package. Root `ios:*` scripts invoke XcodeGen and Xcode directly; Turbo continues to own
-only the JavaScript and TypeScript task graph.
+`apps/ios` and `apps/android` are colocated under `apps/` but have no `package.json`, so pnpm does
+not treat them as workspace packages. Root `ios:*` scripts invoke XcodeGen and Xcode directly, and
+`android:*` scripts invoke the checked-in Gradle wrapper; Turbo continues to own only the
+JavaScript and TypeScript task graph. Neither native app appears in `pnpm build` or `pnpm test`,
+which is why each has its own CI job.
 
 ## Turborepo task graph
 
@@ -105,6 +108,37 @@ where the build carries a Google client — Google. The app authenticates with `
 Bearer` rather than cookies, and runs Google's authorization-code-with-PKCE flow itself before
 handing the id token to `POST /api/auth/sign-in/social`, because Better Auth's browser redirect
 can only return to an `https` origin.
+
+## `apps/android`
+
+The Android client is a Kotlin Jetpack Compose application, `minSdk` 26, compiled and targeted
+against Android 37. Gradle is the source of truth and the wrapper is checked in, so the app builds
+without Android Studio and CI verifies the wrapper's checksum. Versions live in one catalog,
+`gradle/libs.versions.toml`.
+
+```
+apps/android/app/src/main/kotlin/com/linonward/app/
+├── app/            # MainActivity and the root composition
+├── designsystem/   # the brand ramp, the Material 3 scheme, shared components
+└── feature/        # feature-first screens and state
+```
+
+It deliberately mirrors `apps/ios` rather than inventing a second architecture: the same sign-in
+flow, the same one-origin-per-build contract, the same rule that all flow logic lives in a plain
+value — here `AuthenticationState` — so it is covered by JVM tests that need no emulator. There is
+no navigation library, no repository layer and no dependency-injection framework; the app has one
+axis, signed in or not, and those boundaries belong with the first behaviour that needs them.
+
+Two departures from the iOS app are intentional. **Google sign-in is not implemented**: the
+equivalent flow is Custom Tabs with PKCE and its own OAuth client, and it should arrive as its own
+change rather than as a button that always fails. **Material You dynamic colour is off**: the
+palette is the brand ramp shared with `apps/www`, and repainting it from the device wallpaper would
+discard the identity it exists to carry.
+
+The API origin arrives as a `BuildConfig` field from a Gradle property, empty in release for the
+same reason the iOS xcconfig ships it empty. Debug points at `10.0.2.2:3001`, the emulator's alias
+for the host loopback, and `res/xml/network_security_config.xml` permits cleartext for that address
+alone. Details are in [the app README](../apps/android/README.md).
 
 ## `apps/api`
 

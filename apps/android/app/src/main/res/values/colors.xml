@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Only the colours the *window* needs before Compose draws. Everything else
+  lives in `designsystem/BrandColors.kt`; duplicating the ramp in XML would give
+  it two sources of truth.
+-->
+<resources>
+    <!-- navy-950, so the first frame of a dark launch is not a white flash. -->
+    <color name="window_background">#FFFFFFFF</color>
+    <!-- navy-900 and teal-500: the two colours sampled from the logo. -->
+    <color name="brand_navy">#FF03274D</color>
+    <color name="brand_teal">#FF0DB2B3</color>
+</resources>

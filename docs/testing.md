@@ -20,6 +20,12 @@ Next apps use jsdom and Testing Library for components. Playwright stays on `app
 app with routing, redirects and crawler-visible output worth the cost of a browser and a production
 build on every run.
 
+The two native apps run neither. `apps/ios` uses Swift Testing plus XCUITest through `pnpm
+ios:test`, and `apps/android` runs JUnit on the JVM through `pnpm android:test`. Both follow the
+same rule as the rest of the repository: the logic worth testing is pulled out of the UI layer —
+`AuthenticationState` on both platforms — so the flow is covered without a simulator or an
+emulator, and neither app appears in `pnpm test`.
+
 ## Running
 
 ```bash

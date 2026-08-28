@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  `values-zh` rather than `values-zh-rCN`: the copy is Simplified Chinese, and a
+  region qualifier would leave a device set to zh-SG on the English defaults.
+  No `uppercase` or letter-spacing belongs on this text — both are useless or
+  harmful in Chinese, which is why the shared type styles carry neither.
+-->
+<resources>
+    <string name="app_name">LinOnward</string>
+
+    <string name="session_restoring">正在恢复登录状态</string>
+
+    <string name="sign_in_title">登录</string>
+    <string name="sign_in_subtitle_email">我们会向你的邮箱发送六位验证码。</string>
+    <string name="sign_in_subtitle_code">请输入发送至 %1$s 的六位验证码。</string>
+    <string name="sign_in_email_label">邮箱</string>
+    <string name="sign_in_email_placeholder">you@example.com</string>
+    <string name="sign_in_code_label">验证码</string>
+    <string name="sign_in_code_placeholder">123456</string>
+    <string name="sign_in_send_code">发送验证码</string>
+    <string name="sign_in_verify">登录</string>
+    <string name="sign_in_change_email">更换邮箱</string>
+
+    <string name="auth_error_not_configured">此版本未配置服务器地址，请重新安装官方版本。</string>
+    <string name="auth_error_network">无法连接 LinOnward，请检查网络后重试。</string>
+    <string name="auth_error_invalid_code">验证码不正确，请检查后重试。</string>
+    <string name="auth_error_expired_code">验证码已过期，请重新获取。</string>
+    <string name="auth_error_too_many_attempts">尝试次数过多，请重新获取验证码。</string>
+    <string name="auth_error_unavailable">服务出现问题，请稍后重试。</string>
+
+    <string name="home_eyebrow">增长度量与分析</string>
+    <string name="home_title">让增长有迹可循</string>
+    <string name="home_body">在原生应用中查看每一条可追溯到源头的增长信号。</string>
+    <string name="home_greeting">已登录：%1$s</string>
+    <string name="home_account">账户</string>
+    <string name="home_sign_out">退出登录</string>
+    <string name="home_sign_out_confirm">确定退出 LinOnward？</string>
+
+    <string name="common_cancel">取消</string>
+</resources>
