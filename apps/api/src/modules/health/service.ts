@@ -1,9 +1,4 @@
-export type HealthReport = {
-  status: "ok";
-  version: string;
-  uptimeSeconds: number;
-  startedAt: string;
-};
+import type { HealthReport } from "@linonward/contracts/health";
 
 export type ReadinessReport = {
   status: "ready" | "degraded";

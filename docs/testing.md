@@ -15,11 +15,11 @@ this page is the human reference for how the setup works and why.
 
 If jsdom can answer the question, it is not an E2E test.
 
-`apps/api`, `apps/feishu`, `apps/web`, and `packages/db` run Vitest only, with tests beside the
-source they cover. The Node workspaces use Vitest's Node environment; both Next apps use jsdom
-and Testing Library for components. Playwright stays on `apps/www` — it is the app with routing,
-redirects and crawler-visible output worth the cost of a browser and a production build on every
-run.
+`apps/api`, `apps/feishu`, `apps/web`, `packages/contracts`, and `packages/db` run Vitest only,
+with tests beside the source they cover. The Node workspaces use Vitest's Node environment; both
+Next apps use jsdom and Testing Library for components. Playwright stays on `apps/www` — it is the
+app with routing, redirects and crawler-visible output worth the cost of a browser and a production
+build on every run.
 
 ## Running
 
@@ -60,11 +60,16 @@ Tests sit beside the code they cover — `src/lib/i18n.ts` next to
 `src/lib/i18n.test.ts` — rather than in a mirrored `__tests__` tree. Moving a
 module moves its test with it.
 
-The API suite normally uses its in-memory inquiry repository and rate limiter. Its Postgres
-repository contract is skipped unless `DATABASE_URL` is present; CI currently has no service
-containers, so it exercises the in-memory half. Start `postgres` and pass `DATABASE_URL` to the
-filtered API test command when validating the durable adapter. The exact command is in
-[`apps/api/README.md`](../apps/api/README.md#test).
+The API suite normally uses its in-memory inquiry repository and rate limiter. Tests backed by
+Postgres and Redis are skipped unless their URLs are present. CI runs them in a dedicated
+integration job after applying all migrations to a fresh database. Locally, start the services
+and pass both URLs to the filtered integration command:
+
+```bash
+DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
+REDIS_URL=redis://localhost:6379 \
+pnpm --filter @linonward/api test:integration
+```
 
 ## What is worth testing here
 
@@ -158,8 +163,9 @@ page.getByRole("contentinfo").getByRole("navigation", { name: tagline });
 ## Where tests run
 
 `pre-commit` runs Biome on staged files only — no tests, so committing stays
-fast. CI is the gate, in two parallel jobs: `verify` (lint, typecheck, Vitest,
-build) and `e2e` (Playwright). The browser binary is cached on its Playwright
-version, and the HTML report uploads as an artifact on every run.
+fast. CI is the gate, in three parallel jobs: `verify` (lint, typecheck, Vitest,
+build), `integration` (real Postgres, Redis, and migrations), and `e2e`
+(Playwright). The browser binary is cached on its Playwright version, and the
+HTML report uploads as an artifact on every run.
 
 Running both suites locally before calling work done is on you.

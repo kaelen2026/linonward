@@ -9,6 +9,7 @@ const environment = {
   GITHUB_DISPATCH_TOKEN: "github-token",
   GITHUB_REPOSITORY: "kaelen2026/linonward",
   HERMES_API_KEY: "hermes-api-key",
+  REDIS_URL: "redis://localhost:6379",
 };
 
 describe("loadServiceConfig", () => {
@@ -22,6 +23,7 @@ describe("loadServiceConfig", () => {
         apiUrl: "https://api.github.com",
         ref: "main",
         repository: "kaelen2026/linonward",
+        timeoutMs: 30_000,
         token: "github-token",
         workflow: "linonward-bot.yml",
       },
@@ -29,11 +31,13 @@ describe("loadServiceConfig", () => {
         apiKey: "hermes-api-key",
         apiUrl: "http://host.docker.internal:8642/v1",
         model: "contentchief",
+        timeoutMs: 30_000,
       },
       relay: {
         allowedOpenIds: new Set(["ou_first", "ou_second"]),
         maxTaskLength: 6_000,
       },
+      redisUrl: "redis://localhost:6379",
     });
   });
 

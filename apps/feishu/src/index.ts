@@ -2,6 +2,7 @@ import { loadServiceConfig } from "./config.js";
 import { createGitHubDispatcher } from "./github.js";
 import { createHermesDispatcher } from "./hermes.js";
 import { startLongConnection } from "./long-connection.js";
+import { connectRedis } from "./redis.js";
 import type { DispatchTask } from "./relay.js";
 
 const config = loadServiceConfig(process.env);
@@ -18,7 +19,10 @@ const dispatch: DispatchTask = async (task) => {
   return githubDispatch(task);
 };
 
-void startLongConnection(config.feishu, config.relay, dispatch).catch((error: unknown) => {
+const redis = await connectRedis(config.redisUrl);
+
+void startLongConnection(config.feishu, config.relay, dispatch, redis).catch((error: unknown) => {
   console.error("Unable to start Feishu long connection", error);
+  void redis.close();
   process.exitCode = 1;
 });

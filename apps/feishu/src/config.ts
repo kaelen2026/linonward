@@ -4,6 +4,7 @@ import type { RelayConfig } from "./relay.js";
 const defaultTaskLength = 6_000;
 const defaultHermesApiUrl = "http://host.docker.internal:8642/v1";
 const defaultHermesModel = "contentchief";
+const defaultRequestTimeoutMs = 30_000;
 
 export type FeishuConfig = {
   appId: string;
@@ -15,12 +16,14 @@ export type ServiceConfig = {
   github: GitHubConfig;
   hermes?: HermesConfig;
   relay: RelayConfig;
+  redisUrl: string;
 };
 
 export type HermesConfig = {
   apiKey: string;
   apiUrl: string;
   model: string;
+  timeoutMs: number;
 };
 
 export function loadServiceConfig(environment: Record<string, string | undefined>): ServiceConfig {
@@ -46,6 +49,7 @@ export function loadServiceConfig(environment: Record<string, string | undefined
       ref: environment.GITHUB_WORKFLOW_REF?.trim() || "main",
       repository: readRepository(readRequired(environment, "GITHUB_REPOSITORY")),
       token: readRequired(environment, "GITHUB_DISPATCH_TOKEN"),
+      timeoutMs: readRequestTimeout(environment.EXTERNAL_REQUEST_TIMEOUT_MS),
       workflow: environment.GITHUB_WORKFLOW?.trim() || "linonward-bot.yml",
     },
     hermes: loadHermesConfig(environment),
@@ -53,7 +57,16 @@ export function loadServiceConfig(environment: Record<string, string | undefined
       allowedOpenIds,
       maxTaskLength,
     },
+    redisUrl: readRedisUrl(readRequired(environment, "REDIS_URL")),
   };
+}
+
+function readRedisUrl(value: string): string {
+  const url = new URL(value);
+  if (url.protocol !== "redis:" && url.protocol !== "rediss:") {
+    throw new Error("REDIS_URL must use redis or rediss");
+  }
+  return url.toString();
 }
 
 function loadHermesConfig(
@@ -78,7 +91,17 @@ function loadHermesConfig(
     apiKey,
     apiUrl: url.toString().replace(/\/$/, ""),
     model: environment.HERMES_MODEL?.trim() || defaultHermesModel,
+    timeoutMs: readRequestTimeout(environment.EXTERNAL_REQUEST_TIMEOUT_MS),
   };
+}
+
+function readRequestTimeout(value: string | undefined): number {
+  if (!value?.trim()) return defaultRequestTimeoutMs;
+  const timeoutMs = Number(value);
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1_000 || timeoutMs > 120_000) {
+    throw new Error("EXTERNAL_REQUEST_TIMEOUT_MS must be an integer between 1000 and 120000");
+  }
+  return timeoutMs;
 }
 
 function readApiUrl(value: string | undefined): string {

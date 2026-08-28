@@ -3,10 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "predev": "pnpm --filter @linonward/contracts build",
     "dev": "next dev",
+    "prebuild": "pnpm --filter @linonward/contracts build",
     "build": "next build",
     "start": "next start",
+    "pretypecheck": "pnpm --filter @linonward/contracts build",
     "typecheck": "next typegen && tsc --noEmit",
+    "pretest": "pnpm --filter @linonward/contracts build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
@@ -15,6 +19,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@linonward/contracts": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.33.0",

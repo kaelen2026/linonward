@@ -11,6 +11,7 @@
 | `apps/ios` | — | Native SwiftUI application. XcodeGen project, outside the pnpm task graph. |
 | `apps/web` | `@linonward/web` | Internal console. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
+| `packages/contracts` | `@linonward/contracts` | Shared HTTP DTOs, field limits, and runtime response schemas. |
 | `packages/db` | `@linonward/db` | Backend database boundary: Drizzle schema, relations, client, and migrations. |
 | `packages/typescript-config` | `@linonward/typescript-config` | Shared `tsconfig` presets consumed via `extends`. |
 
@@ -35,9 +36,10 @@ only the JavaScript and TypeScript task graph.
 | `test:e2e` | `build` | no | Playwright; needs this workspace's own build to serve |
 | `clean` | — | no | |
 
-`^build` means "build every dependency of this workspace first". The concrete case today is
-`apps/api`: its `@linonward/db` dependency is built before the API is built, type-checked, or
-tested. Configuration-only packages without a `build` script do not add a task to that chain.
+`^build` means "build every dependency of this workspace first". The API builds
+`@linonward/db` and `@linonward/contracts` first; both Next apps build the contracts package
+before their own tasks. Configuration-only packages without a `build` script do not add a task
+to that chain.
 
 Lint and format are *not* Turborepo tasks. Biome is a single fast binary that
 walks the whole repo in one pass, so running it from the root is cheaper than
@@ -151,7 +153,18 @@ Current tables are split by domain under `src/schema/`, then composed once in `s
 Drizzle Kit reads that same object, preventing runtime queries and migration generation from
 drifting onto separate definitions. Existing idempotent migrations remain in `migrations/legacy`;
 the no-op Drizzle `0000` baseline captures their resulting schema, and all future changes are
-generated into `migrations/drizzle`.
+generated into `migrations/drizzle`. The migration executable uses a one-connection pool and holds
+one session-level advisory lock across both histories, so concurrent replica startups cannot run
+the Drizzle half after the legacy lock has already been released.
+
+## `packages/contracts`
+
+`@linonward/contracts` owns data that crosses the HTTP boundary: DTO types, stable field limits,
+and runtime response schemas. It deliberately contains no database tables, Hono routes, React
+components, or service behavior. The API remains authoritative, while clients can validate what
+arrived over the network instead of trusting a TypeScript assertion. Subpath exports keep the
+public website's contact-form bundle independent from the Zod-backed health contract used by the
+server-rendered internal console.
 
 ## `apps/web`
 
@@ -188,8 +201,9 @@ package instead of copying the ramp again. Details in
 and secret, accepts text messages only from configured open IDs, and owns the only Bot connection.
 Normal text invokes the unified `linonward-bot` workflow through GitHub Actions
 `workflow_dispatch`; `/内容` and `/content` requests go to an optional loopback-only Hermes API.
-Topics map to stable sessions on either route. It needs no public callback URL. Deployment and
-environment configuration live in [the app README](../apps/feishu/README.md).
+Topics map to stable sessions on either route. Redis atomically claims message IDs for 24 hours,
+which makes delivery retries safe across process restarts and replicas. It needs no public callback
+URL. Deployment and environment configuration live in [the app README](../apps/feishu/README.md).
 
 ## TypeScript
 

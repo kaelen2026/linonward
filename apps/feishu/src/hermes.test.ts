@@ -52,6 +52,7 @@ describe("createHermesDispatcher", () => {
           "X-Hermes-Session-Key": "feishu:oc_chat:omt_topic",
         }),
         method: "POST",
+        signal: expect.any(AbortSignal),
       }),
     );
   });

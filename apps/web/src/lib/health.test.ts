@@ -13,7 +13,12 @@ function respondWith(body: unknown, init?: ResponseInit) {
 
 describe("fetchApiHealth", () => {
   it("reports the version the API answers with", async () => {
-    respondWith({ status: "ok", version: "1.2.3", uptimeSeconds: 42, startedAt: "" });
+    respondWith({
+      status: "ok",
+      version: "1.2.3",
+      uptimeSeconds: 42,
+      startedAt: "2026-08-28T00:00:00.000Z",
+    });
 
     await expect(fetchApiHealth()).resolves.toEqual({
       reachable: true,
@@ -24,7 +29,12 @@ describe("fetchApiHealth", () => {
   });
 
   it("asks for a fresh answer rather than a cached one", async () => {
-    const fetchSpy = respondWith({ status: "ok", version: "1.2.3", uptimeSeconds: 0 });
+    const fetchSpy = respondWith({
+      status: "ok",
+      version: "1.2.3",
+      uptimeSeconds: 0,
+      startedAt: "2026-08-28T00:00:00.000Z",
+    });
 
     await fetchApiHealth();
 
@@ -38,6 +48,15 @@ describe("fetchApiHealth", () => {
     respondWith({}, { status: 503 });
 
     await expect(fetchApiHealth()).resolves.toEqual({ reachable: false, reason: "HTTP 503" });
+  });
+
+  it("rejects a successful response that violates the API contract", async () => {
+    respondWith({ status: "ok", version: 123, uptimeSeconds: -1 });
+
+    await expect(fetchApiHealth()).resolves.toEqual({
+      reachable: false,
+      reason: "API returned an invalid health report",
+    });
   });
 
   it("survives a refused connection, so the page still renders", async () => {
