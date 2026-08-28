@@ -4,12 +4,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "LinOnward Web",
-    template: "%s | LinOnward Web",
+    default: "LinOnward",
+    template: "%s | LinOnward",
   },
-  description: "LinOnward 内部控制台。",
-  // Internal tooling, so nothing here belongs in a search index.
-  robots: { index: false, follow: false },
+  description: "关于技术、产品与组织的长期思考。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

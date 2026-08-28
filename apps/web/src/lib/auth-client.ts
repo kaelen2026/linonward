@@ -22,7 +22,7 @@ export async function signInWithEmailOtp(email: string, otp: string): AuthClient
 }
 
 export async function signInWithGoogle(): AuthClientResult {
-  const response = await authClient.signIn.social({ callbackURL: "/", provider: "google" });
+  const response = await authClient.signIn.social({ callbackURL: "/admin", provider: "google" });
   return result(response.error);
 }
 

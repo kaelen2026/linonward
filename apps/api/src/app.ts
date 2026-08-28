@@ -54,7 +54,7 @@ export function createApp({
       cors({
         origin: [...allowedOrigins],
         allowHeaders: ["Content-Type"],
-        allowMethods: ["GET", "POST", "OPTIONS"],
+        allowMethods: ["DELETE", "GET", "POST", "PUT", "OPTIONS"],
         credentials: true,
         maxAge: 600,
       }),
