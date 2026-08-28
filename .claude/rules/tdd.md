@@ -119,9 +119,11 @@ matches two elements and fails on strict mode. Reach through the landmark:
 ## Where tests run
 
 The `pre-commit` hook does **not** run tests — only Biome on staged files, so
-committing stays fast. CI is the gate, in two jobs that run in parallel:
-`verify` (lint, typecheck, Vitest, build) and `e2e` (Playwright against a
-production build). Either one red fails the PR.
+committing stays fast. CI first classifies changed paths, then runs only the
+affected product jobs: `verify` (lint, typecheck, Vitest, build), `integration`
+(Postgres and Redis), `e2e` (Playwright against a production build), and `ios`
+(Xcode build and tests). Commit messages are checked on every PR even when no
+product job applies. Any selected job going red fails the PR.
 
 That split means you own the loop locally. Run the suite before you say work is
 done, and report the real output — `pnpm lint`, `pnpm typecheck`, `pnpm test`.
