@@ -7,7 +7,7 @@ compiles against Android 37, and Gradle — not Turborepo — owns the build.
 
 - JDK 17 or newer to start Gradle. The checked-in Daemon criteria pins builds to JDK 17 and Gradle
   downloads it automatically when it is not installed locally.
-- An Android SDK with platform 37 and `ANDROID_HOME` set, or a `local.properties` naming its path
+- An Android SDK with platform 37.1 and `ANDROID_HOME` set, or a `local.properties` naming its path
 - Android Studio is optional. Everything below runs from the command line.
 
 ## Build and test

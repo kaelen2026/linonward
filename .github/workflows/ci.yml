@@ -192,8 +192,8 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
 
-      - name: Install Android API 37
-        run: sdkmanager "platforms;android-37" "build-tools;37.0.0"
+      - name: Install Android API 37.1
+        run: sdkmanager "platforms;android-37.1" "build-tools;37.0.0"
 
       - name: Lint
         run: apps/android/gradlew -p apps/android :app:lintDebug
