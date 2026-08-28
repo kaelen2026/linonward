@@ -29,6 +29,7 @@ jobs:
     outputs:
       verify: ${{ steps.scope.outputs.verify }}
       integration: ${{ steps.scope.outputs.integration }}
+      harmony: ${{ steps.scope.outputs.harmony }}
       ios: ${{ steps.scope.outputs.ios }}
       e2e: ${{ steps.scope.outputs.e2e }}
     steps:
@@ -168,6 +169,25 @@ jobs:
 
       - name: Apply migrations and verify infrastructure adapters
         run: pnpm --filter @linonward/api test:integration
+
+  harmony:
+    name: HarmonyOS build and host tests
+    needs: changes
+    # Never execute code from a fork on a machine that holds the proprietary SDK.
+    if: >-
+      vars.HARMONY_CI_ENABLED == 'true' &&
+      needs.changes.outputs.harmony == 'true' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: [self-hosted, macos, harmonyos-api12]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Lint, build, and run host tests
+        env:
+          HARMONY_CLI_HOME: ${{ vars.HARMONY_CLI_HOME }}
+          DEVECO_SDK_HOME: ${{ vars.DEVECO_SDK_HOME }}
+        run: scripts/harmony-ci.sh verify
 
   ios:
     name: iOS build and test

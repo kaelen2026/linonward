@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 
-const ALL_SCOPES = ["verify", "integration", "ios", "e2e"];
+const ALL_SCOPES = ["verify", "integration", "harmony", "ios", "e2e"];
 
 const ROOT_NODE_INPUTS = new Set([
   ".nvmrc",
@@ -68,6 +68,7 @@ export function classifyChanges(paths) {
       ]);
 
     scopes.ios ||= path.startsWith("apps/ios/") || path === "package.json" || path === ".nvmrc";
+    scopes.harmony ||= path.startsWith("apps/harmony/") || path === "scripts/harmony-ci.sh";
   }
 
   return scopes;
