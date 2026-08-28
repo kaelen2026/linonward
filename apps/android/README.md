@@ -5,8 +5,9 @@ compiles against Android 37, and Gradle — not Turborepo — owns the build.
 
 ## Requirements
 
-- JDK 17 (`JAVA_HOME` must point at it; the toolchain is pinned to 17 in `app/build.gradle.kts`)
-- An Android SDK with platform 37 and `ANDROID_HOME` set, or a `local.properties` naming its path
+- JDK 17 or newer to start Gradle. The checked-in Daemon criteria pins builds to JDK 17 and Gradle
+  downloads it automatically when it is not installed locally.
+- An Android SDK with platform 37.1 and `ANDROID_HOME` set, or a `local.properties` naming its path
 - Android Studio is optional. Everything below runs from the command line.
 
 ## Build and test
@@ -22,6 +23,16 @@ pnpm android:build   # debug APK
 Each is a thin wrapper over the checked-in Gradle wrapper, so `apps/android/gradlew -p apps/android
 <task>` does the same thing. The release build (`:app:assembleRelease`) additionally runs R8,
 resource shrinking, and `lintVitalRelease`.
+
+## Gradle Daemon JDK
+
+`gradle/gradle-daemon-jvm.properties` is generated configuration and must stay tracked. It makes
+the Daemon use JDK 17 consistently across developer machines and CI. If the JDK baseline changes,
+update the task configuration in `build.gradle.kts`, then regenerate the file with:
+
+```bash
+apps/android/gradlew -p apps/android updateDaemonJvm
+```
 
 ## Point the app at an API
 

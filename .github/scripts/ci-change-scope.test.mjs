@@ -6,6 +6,7 @@ import { classifyChanges } from "./ci-change-scope.mjs";
 const none = {
   verify: false,
   integration: false,
+  android: false,
   harmony: false,
   ios: false,
   e2e: false,
@@ -45,6 +46,13 @@ test("routes iOS changes only to the macOS job", () => {
   });
 });
 
+test("routes Android changes only to the Android job", () => {
+  assert.deepEqual(classifyChanges(["apps/android/app/build.gradle.kts"]), {
+    ...none,
+    android: true,
+  });
+});
+
 test("routes HarmonyOS changes only to the self-hosted HarmonyOS job", () => {
   assert.deepEqual(classifyChanges(["apps/harmony/entry/src/main/ets/pages/Index.ets"]), {
     ...none,
@@ -56,6 +64,7 @@ test("runs every product job when CI routing changes", () => {
   assert.deepEqual(classifyChanges([".github/workflows/ci.yml"]), {
     verify: true,
     integration: true,
+    android: true,
     harmony: true,
     ios: true,
     e2e: true,
