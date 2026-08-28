@@ -36,6 +36,7 @@ The Feishu long-connection client requires its own environment configuration; se
 │   ├── web/                    # Internal console — Next.js 16 App Router
 │   └── www/                    # Official website — Next.js App Router
 ├── packages/
+│   ├── contracts/              # Shared HTTP DTOs, limits, and runtime response schemas
 │   ├── db/                     # Drizzle schema, relations, client, migrations
 │   └── typescript-config/      # Shared tsconfig presets
 ├── docs/                       # Project documentation

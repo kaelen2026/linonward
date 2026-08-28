@@ -3,6 +3,22 @@ import path from "node:path";
 
 import type { Sql } from "@linonward/db";
 
+const migrationLockName = "linonward:all-schema-migrations";
+
+/**
+ * Holds one session-level lock around legacy and Drizzle migrations. The caller
+ * must supply a single-connection pool so every query stays on the session that
+ * owns the lock.
+ */
+export async function withMigrationLock<T>(sql: Sql, task: () => Promise<T>): Promise<T> {
+  await sql`select pg_advisory_lock(hashtext(${migrationLockName}))`;
+  try {
+    return await task();
+  } finally {
+    await sql`select pg_advisory_unlock(hashtext(${migrationLockName}))`;
+  }
+}
+
 /**
  * The migrations that still have to run, in filename order. Numeric prefixes
  * (`001_`, `002_`) are what makes that order meaningful.

@@ -1,3 +1,5 @@
+import { inquiryLimits } from "@linonward/contracts/contact";
+
 import type { Locale } from "@/lib/i18n";
 
 /**
@@ -10,12 +12,7 @@ import type { Locale } from "@/lib/i18n";
  * two ever drift, the server wins and `submitInquiry` reports its verdict as
  * `invalid`.
  */
-export const inquiryLimits = {
-  name: { max: 80 },
-  email: { max: 254 },
-  company: { max: 120 },
-  message: { min: 10, max: 2000 },
-} as const;
+export { inquiryLimits } from "@linonward/contracts/contact";
 
 /** Rendered in form order, which is also the order errors are announced in. */
 export const inquiryFields = ["name", "email", "company", "message"] as const;

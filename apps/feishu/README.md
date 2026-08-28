@@ -30,9 +30,13 @@ events, so there is only one long connection and every reply uses the same Bot i
 - Hermes is addressed through its loopback-only API server with a bearer key; it is not exposed to
   Feishu or the public network. The Docker service reaches it through `host.docker.internal`.
 - Task text defaults to 6,000 characters (set `MAX_TASK_LENGTH` to lower it, if needed).
+- Redis atomically claims each Feishu message for 24 hours, so retries, restarts, and accidental
+  replica overlap cannot dispatch the same task twice.
+- GitHub and Hermes calls time out after 30 seconds by default; set
+  `EXTERNAL_REQUEST_TIMEOUT_MS` between 1,000 and 120,000 when needed.
 
 Long connection mode does not expose a callback URL or an inbound HTTP endpoint. It must run as
-one long-lived process with outbound access to Feishu and GitHub.
+one long-lived process with outbound access to Feishu and GitHub, plus its Redis dependency.
 
 ## Configure
 

@@ -14,9 +14,17 @@ export type DatabaseConnection = {
   close(): Promise<void>;
 };
 
-export function connectDatabase(url: string): DatabaseConnection {
+export type DatabaseConnectionOptions = {
+  /** Keep at one when session-level state, such as an advisory lock, is used. */
+  maxConnections?: number;
+};
+
+export function connectDatabase(
+  url: string,
+  { maxConnections = 10 }: DatabaseConnectionOptions = {},
+): DatabaseConnection {
   const sql = postgres(url, {
-    max: 10,
+    max: maxConnections,
     idle_timeout: 20,
     connect_timeout: 10,
     onnotice: (notice) => {

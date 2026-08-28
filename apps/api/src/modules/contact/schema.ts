@@ -1,3 +1,4 @@
+import { type InquiryInput, inquiryLimits, inquiryLocales } from "@linonward/contracts/contact";
 import { z } from "zod";
 
 /**
@@ -5,12 +6,12 @@ import { z } from "zod";
  * serves, so a field is added in one place and validated at the edge.
  */
 export const inquiryInputSchema = z.object({
-  name: z.string().trim().min(1).max(80),
-  email: z.email().max(254),
-  company: z.string().trim().max(120).optional(),
-  message: z.string().trim().min(10).max(2000),
+  name: z.string().trim().min(1).max(inquiryLimits.name.max),
+  email: z.email().max(inquiryLimits.email.max),
+  company: z.string().trim().max(inquiryLimits.company.max).optional(),
+  message: z.string().trim().min(inquiryLimits.message.min).max(inquiryLimits.message.max),
   // The website ships zh and en; anything else has no template to reply with.
-  locale: z.enum(["zh", "en"]).default("zh"),
-});
+  locale: z.enum(inquiryLocales).default("zh"),
+}) satisfies z.ZodType<InquiryInput>;
 
-export type InquiryInput = z.infer<typeof inquiryInputSchema>;
+export type { InquiryInput } from "@linonward/contracts/contact";

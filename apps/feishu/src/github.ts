@@ -7,6 +7,7 @@ export type GitHubConfig = {
   repository: string;
   token: string;
   workflow: string;
+  timeoutMs?: number;
 };
 
 type Fetcher = (input: string, init: RequestInit) => Promise<Response>;
@@ -37,6 +38,7 @@ export function createGitHubDispatcher(
         "X-GitHub-Api-Version": "2022-11-28",
       },
       method: "POST",
+      signal: AbortSignal.timeout(config.timeoutMs ?? 30_000),
     });
 
     if (!response.ok) {

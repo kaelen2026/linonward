@@ -1,8 +1,8 @@
 import * as Lark from "@larksuiteoapi/node-sdk";
 
 import type { FeishuConfig } from "./config.js";
+import { createRedisMessageDeduplicator, type RedisClient } from "./redis.js";
 import {
-  createMessageIdDeduplicator,
   type DispatchTask,
   handleFeishuMessage,
   type RelayConfig,
@@ -13,8 +13,9 @@ export async function startLongConnection(
   feishuConfig: FeishuConfig,
   relayConfig: RelayConfig,
   dispatch: DispatchTask,
+  redis: Pick<RedisClient, "eval">,
 ): Promise<Lark.WSClient> {
-  const claimMessage = createMessageIdDeduplicator();
+  const claimMessage = createRedisMessageDeduplicator(redis);
   const messageClient = new Lark.Client({
     appId: feishuConfig.appId,
     appSecret: feishuConfig.appSecret,

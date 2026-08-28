@@ -1,11 +1,10 @@
+import { type WebSession, webSessionSchema } from "@linonward/contracts/session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { apiUrl } from "@/lib/api";
 
-export type WebSession = {
-  user: { email: string; id: string; name: string };
-};
+export type { WebSession } from "@linonward/contracts/session";
 
 export async function getSession(): Promise<WebSession | null> {
   const cookieHeader = (await cookies()).toString();
@@ -15,7 +14,8 @@ export async function getSession(): Promise<WebSession | null> {
       headers: { cookie: cookieHeader },
     });
     if (!response.ok) return null;
-    return (await response.json()) as WebSession | null;
+    const parsed = webSessionSchema.safeParse(await response.json());
+    return parsed.success ? parsed.data : null;
   } catch {
     return null;
   }

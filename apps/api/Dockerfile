@@ -8,12 +8,14 @@ RUN corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/typescript-config ./packages/typescript-config
+COPY packages/contracts/package.json ./packages/contracts/package.json
 COPY packages/db/package.json ./packages/db/package.json
 COPY apps/api/package.json ./apps/api/package.json
 
 RUN pnpm install --frozen-lockfile
 
 COPY apps/api ./apps/api
+COPY packages/contracts ./packages/contracts
 COPY packages/db ./packages/db
 
 RUN pnpm --filter @linonward/api build
@@ -28,6 +30,9 @@ COPY --from=build --chown=node:node /app/node_modules /app/node_modules
 COPY --from=build --chown=node:node /app/apps/api/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/apps/api/package.json ./package.json
 COPY --from=build --chown=node:node /app/apps/api/dist ./dist
+COPY --from=build --chown=node:node /app/packages/contracts/package.json /app/packages/contracts/package.json
+COPY --from=build --chown=node:node /app/packages/contracts/dist /app/packages/contracts/dist
+COPY --from=build --chown=node:node /app/packages/contracts/node_modules /app/packages/contracts/node_modules
 # The workspace symlink in node_modules resolves here. Copy the package's
 # runtime contract and pnpm dependency links; source and tooling stay behind.
 COPY --from=build --chown=node:node /app/packages/db/package.json /app/packages/db/package.json

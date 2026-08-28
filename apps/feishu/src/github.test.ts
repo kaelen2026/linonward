@@ -47,6 +47,7 @@ describe("createGitHubDispatcher", () => {
           "Content-Type": "application/json",
         }),
         method: "POST",
+        signal: expect.any(AbortSignal),
       }),
     );
   });

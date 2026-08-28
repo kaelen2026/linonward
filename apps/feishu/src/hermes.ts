@@ -32,6 +32,7 @@ export function createHermesDispatcher(
         "X-Hermes-Session-Key": `feishu:${task.chatId}:${task.threadKey}`,
       },
       method: "POST",
+      signal: AbortSignal.timeout(config.timeoutMs ?? 30_000),
     });
 
     if (!response.ok) {

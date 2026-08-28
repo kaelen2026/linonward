@@ -63,6 +63,81 @@ jobs:
       - name: Build
         run: pnpm build
 
+  integration:
+    name: Postgres and Redis integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: linonward
+          POSTGRES_USER: linonward
+          POSTGRES_PASSWORD: linonward
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U linonward -d linonward"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://linonward:linonward@127.0.0.1:5432/linonward
+      REDIS_URL: redis://127.0.0.1:6379
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations and verify infrastructure adapters
+        run: pnpm --filter @linonward/api test:integration
+
+  ios:
+    name: iOS build and test
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Regenerate Xcode project
+        run: pnpm ios:generate
+
+      - name: Check generated project is current
+        run: git diff --exit-code -- apps/ios/LinOnward.xcodeproj
+
+      - name: Build
+        run: pnpm ios:build
+
+      - name: Test
+        run: pnpm ios:test
+
   e2e:
     name: End-to-end
     runs-on: ubuntu-latest

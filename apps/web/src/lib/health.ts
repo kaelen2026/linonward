@@ -1,3 +1,5 @@
+import { healthReportSchema } from "@linonward/contracts/health";
+
 import { apiUrl } from "@/lib/api";
 
 /**
@@ -17,17 +19,17 @@ export async function fetchApiHealth(): Promise<ApiHealth> {
       return { reachable: false, reason: `HTTP ${response.status}` };
     }
 
-    const report = (await response.json()) as Partial<{
-      status: string;
-      version: string;
-      uptimeSeconds: number;
-    }>;
+    const parsed = healthReportSchema.safeParse(await response.json());
+    if (!parsed.success) {
+      return { reachable: false, reason: "API returned an invalid health report" };
+    }
+    const report = parsed.data;
 
     return {
       reachable: true,
-      status: report.status ?? "unknown",
-      version: report.version ?? "unknown",
-      uptimeSeconds: report.uptimeSeconds ?? 0,
+      status: report.status,
+      version: report.version,
+      uptimeSeconds: report.uptimeSeconds,
     };
   } catch (error) {
     return { reachable: false, reason: error instanceof Error ? error.message : "unknown error" };

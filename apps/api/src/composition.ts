@@ -40,29 +40,61 @@ export type ApiDependencies = {
   close: () => Promise<void>;
 };
 
+type InfrastructureFactories = {
+  connectDatabase: typeof connectDatabase;
+  connectRedis: typeof connectRedis;
+};
+
+const defaultInfrastructureFactories: InfrastructureFactories = { connectDatabase, connectRedis };
+
+async function closeResources(closers: readonly (() => Promise<void>)[]): Promise<void> {
+  const results = await Promise.allSettled(closers.map((close) => close()));
+  const failure = results.find(
+    (result): result is PromiseRejectedResult => result.status === "rejected",
+  );
+  if (failure) {
+    throw failure.reason;
+  }
+}
+
 /**
  * Picks the real adapters. This is the only function that knows Postgres and
  * Redis exist — swapping either one is a change here and in its adapter file.
  */
-export async function createDefaultDependencies(config: ApiConfig): Promise<ApiDependencies> {
+export async function createDefaultDependencies(
+  config: ApiConfig,
+  factories: InfrastructureFactories = defaultInfrastructureFactories,
+): Promise<ApiDependencies> {
   const clock = () => new Date();
   const probes: DependencyProbes = {};
   const closers: (() => Promise<void>)[] = [];
 
   let postgres: DatabaseConnection | undefined;
-  if (config.databaseUrl) {
-    postgres = connectDatabase(config.databaseUrl);
-    probes.postgres = () => postgres?.ping() ?? Promise.resolve();
-    closers.push(() => postgres?.close() ?? Promise.resolve());
-  }
-
   let redis: RedisConnection | undefined;
-  if (config.redisUrl) {
-    redis = await connectRedis(config.redisUrl);
-    probes.redis = async () => {
-      await redis?.ping();
-    };
-    closers.push(() => redis?.close() ?? Promise.resolve());
+  try {
+    if (config.databaseUrl) {
+      postgres = factories.connectDatabase(config.databaseUrl);
+      probes.postgres = () => postgres?.ping() ?? Promise.resolve();
+      closers.push(() => postgres?.close() ?? Promise.resolve());
+    }
+
+    if (config.redisUrl) {
+      redis = await factories.connectRedis(config.redisUrl);
+      probes.redis = async () => {
+        await redis?.ping();
+      };
+      closers.push(() => redis?.close() ?? Promise.resolve());
+    }
+  } catch (startupError) {
+    try {
+      await closeResources(closers);
+    } catch (cleanupError) {
+      throw new AggregateError(
+        [startupError, cleanupError],
+        "API startup failed and initialized resources could not be closed",
+      );
+    }
+    throw startupError;
   }
 
   return {
@@ -82,11 +114,7 @@ export async function createDefaultDependencies(config: ApiConfig): Promise<ApiD
         : undefined,
     probes,
     trustedProxyIps: config.trustedProxyIps,
-    close: async () => {
-      for (const closer of closers) {
-        await closer();
-      }
-    },
+    close: () => closeResources(closers),
   };
 }
 
