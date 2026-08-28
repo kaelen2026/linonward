@@ -1,0 +1,3 @@
+interface:
+  display_name: "Review Web Interface"
+  short_description: "Audit UI, UX, and accessibility quality"
