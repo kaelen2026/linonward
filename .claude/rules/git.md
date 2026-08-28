@@ -87,7 +87,7 @@ pnpm lint
 pnpm typecheck
 ```
 
-Add `pnpm build` for anything touching the build — the same gate CLAUDE.md sets.
+Add `pnpm build` for anything touching the build.
 If any of them fails, fix it or say plainly that it fails — do not commit over
 red and call it done.
 
@@ -119,13 +119,22 @@ workspace/github/kaelen2026/
 └── linonward-dark-mode-border/    # fix/dark-mode-border
 ```
 
-Create one, then install before touching anything:
+Before creating a worktree, synchronize the clean primary `main` checkout with
+`origin/main`. Agents use the guarded entry point, which fetches, permits only a
+fast-forward, refuses dirty/ahead/diverged states, verifies equality, and then
+creates the worktree:
 
 ```bash
-git worktree add ../linonward-pricing-page -b feat/pricing-page
+scripts/create-agent-worktree.sh codex/pricing-page ../linonward-pricing-page
 cd ../linonward-pricing-page
 pnpm install
+scripts/assert-agent-worktree.sh
 ```
+
+Do not stash, reset, merge a divergence, or discard local changes to make the
+guard pass. Resolve the primary checkout state explicitly before starting new
+work. Humans creating worktrees manually must enforce the same clean,
+fast-forward-only synchronization sequence.
 
 `pnpm install` is **not optional**. A fresh worktree has no `node_modules`, and
 `.husky/_` is gitignored so it does not come across either — but `core.hooksPath`

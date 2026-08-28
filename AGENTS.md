@@ -1,13 +1,37 @@
-# CLAUDE.md
+# AGENTS.md
 
 *Must output before*
 **Yeah, LinOnward**
 
-Guidance for Claude Code (claude.ai/code) in this repository.
+Guidance for coding agents, including Codex, in this repository.
+
+## Mandatory worktree gate
+
+The primary checkout on `main` is read-only for agents. Before the first mutating action in any
+change, build, or implementation task, run:
+
+```bash
+git branch --show-current
+git status --short
+git worktree list
+scripts/assert-agent-worktree.sh
+```
+
+If the check fails, do not edit files, call `apply_patch`, install dependencies, run a formatter,
+or execute a command that generates files. Follow the Worktrees section in
+[`.claude/rules/git.md`](.claude/rules/git.md) and use its guarded creation command before
+continuing.
+
+Perform every later command and edit from the task worktree. Read-only investigation may run in
+the primary checkout. The scripts are the executable source of truth; do not reproduce or bypass
+their checks manually.
+
+Do not begin in the primary checkout and migrate changes later. If a worktree cannot be created
+safely, stop and ask the user instead of modifying `main`.
 
 Setup, scripts, and workspace layout are in [README.md](./README.md). Long-form detail is in
-[`docs/`](./docs). Git rules — commit format, hooks, staging, branches — are in
-[`.claude/rules/git.md`](.claude/rules/git.md), and how to write tests is in
+[`docs/`](./docs). Git rules — commit format, hooks, staging, branches — are in the linked rule
+above, and how to write tests is in
 [`.claude/rules/tdd.md`](.claude/rules/tdd.md). This file covers only what those don't: the
 things that will bite an agent.
 
