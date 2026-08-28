@@ -2,10 +2,10 @@ import Link from "next/link";
 
 import { SiteHeader } from "@/components/site/site-header";
 import { apiBaseUrl } from "@/lib/api";
-import { requireSession } from "@/lib/session";
+import { requireAdministrator } from "@/lib/session";
 
 export default async function HomePage() {
-  const session = await requireSession();
+  const session = await requireAdministrator();
   return (
     <>
       <SiteHeader pathname="/" userEmail={session.user.email} />

@@ -19,6 +19,7 @@ export type DispatchResult = {
 export type DispatchTask = (task: Task) => Promise<DispatchResult | undefined>;
 export type ReplyTask = (task: Task, text: string) => Promise<void>;
 export type ClaimMessage = (messageId: string) => Promise<boolean>;
+export type PersistTask = (task: Task) => Promise<boolean>;
 
 export type FeishuMessageEvent = {
   message: {
@@ -61,6 +62,7 @@ export async function handleFeishuMessage(
   dispatch: DispatchTask,
   reply: ReplyTask = async () => undefined,
   claimMessage: ClaimMessage = () => Promise.resolve(true),
+  persistTask: PersistTask = () => Promise.resolve(true),
 ): Promise<{ status: "dispatched" | "ignored" }> {
   if (event.message.message_type !== "text") {
     return { status: "ignored" };
@@ -73,6 +75,13 @@ export async function handleFeishuMessage(
 
   const task = getTask(event.message, config.maxTaskLength, openId);
   if (!task) {
+    return { status: "ignored" };
+  }
+
+  // Postgres is the correctness boundary. Redis below only sheds duplicate work
+  // while a replica is healthy; a crash cannot erase a persisted task.
+  if (!(await persistTask(task))) {
+    console.info("Ignoring duplicate Feishu task", task.messageId);
     return { status: "ignored" };
   }
 

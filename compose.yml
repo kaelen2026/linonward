@@ -24,9 +24,20 @@ services:
     ports:
       - "${API_PORT:-3001}:3001"
     restart: unless-stopped
-    # Migrations run in the same container as the app: one image, one command,
-    # and no window where the code is newer than the schema.
-    command: sh -c "node dist/migrate.js && node dist/index.js"
+    command: node dist/index.js
+
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://linonward:${POSTGRES_PASSWORD:-linonward}@postgres:5432/linonward
+    image: linonward-api:local
+    profiles: ["migrate"]
+    command: node dist/migrate.js
 
   postgres:
     image: postgres:18-alpine

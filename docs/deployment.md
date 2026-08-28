@@ -10,7 +10,7 @@ API, not a separately deployed service.
 | `apps/www` | `.next/`; `pnpm --filter @linonward/www start` | Stateless; browser calls `apps/api` directly |
 | `apps/web` | `.next/`; `pnpm --filter @linonward/web start` | Stateless; server and auth proxy call `apps/api` |
 | `apps/api` | `dist/`; `pnpm --filter @linonward/api start` | PostgreSQL and Redis are mandatory in production |
-| `apps/feishu` | `dist/`; `pnpm --filter @linonward/feishu start` | One long-lived process with Redis plus outbound Feishu and GitHub access |
+| `apps/feishu` | `dist/`; `pnpm --filter @linonward/feishu start` | PostgreSQL outbox, Redis, and outbound Feishu/GitHub access |
 
 Build everything from the repository root with `pnpm build`, or build one deployable with its
 filtered command. The API build automatically builds `@linonward/db` first through both its
@@ -46,16 +46,16 @@ standalone server, static assets, and `apps/www/public` where applicable.
 
 [`apps/api/Dockerfile`](../apps/api/Dockerfile) is the production image definition. The root
 [`compose.yml`](../compose.yml) is the local reference topology: API, PostgreSQL 18, and Redis 8,
-with the API waiting for both health checks. Its container command runs migrations before the
-server:
+with the API waiting for both health checks. Run migrations as the separate one-shot deployment
+service before starting application replicas:
 
 ```text
-node dist/migrate.js && node dist/index.js
+docker compose --profile migrate run --rm migrate
 ```
 
 The migration process uses a single database connection and holds one advisory lock across both
-the legacy and Drizzle histories. Starting several new API containers at once therefore serializes
-the complete migration sequence rather than only its first half.
+the legacy and Drizzle histories. See [Operations and governance](./operations.md) for the
+expand/contract policy and recovery controls.
 
 In production, `NODE_ENV=production` makes the API reject missing PostgreSQL, Redis, Better Auth,
 or Resend configuration instead of silently selecting in-memory adapters or omitting

@@ -76,6 +76,33 @@ describe("handleFeishuMessage", () => {
     expect(reply).toHaveBeenCalledTimes(1);
   });
 
+  it("does not dispatch when the durable outbox already contains the task", async () => {
+    const dispatch = vi.fn();
+    const persistTask = vi.fn().mockResolvedValue(false);
+
+    await expect(
+      handleFeishuMessage(
+        {
+          message: {
+            chat_id: "oc_chat",
+            content: JSON.stringify({ text: "summarize the latest commit" }),
+            message_id: "om_persisted",
+            message_type: "text",
+          },
+          sender: { sender_id: { open_id: "ou_authorized" } },
+        },
+        config,
+        dispatch,
+        undefined,
+        undefined,
+        persistTask,
+      ),
+    ).resolves.toEqual({ status: "ignored" });
+
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(persistTask).toHaveBeenCalledOnce();
+  });
+
   it("routes a /内容 command to the local content producer", async () => {
     const dispatch = vi.fn().mockResolvedValue({ reply: "这是成稿。" });
     const reply = vi.fn().mockResolvedValue(undefined);
