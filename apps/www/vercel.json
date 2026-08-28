@@ -1,0 +1,4 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "npx --yes turbo@2.10.11 query affected --base=HEAD^1 --head=HEAD --packages=@linonward/www --tasks=build --exit-code --no-update-notifier"
+}
