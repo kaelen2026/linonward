@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 
-const ALL_SCOPES = ["verify", "integration", "ios", "e2e"];
+const ALL_SCOPES = ["verify", "integration", "android", "ios", "e2e"];
 
 const ROOT_NODE_INPUTS = new Set([
   ".nvmrc",
@@ -43,7 +43,8 @@ export function classifyChanges(paths) {
     const changesNodeWorkspace =
       ROOT_NODE_INPUTS.has(path) ||
       path.startsWith("packages/") ||
-      (path.startsWith("apps/") && !startsWithAny(path, ["apps/ios/", "apps/harmony/"])) ||
+      (path.startsWith("apps/") &&
+        !startsWithAny(path, ["apps/android/", "apps/ios/", "apps/harmony/"])) ||
       path.startsWith(".github/scripts/");
     scopes.verify ||= changesNodeWorkspace;
 
@@ -68,6 +69,7 @@ export function classifyChanges(paths) {
       ]);
 
     scopes.ios ||= path.startsWith("apps/ios/") || path === "package.json" || path === ".nvmrc";
+    scopes.android ||= path.startsWith("apps/android/");
   }
 
   return scopes;
