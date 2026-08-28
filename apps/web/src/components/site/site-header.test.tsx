@@ -23,10 +23,10 @@ describe("SiteHeader", () => {
   });
 
   it("tells assistive tech which page is showing", () => {
-    render(<SiteHeader pathname="/status" />);
+    render(<SiteHeader pathname="/editor" />);
 
     const nav = screen.getByRole("navigation", { name: "主导航" });
-    expect(nav.querySelector('[aria-current="page"]')).toHaveTextContent("状态");
+    expect(nav.querySelector('[aria-current="page"]')).toHaveTextContent("编辑器");
   });
 
   it("marks nothing current on a page outside the navigation", () => {
