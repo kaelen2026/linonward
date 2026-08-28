@@ -15,6 +15,11 @@ pluginManagement {
   }
 }
 
+plugins {
+  // Lets Gradle auto-provision the JDK required by the checked-in Daemon criteria.
+  id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 dependencyResolutionManagement {
   // A project-local repository declaration is a mistake here, not a fallback:
   // it would resolve a dependency this file never listed.
