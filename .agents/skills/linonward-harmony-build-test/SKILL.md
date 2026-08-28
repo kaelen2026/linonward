@@ -8,6 +8,7 @@ description: Sync, build, test, launch, or diagnose the LinOnward HarmonyOS app 
 ## Resolve the environment first
 
 - The DevEco Studio project root is `apps/harmony`; run hvigor commands from that directory.
+- Run `scripts/prepare-harmony-profile.sh` before opening or building a fresh checkout. It creates the ignored root `build-profile.json5` from the tracked template without overwriting local signing.
 - The app is a stage-model HarmonyOS project compatible with API 12 (`5.0.0(12)`). Its module is `entry`, product is `default`, and targets are `default` and `ohosTest`.
 - A fresh clone has no `hvigorw`. Open and sync `apps/harmony` in DevEco Studio 5.0.5 or newer first; sync generates the wrapper and downloads `.hvigor/`, both of which are intentionally gitignored.
 - Check the installed DevEco Studio, HarmonyOS SDK, project sync, emulator/device availability, and developer-mode connection when a failure may be environmental. Distinguish missing proprietary tooling from a repository defect.
@@ -32,7 +33,7 @@ For focused diagnosis, narrow to the affected module, target, suite, or task usi
 ## Diagnose by layer
 
 1. Missing wrapper or `.hvigor`: the project has not completed DevEco sync; do not add generated wrapper or SDK artifacts to Git.
-2. Project or profile failure: inspect JSON5 syntax and the matching root/module `build-profile.json5` before changing ArkTS.
+2. Project or profile failure: inspect the tracked root `build-profile.template.json5`, ignored local root `build-profile.json5`, and module `build-profile.json5` before changing ArkTS. Never print the local profile because DevEco may have written signing material into it.
 3. Resource failure: verify `$r(...)` names exist in `base` and that locale/dark overrides use the same resource names.
 4. ArkTS compile failure: report the first actionable compiler diagnostic and source location, not only the final hvigor failure.
 5. Host-test failure: rerun the affected Hypium suite and inspect its assertion or thrown error.

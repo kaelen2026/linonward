@@ -1,8 +1,7 @@
 {
   "app": {
-    // Left empty on purpose: signing material is per-developer and per-release.
-    // DevEco Studio writes an automatically generated debug config in here on
-    // first run, and that edit must not be committed.
+    // Local signing belongs in the ignored build-profile.json5 generated from
+    // this template. Never add certificates, paths, or passwords here.
     "signingConfigs": [],
     "products": [
       {

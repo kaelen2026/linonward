@@ -37,6 +37,12 @@ jobs:
           # Both PR and push comparisons need the base commit.
           fetch-depth: 0
 
+      - name: Reject tracked HarmonyOS signing material
+        run: scripts/check-harmony-signing-profile.sh
+
+      - name: Test HarmonyOS signing guard
+        run: node --test .github/scripts/check-harmony-signing-profile.test.mjs
+
       - name: Test change-scope routing
         run: node --test .github/scripts/ci-change-scope.test.mjs
 

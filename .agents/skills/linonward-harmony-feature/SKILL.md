@@ -8,7 +8,7 @@ description: Build, refactor, or review ArkTS and ArkUI features in apps/harmony
 ## Start from the app's actual shape
 
 - Read `apps/harmony/README.md`, the nearest ArkTS implementation, and its tests before choosing a pattern.
-- Treat `apps/harmony/build-profile.json5`, `entry/build-profile.json5`, and `entry/src/main/module.json5` as the sources of truth for products, build modes, targets, abilities, device types, and permissions.
+- Treat `apps/harmony/build-profile.template.json5`, `entry/build-profile.json5`, and `entry/src/main/module.json5` as the tracked sources of truth for products, build modes, targets, abilities, device types, and permissions. Run `scripts/prepare-harmony-profile.sh` to create the ignored machine-local root profile.
 - Keep lifecycle code in `entryability`, reusable brand primitives in `designsystem`, pages in `pages`, pure configuration and URL logic in `config`, and user-facing resources under `entry/src/main/resources`.
 - The app deliberately begins with one page and no router, view-model layer, database, or HTTP client. Add only the boundary required by the requested behavior and follow the closest existing implementation.
 
@@ -26,7 +26,7 @@ description: Build, refactor, or review ArkTS and ArkUI features in apps/harmony
 - Keep the API origin as the `API_BASE_URL` build-profile field. Debug defaults to `http://localhost:3001`; release is intentionally empty and must not inherit localhost.
 - If authentication is added, use `Authorization: Bearer`, keep flow decisions in device-independent plain ArkTS, and do not replace the native flow with web cookie sessions.
 - Add only permissions required by implemented behavior. Document why each new `requestPermissions` entry is necessary; do not request speculative access.
-- Do not commit signing material or a DevEco-generated debug signing configuration. `signingConfigs` is empty in version control by design.
+- Do not commit signing material or a DevEco-generated debug signing configuration. The root `build-profile.json5` is ignored by design; move only reviewed non-signing changes into `build-profile.template.json5`.
 
 ## Localize and test
 

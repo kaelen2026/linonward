@@ -15,7 +15,15 @@ task for it.
 
 ## Open and build
 
-Open `apps/harmony` as the project root in DevEco Studio and let it sync. The sync is what
+Create the ignored, machine-local project profile before opening DevEco Studio:
+
+```bash
+scripts/prepare-harmony-profile.sh
+```
+
+The script copies `build-profile.template.json5` only when `build-profile.json5` is absent. It
+never overwrites an existing profile, so DevEco-managed local signing remains intact. Open
+`apps/harmony` as the project root in DevEco Studio and let it sync. The sync is what
 generates the `hvigorw` wrapper and downloads hvigor into `.hvigor/`; both are gitignored, so a
 fresh clone has no command line until it has been synced once. After that, from `apps/harmony`:
 
@@ -33,10 +41,14 @@ implying CI covered it.
 
 ## Signing
 
-`build-profile.json5` ships `signingConfigs: []` on purpose. DevEco Studio writes an automatically
-generated debug config into that array on first run, keyed to the machine's certificate; that edit
-is local state and must not be committed. Release signing comes from the release pipeline, not
-from the repository.
+`build-profile.template.json5` is the reviewed source of truth for project products, SDK versions,
+build modes, and modules. The generated `build-profile.json5` is ignored because DevEco Studio
+writes machine paths and debug signing material into it. To change shared project configuration,
+validate the change locally, then copy only the non-signing fields into the template for review.
+
+The pre-commit and pre-push hooks plus the always-running CI scope job reject a tracked local profile, known
+signing fields, signing files, or a non-empty `signingConfigs` in the template. Release signing
+comes from the release pipeline, not from the repository.
 
 ## Point the app at an API
 
