@@ -9,6 +9,7 @@ const environment = {
   GITHUB_DISPATCH_TOKEN: "github-token",
   GITHUB_REPOSITORY: "kaelen2026/linonward",
   HERMES_API_KEY: "hermes-api-key",
+  DATABASE_URL: "postgres://localhost:5432/linonward",
   REDIS_URL: "redis://localhost:6379",
 };
 
@@ -19,6 +20,7 @@ describe("loadServiceConfig", () => {
         appId: "cli_0123456789abcdef",
         appSecret: "app-secret",
       },
+      databaseUrl: "postgres://localhost:5432/linonward",
       github: {
         apiUrl: "https://api.github.com",
         ref: "main",

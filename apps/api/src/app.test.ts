@@ -89,4 +89,18 @@ describe("createApp", () => {
 
     expect(response.headers.get("access-control-allow-origin")).toBeNull();
   });
+
+  it("publishes its machine-readable contract and low-cardinality request metric", async () => {
+    const app = createApp({ modules: [], allowedOrigins: [] });
+
+    const contract = await app.request("/openapi.json");
+    expect(contract.status).toBe(200);
+    expect(await contract.json()).toMatchObject({ openapi: "3.1.0", paths: { "/health": {} } });
+
+    await app.request("/health");
+    const metrics = await app.request("/metrics");
+    expect(await metrics.text()).toContain(
+      'linonward_http_requests_total{method="GET",path="/health",status="404"} 1',
+    );
+  });
 });

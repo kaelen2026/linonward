@@ -15,6 +15,10 @@
     "./session": {
       "types": "./dist/session.d.ts",
       "import": "./dist/session.js"
+    },
+    "./openapi": {
+      "types": "./dist/openapi.d.ts",
+      "import": "./dist/openapi.js"
     }
   },
   "scripts": {

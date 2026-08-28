@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
 import { apiBaseUrl } from "@/lib/api";
 import { fetchApiHealth } from "@/lib/health";
-import { requireSession } from "@/lib/session";
+import { requireAdministrator } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "状态",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function StatusPage() {
-  const [session, health] = await Promise.all([requireSession(), fetchApiHealth()]);
+  const [session, health] = await Promise.all([requireAdministrator(), fetchApiHealth()]);
 
   return (
     <>

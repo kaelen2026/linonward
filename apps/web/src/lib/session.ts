@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { apiUrl } from "@/lib/api";
+import { isAdministrator, readAdministratorEmails } from "@/lib/authorization";
 
 export type { WebSession } from "@linonward/contracts/session";
 
@@ -24,5 +25,13 @@ export async function getSession(): Promise<WebSession | null> {
 export async function requireSession(): Promise<WebSession> {
   const session = await getSession();
   if (!session) redirect("/login");
+  return session;
+}
+
+/** Require both an authenticated session and the internal-console role. */
+export async function requireAdministrator(): Promise<WebSession> {
+  const session = await requireSession();
+  const administrators = readAdministratorEmails(process.env.INTERNAL_CONSOLE_ADMIN_EMAILS);
+  if (!isAdministrator(session, administrators)) redirect("/unauthorized");
   return session;
 }

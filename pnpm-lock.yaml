@@ -81,6 +81,9 @@ importers:
       '@larksuiteoapi/node-sdk':
         specifier: 1.73.0
         version: 1.73.0(debug@4.4.3)
+      '@linonward/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       redis:
         specifier: 6.2.1
         version: 6.2.1
@@ -128,6 +131,9 @@ importers:
       '@linonward/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@playwright/test':
+        specifier: 1.62.1
+        version: 1.62.1
       '@tailwindcss/postcss':
         specifier: 4.3.3
         version: 4.3.3
