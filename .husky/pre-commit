@@ -1,2 +1,3 @@
 scripts/assert-agent-worktree.sh
+scripts/check-harmony-signing-profile.sh
 pnpm exec lint-staged
