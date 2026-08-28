@@ -22,15 +22,75 @@ env:
   DO_NOT_TRACK: 1
 
 jobs:
+  changes:
+    name: Change scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      verify: ${{ steps.scope.outputs.verify }}
+      integration: ${{ steps.scope.outputs.integration }}
+      ios: ${{ steps.scope.outputs.ios }}
+      e2e: ${{ steps.scope.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Both PR and push comparisons need the base commit.
+          fetch-depth: 0
+
+      - name: Test change-scope routing
+        run: node --test .github/scripts/ci-change-scope.test.mjs
+
+      - name: Resolve changed paths
+        id: scope
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE_SHA: ${{ github.event.before }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            base_sha="$PR_BASE_SHA"
+          else
+            base_sha="$PUSH_BASE_SHA"
+          fi
+
+          git diff --name-only "$base_sha" "$GITHUB_SHA" \
+            | node .github/scripts/ci-change-scope.mjs \
+            | tee -a "$GITHUB_OUTPUT"
+
+  commitlint:
+    name: Commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate commit messages
+        run: >
+          pnpm exec commitlint
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+          --verbose
+
   verify:
     name: Lint, typecheck, test, build
+    needs: changes
+    if: needs.changes.outputs.verify == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-        with:
-          # commitlint needs the PR's commits, not just the tip.
-          fetch-depth: 0
 
       # Reads the pinned version from `packageManager` in package.json.
       - uses: pnpm/action-setup@v6
@@ -42,14 +102,6 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
-
-      - name: Commit messages
-        if: github.event_name == 'pull_request'
-        run: >
-          pnpm exec commitlint
-          --from ${{ github.event.pull_request.base.sha }}
-          --to ${{ github.event.pull_request.head.sha }}
-          --verbose
 
       - name: Lint
         run: pnpm lint
@@ -65,6 +117,8 @@ jobs:
 
   integration:
     name: Postgres and Redis integration
+    needs: changes
+    if: needs.changes.outputs.integration == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -111,6 +165,8 @@ jobs:
 
   ios:
     name: iOS build and test
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -140,6 +196,8 @@ jobs:
 
   e2e:
     name: End-to-end
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
