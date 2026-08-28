@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinOnward iOS Maintenance"
+  short_description: "Upgrade Xcode Swift SDKs and iOS dependencies safely"
+  default_prompt: "Use $linonward-ios-maintenance to plan and verify this LinOnward iOS toolchain or dependency upgrade."

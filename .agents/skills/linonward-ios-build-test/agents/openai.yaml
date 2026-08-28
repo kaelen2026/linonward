@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinOnward iOS Build & Test"
+  short_description: "Build, test, and debug the LinOnward iOS app"
+  default_prompt: "Use $linonward-ios-build-test to build, test, or diagnose the LinOnward iOS app."

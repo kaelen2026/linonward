@@ -1,0 +1,36 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "LinOnward 主模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "LinOnward"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "LinOnward"
+    },
+    {
+      "name": "home_eyebrow",
+      "value": "增长度量与分析"
+    },
+    {
+      "name": "home_title",
+      "value": "让增长有迹可循"
+    },
+    {
+      "name": "home_body",
+      "value": "在原生应用中查看每一条可追溯到源头的增长信号。"
+    },
+    {
+      "name": "home_api_label",
+      "value": "服务端地址"
+    },
+    {
+      "name": "home_api_missing",
+      "value": "此版本未配置服务器地址"
+    }
+  ]
+}

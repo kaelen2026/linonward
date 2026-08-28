@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinOnward iOS Feature"
+  short_description: "Build SwiftUI features that fit LinOnward"
+  default_prompt: "Use $linonward-ios-feature to implement this iOS feature consistently with the repository."

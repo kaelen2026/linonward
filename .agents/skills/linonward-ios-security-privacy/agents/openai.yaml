@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinOnward iOS Security & Privacy"
+  short_description: "Review iOS credentials networking and privacy"
+  default_prompt: "Use $linonward-ios-security-privacy to review this LinOnward iOS security or privacy change."

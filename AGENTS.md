@@ -58,6 +58,13 @@ all (a synchronous one can), and Playwright locators must be scoped to a landmar
 and footer both hold a nav and a language switcher, so a bare `getByRole` matches twice. Read
 [`.claude/rules/tdd.md`](.claude/rules/tdd.md) before writing a test.
 
+`apps/harmony` is outside all of that. It has no `package.json`, so `pnpm test` and `pnpm build`
+walk straight past it, and **no CI job runs it** — GitHub-hosted runners carry no HarmonyOS SDK.
+A green `pnpm lint && pnpm typecheck && pnpm test && pnpm build` says nothing about a change
+there. Building it needs DevEco Studio and its `hvigorw` wrapper, neither of which exists in this
+environment; if you cannot run them, say the change is unverified instead of implying it passed.
+See [`apps/harmony/README.md`](./apps/harmony/README.md).
+
 ## UI: Base UI, not Radix
 
 `apps/www` uses shadcn/ui in its `base-nova` style, built on **`@base-ui/react`**. There are no

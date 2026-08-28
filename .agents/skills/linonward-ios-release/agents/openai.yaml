@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinOnward iOS Release"
+  short_description: "Archive, beta-test, and submit LinOnward for iOS"
+  default_prompt: "Use $linonward-ios-release to prepare this LinOnward iOS build for TestFlight or App Store release."

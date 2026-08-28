@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinOnward iOS Performance"
+  short_description: "Profile iOS responsiveness memory and stability"
+  default_prompt: "Use $linonward-ios-performance to diagnose this LinOnward iOS performance or stability problem."

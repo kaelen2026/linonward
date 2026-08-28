@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 export const navItems = [
   { href: "/", label: "概览" },
+  { href: "/editor", label: "编辑器" },
   { href: "/status", label: "状态" },
 ] as const;
 
@@ -15,8 +16,8 @@ export const navItems = [
 export function SiteHeader({ pathname, userEmail }: { pathname: string; userEmail?: string }) {
   return (
     <header className="border-b border-border">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-6 px-6">
-        <Link className="text-sm font-semibold tracking-tight" href="/">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-2 px-4 sm:gap-6 sm:px-6">
+        <Link className="whitespace-nowrap text-sm font-semibold tracking-tight" href="/">
           LinOnward Web
         </Link>
 
@@ -27,7 +28,7 @@ export function SiteHeader({ pathname, userEmail }: { pathname: string; userEmai
               <Link
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                  "whitespace-nowrap rounded-md px-2 py-1.5 text-sm transition-colors sm:px-2.5",
                   active
                     ? "bg-muted font-medium text-foreground"
                     : "text-muted-foreground hover:text-foreground",

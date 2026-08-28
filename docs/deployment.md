@@ -112,6 +112,11 @@ touches it. The job it needs is an `ubuntu-latest` one running those same three 
 `actions/setup-java` (temurin 17) and `gradle/actions/setup-gradle`; no emulator is involved,
 because every Android test is a JVM test by design.
 
+`apps/harmony` has **no** job. GitHub-hosted runners carry no HarmonyOS SDK and Huawei does not
+publish the toolchain for unauthenticated download, so nothing gates it the way `ios` gates Xcode.
+A change there has to be built and tested by hand, and the pull request should say so rather than
+let a green CI badge imply coverage it does not have.
+
 pnpm comes from `pnpm/action-setup`, which reads `packageManager`; Node comes from `.nvmrc`. A new
 push cancels an in-flight pull-request run, but pushes to `main` are not cancelled.
 

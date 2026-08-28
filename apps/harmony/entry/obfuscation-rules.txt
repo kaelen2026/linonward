@@ -1,0 +1,9 @@
+# Applied to release builds only; see entry/build-profile.json5.
+#
+# Property names reached by string — resource keys, JSON fields decoded from the
+# API — must survive obfuscation, so keep the default property rules on until a
+# measured reason to tighten them exists.
+-enable-property-obfuscation
+-enable-toplevel-obfuscation
+-enable-filename-obfuscation
+-enable-export-obfuscation

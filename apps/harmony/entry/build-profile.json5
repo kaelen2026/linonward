@@ -1,0 +1,42 @@
+{
+  "apiType": "stageMode",
+  "buildOption": {
+    "arkOptions": {
+      // Compiled into the generated `BuildProfile` class, one origin per build —
+      // the same contract as LINONWARD_API_BASE_URL in apps/ios and
+      // NEXT_PUBLIC_API_URL in the web workspaces. Debug points at where
+      // `pnpm --filter @linonward/api dev` listens.
+      "buildProfileFields": {
+        "API_BASE_URL": "http://localhost:3001"
+      }
+    }
+  },
+  "buildOptionSet": [
+    {
+      "name": "release",
+      "arkOptions": {
+        // Empty on purpose. A release that inherited the debug default would
+        // quietly try to reach localhost on somebody's phone.
+        "buildProfileFields": {
+          "API_BASE_URL": ""
+        },
+        "obfuscation": {
+          "ruleOptions": {
+            "enable": true,
+            "files": [
+              "./obfuscation-rules.txt"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "targets": [
+    {
+      "name": "default"
+    },
+    {
+      "name": "ohosTest"
+    }
+  ]
+}

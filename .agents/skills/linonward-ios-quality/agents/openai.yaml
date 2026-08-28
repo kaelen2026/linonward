@@ -1,0 +1,4 @@
+interface:
+  display_name: "LinOnward iOS Quality"
+  short_description: "Test accessibility and localization quality on iOS"
+  default_prompt: "Use $linonward-ios-quality to verify this LinOnward iOS change for tests, accessibility, and localization."
