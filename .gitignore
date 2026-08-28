@@ -42,6 +42,15 @@ DerivedData/
 **/xcuserdata/
 *.xcuserstate
 
+# android / gradle
+# `build/` above already covers apps/android/app/build. `local.properties`
+# holds a machine's own SDK path; the build resolves the SDK from ANDROID_HOME
+# instead, so committing one would break every other machine.
+.gradle/
+.kotlin/
+.cxx/
+local.properties
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

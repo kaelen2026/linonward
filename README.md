@@ -7,6 +7,7 @@ Turborepo monorepo powered by a pnpm workspace.
 - Node.js `>= 24` (see `.nvmrc`)
 - pnpm `11.19.0` (pinned via `packageManager`; run `corepack enable`)
 - Xcode 26+ and XcodeGen 2.46+ for `apps/ios`
+- JDK 17 and an Android SDK with platform 37 for `apps/android`
 - DevEco Studio 5.0.5+ and HarmonyOS SDK API 12+ for `apps/harmony`
 
 ## Getting started
@@ -34,6 +35,7 @@ and tests are a manual step; see [`apps/harmony/README.md`](./apps/harmony/READM
 ```
 .
 ├── apps/
+│   ├── android/                # Native Jetpack Compose application
 │   ├── api/                    # Backend — Hono modular monolith, Postgres + Redis
 │   ├── feishu/                 # Feishu-to-GitHub task relay
 │   ├── harmony/                # Native ArkTS application for HarmonyOS
@@ -63,6 +65,9 @@ and tests are a manual step; see [`apps/harmony/README.md`](./apps/harmony/READM
 | `pnpm ios:generate` | Regenerate the Xcode project from `apps/ios/project.yml` |
 | `pnpm ios:build` | Build the SwiftUI app for a generic iOS Simulator |
 | `pnpm ios:test` | Run iOS UI tests on an available iPhone Simulator |
+| `pnpm android:lint` | Run Android Lint over `apps/android` |
+| `pnpm android:test` | Run the Android JVM unit tests |
+| `pnpm android:build` | Build the Android debug APK |
 | `pnpm db:generate` | Generate a migration after changing `packages/db/src/schema` |
 | `pnpm db:check` | Validate the Drizzle migration snapshots |
 | `pnpm db:studio` | Open Drizzle Studio against `DATABASE_URL` |

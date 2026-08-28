@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- navy-950, matching the dark background Compose paints a frame later. -->
+    <color name="window_background">#FF00112D</color>
+</resources>

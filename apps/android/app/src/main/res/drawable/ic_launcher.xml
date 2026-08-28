@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  In `drawable/`, not `mipmap-anydpi-v26/`: the icon is a vector, so there is no
+  density bucket for a launcher to choose between and nothing for resource
+  stripping to discard, which is what `mipmap` exists to prevent. `minSdk` is
+  26, exactly where adaptive icons landed, so this one file serves every device
+  the app installs on and needs no PNG fallback.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/brand_navy" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>

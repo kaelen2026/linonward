@@ -139,6 +139,18 @@ otherwise and warns at runtime about the lost semantics.
   `next typegen`: it costs under a second, against six for the `next build` that is the only
   other way to get the same definitions.
 
+## The native apps are outside the JS task graph
+
+`apps/ios` and `apps/android` carry no `package.json`, so `pnpm lint`, `pnpm typecheck`,
+`pnpm test` and `pnpm build` say nothing about either. Verify Android with `pnpm android:lint`,
+`pnpm android:test` and `pnpm android:build`; each shells out to the checked-in Gradle wrapper and
+needs JDK 17 plus an Android SDK. Two traps there: **AGP 9 has built-in Kotlin support**, so
+applying `org.jetbrains.kotlin.android` on top of it is a hard error rather than a redundancy, and
+both Kotlin and Android Lint treat warnings as errors — a deprecation fails the build. The brand
+ramp is duplicated as Kotlin `Color` constants in `designsystem/BrandColors.kt`; retuning a step in
+`globals.css` means editing there too. Details in
+[`apps/android/README.md`](./apps/android/README.md).
+
 ## Gotchas
 
 - Lint and format are deliberately **not** Turborepo tasks. Biome is one binary that walks the

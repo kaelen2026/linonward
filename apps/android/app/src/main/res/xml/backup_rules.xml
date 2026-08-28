@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The Android 11-and-below half of `data_extraction_rules.xml`.
+
+  `android:allowBackup="false"` already stops backup on these versions, so this
+  file only decides what would be copied if that ever changed. Excluding the
+  preferences file is the part that matters: it holds the session token,
+  encrypted under a Keystore key that no backup carries.
+-->
+<full-backup-content>
+    <exclude
+        domain="sharedpref"
+        path="session.xml" />
+</full-backup-content>

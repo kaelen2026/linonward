@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The window theme, not the app's theme. Compose owns every colour the app
+  draws; this only decides what the system shows in the moment between the
+  launcher and the first composition, and how the status and navigation bars
+  behave once it does.
+-->
+<resources>
+    <style name="Theme.LinOnward" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <!-- Compose draws behind the system bars via `enableEdgeToEdge()`, so
+             the bars themselves stay transparent and the content shows through. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nothing this app stores leaves the device. `android:allowBackup="false"`
+  covers Android 11 and below; this file is the same answer for 12 and above,
+  where backup and device-to-device transfer are configured separately.
+
+  It matters most for the session token: it is encrypted under an Android
+  Keystore key, and a Keystore key is never transferred, so a restored copy
+  would be ciphertext the new device can never read. Excluding it means a
+  restore lands on the sign-in screen instead of on an unexplained failure.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </device-transfer>
+</data-extraction-rules>
