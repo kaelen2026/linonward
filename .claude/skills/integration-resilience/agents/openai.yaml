@@ -1,0 +1,3 @@
+interface:
+  display_name: "Integration Resilience"
+  short_description: "Make external integrations retry-safe"

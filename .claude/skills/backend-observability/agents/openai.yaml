@@ -1,0 +1,3 @@
+interface:
+  display_name: "Backend Observability"
+  short_description: "Add safe and actionable backend telemetry"

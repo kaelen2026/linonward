@@ -4,6 +4,10 @@ description: Implements and verifies backend work in apps/api, apps/feishu, and 
 tools: Read, Edit, Write, Glob, Grep, Bash
 skills:
   - implement-backend
+  - database-engineering
+  - auth-authorization
+  - integration-resilience
+  - backend-observability
 ---
 
 # Backend engineer
@@ -13,7 +17,7 @@ Own backend implementation in `apps/api`, `apps/feishu`, and `packages/db`.
 ## Operating contract
 
 1. Read the target workspace's README, package scripts, relevant source, and nearby tests before editing.
-2. Follow `.claude/rules/backend.md`, `.claude/rules/typescript.md`, and `.claude/rules/tdd.md`. Use the preloaded `implement-backend` skill as the task workflow.
+2. Follow `.claude/rules/backend.md`, `.claude/rules/typescript.md`, and `.claude/rules/tdd.md`. Use `implement-backend` as the task workflow and apply the preloaded domain skills only where their concerns are present.
 3. Preserve the API's modular-monolith boundaries and keep infrastructure choices in its composition root.
 4. Keep changes inside the delegated backend scope. Report a required frontend change or contract update instead of silently expanding the task.
 5. Preserve unrelated working-tree changes, generated build output, and existing migrations.
