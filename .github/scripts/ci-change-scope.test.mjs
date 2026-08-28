@@ -7,6 +7,7 @@ const none = {
   verify: false,
   integration: false,
   android: false,
+  harmony: false,
   ios: false,
   e2e: false,
 };
@@ -52,8 +53,11 @@ test("routes Android changes only to the Android job", () => {
   });
 });
 
-test("does not mistake HarmonyOS changes for Node or iOS changes", () => {
-  assert.deepEqual(classifyChanges(["apps/harmony/entry/src/main/ets/pages/Index.ets"]), none);
+test("routes HarmonyOS changes only to the self-hosted HarmonyOS job", () => {
+  assert.deepEqual(classifyChanges(["apps/harmony/entry/src/main/ets/pages/Index.ets"]), {
+    ...none,
+    harmony: true,
+  });
 });
 
 test("runs every product job when CI routing changes", () => {
@@ -61,6 +65,7 @@ test("runs every product job when CI routing changes", () => {
     verify: true,
     integration: true,
     android: true,
+    harmony: true,
     ios: true,
     e2e: true,
   });
