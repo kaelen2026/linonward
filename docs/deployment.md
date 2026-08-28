@@ -106,6 +106,11 @@ history to an empty database, and runs the production adapter contracts against 
 `ios` regenerates the Xcode project, confirms the checked-in project is current, then builds and
 tests the iOS app on macOS.
 
+`apps/harmony` has **no** job. GitHub-hosted runners carry no HarmonyOS SDK and Huawei does not
+publish the toolchain for unauthenticated download, so nothing gates it the way `ios` gates Xcode.
+A change there has to be built and tested by hand, and the pull request should say so rather than
+let a green CI badge imply coverage it does not have.
+
 pnpm comes from `pnpm/action-setup`, which reads `packageManager`; Node comes from `.nvmrc`. A new
 push cancels an in-flight pull-request run, but pushes to `main` are not cancelled.
 
