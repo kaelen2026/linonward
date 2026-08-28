@@ -1,0 +1,3 @@
+interface:
+  display_name: "Auth Authorization"
+  short_description: "Protect identity, sessions, and permissions"

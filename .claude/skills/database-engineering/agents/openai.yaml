@@ -1,0 +1,3 @@
+interface:
+  display_name: "Database Engineering"
+  short_description: "Build safe PostgreSQL and Drizzle changes"
