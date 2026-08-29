@@ -9,3 +9,8 @@ SWIFT_OPTIMIZATION_LEVEL = -O
 // sign-in screen. Supply it from the release pipeline, e.g.
 // `xcodebuild … LINONWARD_API_BASE_URL=https:/$()/api.example.com`.
 LINONWARD_API_BASE_URL =
+
+// Supply with `LINONWARD_ARTICLE_READER_URL=https:/$()/h5.example.com/`.
+// Empty fails visibly instead of shipping a privileged WebView pointed at a
+// development or unreviewed origin.
+LINONWARD_ARTICLE_READER_URL =
