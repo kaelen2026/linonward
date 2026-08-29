@@ -13,16 +13,16 @@
       "value": "#03274D"
     },
     {
+      "name": "border",
+      "value": "#CEDEF2"
+    },
+    {
       "name": "page_background",
       "value": "#FFFFFF"
     },
     {
       "name": "surface",
       "value": "#F2F7FE"
-    },
-    {
-      "name": "border",
-      "value": "#CEDEF2"
     },
     {
       "name": "text_primary",

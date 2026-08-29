@@ -98,6 +98,10 @@ semantically in `resources/base/element/color.json` and flipped by
 split as the `:root` / `prefers-color-scheme` layers in `apps/www`. `text_accent` is `teal-700` in
 light mode and `teal-300` in dark, never `teal-500`, which is 2.61:1 on white.
 
+Those color resources and `DesignTokens.generated.ets` are generated from `design/tokens.json`.
+Change the shared source and run `pnpm design-tokens:generate`; do not edit generated outputs
+directly.
+
 `base` is the fallback locale and holds English; `zh_CN` overrides it. There is no `en_US`
 directory, because it would only duplicate `base` and drift from it.
 

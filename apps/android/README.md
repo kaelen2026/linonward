@@ -108,6 +108,9 @@ app/src/test/     JVM tests of the flow, the request shapes, and the decoder
 Keep the app on the HTTP side of the backend boundary. It must not import `packages/db` or backend
 implementation files.
 
+Shared colors and dimensions are generated from `design/tokens.json`. Change that source and run
+`pnpm design-tokens:generate`; do not edit `BrandColors.kt` directly.
+
 ## Conventions worth knowing
 
 - **AGP 9 has built-in Kotlin support.** Applying `org.jetbrains.kotlin.android` on top of

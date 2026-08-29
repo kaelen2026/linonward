@@ -111,3 +111,6 @@ LinOnwardUITests/        End-to-end user-visible behavior
 
 Keep the app on the HTTP side of the backend boundary. It must not import `packages/db` or backend
 implementation files.
+
+Shared colors and dimensions are generated from `design/tokens.json`. Change that source and run
+`pnpm design-tokens:generate`; do not edit `DesignTokens.generated.swift` directly.

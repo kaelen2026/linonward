@@ -22,10 +22,14 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun BrandMark(modifier: Modifier = Modifier) {
-  Canvas(modifier = modifier.size(56.dp)) {
+  Canvas(modifier = modifier.size(DesignTokens.Size.BrandMark.dp)) {
     drawRoundRect(
       color = BrandColors.Navy900,
-      cornerRadius = CornerRadius(x = 14.dp.toPx(), y = 14.dp.toPx()),
+      cornerRadius =
+        CornerRadius(
+          x = DesignTokens.Radius.BrandMark.dp.toPx(),
+          y = DesignTokens.Radius.BrandMark.dp.toPx(),
+        ),
     )
 
     val stroke = Stroke(width = 3.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)

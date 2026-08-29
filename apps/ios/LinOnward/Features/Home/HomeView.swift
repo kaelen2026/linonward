@@ -8,10 +8,10 @@ struct HomeView: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 28) {
+      VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxxl) {
         BrandMark()
 
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
           Text("home.eyebrow")
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(Color.brandTeal)
@@ -29,9 +29,9 @@ struct HomeView: View {
         Label("home.greeting \(user.name)", systemImage: "checkmark.circle.fill")
           .font(.callout.weight(.medium))
           .foregroundStyle(.secondary)
-          .padding(.horizontal, 16)
-          .padding(.vertical, 12)
-          .background(.thinMaterial, in: .rect(cornerRadius: 14))
+          .padding(.horizontal, DesignTokens.Spacing.lg)
+          .padding(.vertical, DesignTokens.Spacing.md)
+          .background(.thinMaterial, in: .rect(cornerRadius: DesignTokens.Radius.brandMark))
           .accessibilityIdentifier("home.greeting")
 
         NavigationLink {
@@ -45,9 +45,9 @@ struct HomeView: View {
         .controlSize(.large)
         .accessibilityIdentifier("article.reader.open")
       }
-      .frame(maxWidth: 560, alignment: .leading)
-      .padding(.horizontal, 24)
-      .padding(.vertical, 40)
+      .frame(maxWidth: DesignTokens.Size.contentMaximumWidth, alignment: .leading)
+      .padding(.horizontal, DesignTokens.Spacing.xxl)
+      .padding(.vertical, DesignTokens.Spacing.xxxxl)
     }
     .background {
       LinearGradient(
