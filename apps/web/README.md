@@ -55,7 +55,8 @@ apps/web/
 │   ├── editor/page.tsx      # /editor — redirects to /admin
 │   ├── observability/page.tsx # /observability — Prometheus + Tempo
 │   ├── status/page.tsx      # /status — reads GET /health
-│   └── globals.css          # Tailwind v4 + a small slice of the brand tokens
+│   ├── design-tokens.generated.css # generated cross-platform tokens
+│   └── globals.css          # Tailwind v4 semantic mapping and app styles
 ├── src/components/articles/ # public article rendering
 ├── src/components/site/     # app shell
 ├── src/components/editor/   # ProseMirror schema, editor boundary and workbench

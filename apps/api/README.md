@@ -83,8 +83,10 @@ testable without a server, a clock, or a database. That is why the suite runs in
 The content module is mounted only when PostgreSQL is configured. Public reads expose published
 rows only. Administrative routes authenticate through Better Auth and authorize against the
 `administrator` and `editor` role assignments; the bootstrap administrator email list remains a
-server-side fallback. Every attempted mutation records a success or failure audit event, and a
-successful mutation commits its audit row in the same database transaction.
+server-side override that grants the administrator role before database assignments are read.
+Every authenticated mutation that reaches authorization records a success or failure audit event;
+requests rejected before that boundary, such as an unauthenticated request, do not. A successful
+mutation commits its audit row in the same database transaction.
 
 Every failure — validation, unknown route, unexpected crash — uses one envelope:
 

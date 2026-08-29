@@ -14,11 +14,11 @@ This page is the human reference for how the setup works and why.
 
 If jsdom can answer the question, it is not an E2E test.
 
-`apps/api`, `apps/feishu`, `apps/h5`, `apps/web`, `packages/contracts`, and `packages/db` run Vitest only,
-with tests beside the source they cover. The Node workspaces use Vitest's Node environment; both
-Next apps use jsdom and Testing Library for components. Playwright stays on `apps/www` — it is the
-app with routing, redirects and crawler-visible output worth the cost of a browser and a production
-build on every run.
+`apps/api`, `apps/feishu`, `apps/h5`, `apps/web`, `packages/contracts`, and `packages/db` run
+Vitest only, with tests beside the source they cover. Server and package workspaces use Vitest's
+Node environment; the two Next apps and the Vite H5 reader use jsdom and Testing Library for UI.
+Playwright stays on `apps/www` — it is the app with routing, redirects and crawler-visible output
+worth the cost of a browser and a production build on every run.
 
 The three native apps run neither. `apps/ios` uses Swift Testing plus XCUITest through `pnpm
 ios:test`, `apps/android` runs JUnit and Android instrumentation tests, and `apps/harmony` uses

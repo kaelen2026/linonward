@@ -75,7 +75,7 @@ upstream version to keep in sync.
 This describes a JavaScript workspace. A native app — `apps/ios`, `apps/android`, or
 `apps/harmony` — deliberately
 carries no `package.json`, stays out of the Turborepo graph, and gets root `<platform>:*` scripts
-plus its own CI job instead.
+where useful, or a platform-specific script such as `scripts/harmony-ci.sh`, plus its own CI job.
 
 1. `mkdir -p apps/<name>` and add a `package.json` named `@linonward/<name>`.
 2. Give it `dev`, `build`, and `typecheck` scripts so it joins the task graph.

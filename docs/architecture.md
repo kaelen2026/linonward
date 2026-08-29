@@ -298,7 +298,8 @@ apps/web/
 │   ├── admin/page.tsx        # capability-shaped article management
 │   ├── observability/page.tsx # Prometheus and Tempo operational view
 │   ├── status/page.tsx      # /status — GET /health, force-dynamic
-│   └── globals.css          # Tailwind v4, a subset of the brand tokens
+│   ├── design-tokens.generated.css # generated cross-platform tokens
+│   └── globals.css          # Tailwind v4 semantic mapping and app styles
 ├── src/components/editor/   # ProseMirror schema, plugins, toolbar, persistence UI
 ├── src/components/site/     # app shell
 └── src/lib/                 # auth, capabilities, article API, health and observability

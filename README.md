@@ -21,6 +21,8 @@ The website runs at http://localhost:3000, the API at http://localhost:3001, the
 internal console at http://localhost:3002, and the H5 reader at http://localhost:3003. The
 command above starts only the website; run `pnpm dev` for every JavaScript app except the Feishu
 relay, or start the API separately when exercising the contact form.
+The optional Grafana profile also defaults to port 3003; when running it beside H5, set
+`GRAFANA_PORT=3004` and `GRAFANA_URL=http://localhost:3004`.
 The API is a Hono modular monolith; see [`apps/api/README.md`](./apps/api/README.md).
 Those defaults line up, so the site's contact form reaches the API with no `.env` at
 all — point it elsewhere with `NEXT_PUBLIC_API_URL` (see
