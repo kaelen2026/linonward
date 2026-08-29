@@ -34,6 +34,7 @@ src/
     │   ├── routes.ts        # HTTP edge
     │   └── service.ts       # domain logic
     ├── auth/                # Better Auth handler and Resend OTP delivery
+    ├── content/             # public reading, protected lifecycle, roles, audit
     └── contact/
         ├── index.ts         # createContactModule
         ├── routes.ts        # HTTP edge + zod validation
@@ -67,8 +68,23 @@ testable without a server, a clock, or a database. That is why the suite runs in
 | --- | --- | --- |
 | `GET` | `/health` | Liveness, running version, uptime — touches no dependency |
 | `GET` | `/health/ready` | Readiness; `200` ready, `503` degraded, naming what failed |
+| `GET` | `/openapi.json` | OpenAPI 3.1 document for application-owned routes |
+| `GET` | `/metrics` | Prometheus request counters, latency histogram, and active requests |
 | `POST` | `/contact/inquiries` | Submit a contact-form inquiry |
+| `GET` | `/api/content/articles` | List published articles, filtered by `locale=zh|en` |
+| `GET` | `/api/content/articles/:slug` | Read one published article |
+| `GET` | `/api/content/admin/access` | Return the current content roles and capabilities |
+| `GET, POST` | `/api/content/admin/articles` | List all articles or create a draft |
+| `PUT, DELETE` | `/api/content/admin/articles/:id` | Update or delete an article |
+| `POST` | `/api/content/admin/articles/:id/publish` | Publish an article |
+| `POST` | `/api/content/admin/articles/:id/unpublish` | Return an article to draft |
 | `*` | `/api/auth/*` | Email OTP, Google OAuth, and session lifecycle |
+
+The content module is mounted only when PostgreSQL is configured. Public reads expose published
+rows only. Administrative routes authenticate through Better Auth and authorize against the
+`administrator` and `editor` role assignments; the bootstrap administrator email list remains a
+server-side fallback. Every attempted mutation records a success or failure audit event, and a
+successful mutation commits its audit row in the same database transaction.
 
 Every failure — validation, unknown route, unexpected crash — uses one envelope:
 
@@ -128,8 +144,14 @@ DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
   pnpm --filter @linonward/api migrate
 ```
 
-Under Compose the app container runs `node dist/migrate.js && node dist/index.js`, so there is
-never a window where the code is newer than the schema.
+Under Compose, run the one-shot `migrate` profile before starting or rolling application replicas:
+
+```bash
+docker compose --profile migrate run --rm migrate
+```
+
+The API container starts only `dist/index.js`; deployment ordering is therefore an operator or
+platform responsibility rather than an implicit side effect of process startup.
 
 After changing `packages/db/src/schema`, run `pnpm db:generate` and `pnpm db:check`; never hand-edit
 a generated migration that has already been deployed.
@@ -165,6 +187,7 @@ Brings up Postgres 18, Redis 8, and the API, with the app waiting on both health
 
 ```bash
 cp apps/api/.env.example apps/api/.env
+docker compose --profile migrate run --rm migrate
 docker compose up --build -d
 curl localhost:3001/health/ready
 docker compose down          # add -v to drop the data volume
@@ -210,11 +233,12 @@ pnpm --filter @linonward/api test:watch
 Vitest only; there is no browser to drive. Routes are exercised through `app.request()`, which
 runs the real middleware stack without opening a socket.
 
-The Postgres half of the repository contract is skipped unless `DATABASE_URL` is set — CI has no
-service containers, so it runs the in-memory half only. To run both:
+The normal Vitest task skips infrastructure integration tests unless their URLs are set. CI runs a
+separate integration job with fresh PostgreSQL and Redis service containers. To reproduce it:
 
 ```bash
-docker compose up -d postgres
+docker compose up -d postgres redis
 DATABASE_URL=postgres://linonward:linonward@localhost:5432/linonward \
-  pnpm --filter @linonward/api test
+REDIS_URL=redis://localhost:6379 \
+  pnpm --filter @linonward/api test:integration
 ```

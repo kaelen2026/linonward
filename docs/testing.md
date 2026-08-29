@@ -14,22 +14,23 @@ This page is the human reference for how the setup works and why.
 
 If jsdom can answer the question, it is not an E2E test.
 
-`apps/api`, `apps/feishu`, `apps/web`, `packages/contracts`, and `packages/db` run Vitest only,
+`apps/api`, `apps/feishu`, `apps/h5`, `apps/web`, `packages/contracts`, and `packages/db` run Vitest only,
 with tests beside the source they cover. The Node workspaces use Vitest's Node environment; both
 Next apps use jsdom and Testing Library for components. Playwright stays on `apps/www` — it is the
 app with routing, redirects and crawler-visible output worth the cost of a browser and a production
 build on every run.
 
-The two native apps run neither. `apps/ios` uses Swift Testing plus XCUITest through `pnpm
-ios:test`, and `apps/android` runs JUnit on the JVM through `pnpm android:test`. Both follow the
+The three native apps run neither. `apps/ios` uses Swift Testing plus XCUITest through `pnpm
+ios:test`, `apps/android` runs JUnit and Android instrumentation tests, and `apps/harmony` uses
+Hypium host and device suites through `scripts/harmony-ci.sh`. They follow the
 same rule as the rest of the repository: the logic worth testing is pulled out of the UI layer —
-`AuthenticationState` on both platforms — so the flow is covered without a simulator or an
-emulator, and neither app appears in `pnpm test`.
+`AuthenticationState` on iOS and Android, and pure endpoint logic on HarmonyOS — so most flow
+logic is covered without a device. None of the native apps appears in `pnpm test`.
 
 ## Running
 
 ```bash
-pnpm test                                  # every workspace, via Turborepo — what CI runs
+pnpm test                                  # architecture test, then every workspace via Turborepo
 pnpm --filter @linonward/www test          # one workspace, once
 pnpm --filter @linonward/www test:watch    # the TDD loop
 pnpm --filter @linonward/api test:watch    # API TDD loop
@@ -168,9 +169,9 @@ page.getByRole("contentinfo").getByRole("navigation", { name: tagline });
 ## Where tests run
 
 `pre-commit` runs Biome on staged files only — no tests, so committing stays
-fast. CI is the gate, in three parallel jobs: `verify` (lint, typecheck, Vitest,
-build), `integration` (real Postgres, Redis, and migrations), and `e2e`
-(Playwright). The browser binary is cached on its Playwright version, and the
-HTML report uploads as an artifact on every run.
+fast. CI routes changed paths into `verify` (lint, typecheck, architecture and Vitest tests,
+build), `integration` (real Postgres, Redis, and migrations), `e2e` (Playwright), and native
+platform jobs. The HarmonyOS jobs require an enabled self-hosted runner. The browser binary is
+cached on its Playwright version, and the HTML report uploads as an artifact on every run.
 
 Running both suites locally before calling work done is on you.

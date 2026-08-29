@@ -9,6 +9,7 @@
 | `apps/android` | — | Native Jetpack Compose application. Gradle build, outside the pnpm task graph. |
 | `apps/api` | `@linonward/api` | Backend HTTP API. Hono, laid out as a modular monolith. |
 | `apps/feishu` | `@linonward/feishu` | Feishu event relay. Routes authorized text to a GitHub Actions `workflow_dispatch` or local Hermes. |
+| `apps/h5` | `@linonward/h5` | Vite + React article reader embedded in native WebViews. |
 | `apps/harmony` | — | Native ArkTS application for HarmonyOS. DevEco Studio project, outside the pnpm task graph. |
 | `apps/ios` | — | Native SwiftUI application. XcodeGen project, outside the pnpm task graph. |
 | `apps/web` | `@linonward/web` | Internal console. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
@@ -99,15 +100,15 @@ reader must add authentication rather than re-expose this endpoint.
 
 ## `apps/ios`
 
-The native client is a Swift 6 SwiftUI application targeting iOS 18 on iPhone and iPad. XcodeGen's
+The native client is a Swift 6 SwiftUI application targeting iOS 26 on iPhone and iPad. XcodeGen's
 `project.yml` is the source of truth, while the generated `LinOnward.xcodeproj` stays checked in so
 the app opens directly in Xcode. Shared build settings live in `Config/`; app composition, design
 primitives, feature code, localized resources, and UI tests remain in separate directories.
 
-The initial shell deliberately has one `NavigationStack` and no global router, view-model layer,
-database, or network client. Those boundaries should appear only with the first behavior that needs
-them. When API access is added, the app stays on the HTTP side of `apps/api` and never imports
-`packages/db` or backend implementation files.
+The app has one `NavigationStack`, with authentication and the H5 article reader composed at the
+root. Authentication owns its state, URLSession boundary, and Keychain token store; the reader owns
+its locked-down `WKWebView` and negotiated bridge. The app stays on the HTTP side of `apps/api` and
+never imports `packages/db` or backend implementation files.
 
 Authentication is the one feature that crosses that boundary today: an email one-time code, and —
 where the build carries a Google client — Google. The app authenticates with `Authorization:
@@ -149,8 +150,9 @@ alone. Details are in [the app README](../apps/android/README.md).
 ## `apps/harmony`
 
 The HarmonyOS client is a stage-model ArkTS application targeting API 12 on phone, tablet, and
-2-in-1. `build-profile.json5` and `entry/build-profile.json5` are the source of truth for hvigor;
-unlike `apps/ios`, nothing generated is checked in, because DevEco Studio recreates the `hvigorw`
+2-in-1. The tracked `build-profile.template.json5` is the reviewed project profile;
+`scripts/prepare-harmony-profile.sh` creates the ignored machine-local `build-profile.json5`.
+The module profile under `entry/` remains tracked. DevEco Studio recreates the project `hvigorw`
 wrapper and `.hvigor/` on sync.
 
 ```
@@ -174,9 +176,11 @@ Color resources mirror the two-layer scheme in `apps/www`: semantic names in
 `resources/base/element/color.json`, flipped by `resources/dark/element/color.json` on the system
 dark color mode.
 
-**No CI job gates it.** GitHub-hosted runners carry no HarmonyOS SDK and the toolchain is not
-publicly downloadable, so unlike the `ios` job there is nothing for `ci.yml` to run. Building and
-testing this app is manual until a self-hosted runner with the SDK exists.
+GitHub-hosted runners carry no HarmonyOS SDK. When `HARMONY_CI_ENABLED=true`, changed HarmonyOS
+paths run lint, an unsigned build, and host tests on a repository-owned self-hosted macOS runner;
+fork pull requests are excluded. A separate scheduled/manual workflow runs device tests on a
+runner with attached hardware. When that variable or those runners are unavailable, verification
+remains a documented local step rather than part of a green hosted run.
 
 The shell is one page with no router, no view-model layer, and no HTTP client; authentication is
 the largest gap against `apps/ios`. When it is added, the app stays on the HTTP side of `apps/api`
@@ -264,11 +268,25 @@ code. API module isolation remains independently enforced by `apps/api/src/modul
 The cross-platform capability and compatibility lifecycle is recorded in
 [`capabilities.md`](./capabilities.md).
 
+## `apps/h5`
+
+`apps/h5` is a Vite + React article surface, not a standalone content backend. Native sends
+sanitized article data and reader settings through a versioned bridge; H5 reports readiness,
+rendered height, link taps, image taps, and validation errors back to its host. The handshake
+negotiates a protocol minor version and capability intersection, then binds every later message to
+a random page `sessionId` so stale or cross-page messages are rejected.
+
+The production build uses relative asset paths and a restrictive Content Security Policy, so it
+can be hosted below a URL prefix or bundled into a native client. iOS currently embeds it in a
+locked-down `WKWebView`; Android and HarmonyOS support are planned. The full message contract and
+transport order live in [the app README](../apps/h5/README.md).
+
 ## `apps/web`
 
-`apps/web` is the internal console: a second Next.js 16 App Router app, single-language
-(`zh-CN`), `noindex`, served on port 3002 so it can run alongside `www` (3000) and `api`
-(3001). It reads operational data from `apps/api`; authentication is its only write path.
+`apps/web` is the internal console and article publication surface: a second Next.js 16 App Router
+app, single-language (`zh-CN`), `noindex`, served on port 3002 so it can run alongside `www`
+(3000) and `api` (3001). Its public routes read published content; protected routes manage the
+article lifecycle and read health, Prometheus metrics, and Tempo traces.
 
 ```
 apps/web/
@@ -276,10 +294,14 @@ apps/web/
 │   ├── layout.tsx           # root layout — metadata, globals.css
 │   ├── page.tsx             # /
 │   ├── login/page.tsx       # /login — Better Auth email OTP / Google
+│   ├── articles/             # published article index and detail pages
+│   ├── admin/page.tsx        # capability-shaped article management
+│   ├── observability/page.tsx # Prometheus and Tempo operational view
 │   ├── status/page.tsx      # /status — GET /health, force-dynamic
 │   └── globals.css          # Tailwind v4, a subset of the brand tokens
+├── src/components/editor/   # ProseMirror schema, plugins, toolbar, persistence UI
 ├── src/components/site/     # app shell
-└── src/lib/                 # auth client/session, API origin, health fetch, cn()
+└── src/lib/                 # auth, capabilities, article API, health and observability
 ```
 
 Better Auth runs inside Hono and stores users, accounts, sessions, and OTP verification records
@@ -287,10 +309,15 @@ in Postgres through Drizzle ORM. Email OTP delivery uses Resend; Google OAuth is
 proxies `/api/auth/*` to Hono so browser cookies remain first-party, while protected Server
 Components forward the cookie to `GET /api/auth/get-session` before rendering.
 
+The content API returns roles and fine-grained capabilities. Server Components use those
+capabilities to shape the management UI, while the API independently authorizes every create,
+update, publish, unpublish, and delete command. Public article reads are cached for 60 seconds;
+development alone supplies a preview article when the API is unavailable or empty.
+
 It carries no shadcn/ui registry and no Playwright suite — end-to-end coverage stays on
-`www`, the app with routing and crawler-visible output worth a browser. Its design tokens
-are a deliberate subset of www's; a third consumer is the point to extract a shared
-package instead of copying the ramp again. Details in
+`www`, the app with routing and crawler-visible output worth a browser. Its CSS tokens are
+generated from the same cross-platform `design/tokens.json` source as www and the native clients.
+Details in
 [the app README](../apps/web/README.md).
 
 ## `apps/feishu`

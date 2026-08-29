@@ -61,9 +61,10 @@ and footer both hold a nav and a language switcher, so a bare `getByRole` matche
 `apps/harmony` is outside all of that. Its tracked project configuration is
 `build-profile.template.json5`; `scripts/harmony-ci.sh` creates the ignored machine-local
 `build-profile.json5` before building. It has no `package.json`, so `pnpm test` and `pnpm build`
-walk straight past it, and **no hosted CI job runs it** — GitHub-hosted runners carry no
-HarmonyOS SDK. A green `pnpm lint && pnpm typecheck && pnpm test && pnpm build` says nothing about
-a change there. Verify it with installed HarmonyOS Command Line Tools by setting
+walk straight past it. GitHub-hosted runners carry no HarmonyOS SDK; CI covers it only when
+`HARMONY_CI_ENABLED=true` and the repository-owned self-hosted runner is available. A green hosted
+run can therefore say nothing about a change there. Verify it with installed HarmonyOS Command
+Line Tools by setting
 `HARMONY_CLI_HOME` to the tools directory and `DEVECO_SDK_HOME` to its `sdk` directory, then run
 `scripts/harmony-ci.sh verify`. A DevEco-synced project-level `hvigorw` is an alternative, not a
 prerequisite. See [`apps/harmony/README.md`](./apps/harmony/README.md).

@@ -17,18 +17,20 @@ pnpm install
 pnpm --filter @linonward/www dev
 ```
 
-The website runs at http://localhost:3000, the API at http://localhost:3001, and the
-internal console at http://localhost:3002. The command above starts only the website; run
-`pnpm dev` for all apps or start the API separately when exercising the contact form.
+The website runs at http://localhost:3000, the API at http://localhost:3001, the
+internal console at http://localhost:3002, and the H5 reader at http://localhost:3003. The
+command above starts only the website; run `pnpm dev` for every JavaScript app except the Feishu
+relay, or start the API separately when exercising the contact form.
 The API is a Hono modular monolith; see [`apps/api/README.md`](./apps/api/README.md).
 Those defaults line up, so the site's contact form reaches the API with no `.env` at
 all — point it elsewhere with `NEXT_PUBLIC_API_URL` (see
 [`apps/www/.env.example`](./apps/www/.env.example)).
 The Feishu long-connection client requires its own environment configuration; see
 [`apps/feishu/README.md`](./apps/feishu/README.md).
-Both native clients build outside pnpm and Turborepo: `apps/ios` through XcodeGen and Xcode,
-`apps/harmony` through DevEco Studio and hvigor. The HarmonyOS app has no CI job, so its build
-and tests are a manual step; see [`apps/harmony/README.md`](./apps/harmony/README.md).
+All three native clients build outside pnpm and Turborepo: `apps/ios` through XcodeGen and Xcode,
+`apps/android` through Gradle, and `apps/harmony` through DevEco Studio or HarmonyOS Command Line
+Tools. HarmonyOS verification runs only when the repository's self-hosted runner is enabled; see
+[`apps/harmony/README.md`](./apps/harmony/README.md).
 
 ## Workspace layout
 
@@ -38,6 +40,7 @@ and tests are a manual step; see [`apps/harmony/README.md`](./apps/harmony/READM
 │   ├── android/                # Native Jetpack Compose application
 │   ├── api/                    # Backend — Hono modular monolith, Postgres + Redis
 │   ├── feishu/                 # Feishu-to-GitHub task relay
+│   ├── h5/                     # React article reader embedded by native clients
 │   ├── harmony/                # Native ArkTS application for HarmonyOS
 │   ├── ios/                    # Native SwiftUI application for iPhone and iPad
 │   ├── web/                    # Internal console — Next.js 16 App Router
@@ -57,10 +60,11 @@ and tests are a manual step; see [`apps/harmony/README.md`](./apps/harmony/READM
 
 | Command | Description |
 | --- | --- |
-| `pnpm dev` | Run every app in dev mode via Turborepo |
+| `pnpm dev` | Run every JavaScript app except the Feishu relay in dev mode |
+| `pnpm dev:feishu` | Run the Feishu relay after configuring its environment |
 | `pnpm build` | Build every workspace |
 | `pnpm typecheck` | Type-check every workspace |
-| `pnpm test` | Run Vitest across every workspace |
+| `pnpm test` | Run architecture boundaries, then workspace Vitest suites |
 | `pnpm test:e2e` | Run Playwright end-to-end against a production build |
 | `pnpm ios:generate` | Regenerate the Xcode project from `apps/ios/project.yml` |
 | `pnpm ios:build` | Build the SwiftUI app for a generic iOS Simulator |

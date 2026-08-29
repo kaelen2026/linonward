@@ -12,14 +12,15 @@ Node 24 is required. With nvm: `nvm use` picks up `.nvmrc`.
 ## Everyday commands
 
 ```bash
-pnpm dev                             # all apps
+pnpm dev                             # all JavaScript apps except the Feishu relay
 pnpm --filter @linonward/www dev     # just the website        (3000)
 pnpm --filter @linonward/api dev     # backend API             (3001)
 pnpm --filter @linonward/web dev     # internal console        (3002)
-pnpm --filter @linonward/feishu dev  # Feishu event relay (requires apps/feishu/.env)
+pnpm --filter @linonward/h5 dev      # native article reader   (3003)
+pnpm dev:feishu                      # Feishu relay (requires apps/feishu/.env)
 pnpm build
 pnpm typecheck
-pnpm test                            # Vitest, every workspace
+pnpm test                            # architecture boundaries + workspace Vitest
 pnpm test:e2e                        # Playwright, against a production build
 pnpm lint                            # check only
 pnpm lint:fix                        # apply safe fixes
@@ -31,10 +32,10 @@ pnpm android:test                    # Android JVM unit tests, no emulator
 pnpm android:build                   # Android debug APK
 ```
 
-The `android:*` and `ios:*` scripts shell out to Gradle and Xcode. Those apps are outside the
-Turborepo graph, so `pnpm build` and `pnpm test` do not cover them. Android needs JDK 17 on
-`JAVA_HOME` and an Android SDK on `ANDROID_HOME`; setup and the API-origin contract are in
-[`apps/android/README.md`](../apps/android/README.md).
+The `android:*` and `ios:*` scripts shell out to Gradle and Xcode. HarmonyOS uses
+`scripts/harmony-ci.sh` directly. All three native apps are outside the Turborepo graph, so
+`pnpm build` and `pnpm test` do not cover them. Platform requirements and API-origin contracts
+live in each app's README.
 
 Testing has its own page: [testing.md](./testing.md).
 
@@ -71,7 +72,8 @@ upstream version to keep in sync.
 
 ## Adding a new app
 
-This describes a JavaScript workspace. A native app — `apps/ios`, `apps/android` — deliberately
+This describes a JavaScript workspace. A native app — `apps/ios`, `apps/android`, or
+`apps/harmony` — deliberately
 carries no `package.json`, stays out of the Turborepo graph, and gets root `<platform>:*` scripts
 plus its own CI job instead.
 
