@@ -18,11 +18,13 @@ Run from the repository root:
 pnpm android:lint    # Android Lint, warnings are errors
 pnpm android:test    # JVM unit tests — no emulator, seconds
 pnpm android:build   # debug APK
+pnpm ci:android      # the same lint, tests, debug and release builds as CI
 ```
 
 Each is a thin wrapper over the checked-in Gradle wrapper, so `apps/android/gradlew -p apps/android
 <task>` does the same thing. The release build (`:app:assembleRelease`) additionally runs R8,
-resource shrinking, and `lintVitalRelease`.
+resource shrinking, and `lintVitalRelease`. It fails before compiling unless
+`linonward.apiBaseUrl.release` is a non-empty HTTPS origin.
 
 ## Gradle Daemon JDK
 
@@ -50,13 +52,21 @@ Cleartext HTTP is permitted **only** for those loopback addresses, through
 against a real host is not a reason to widen that file.
 
 Release ships the value **empty** on purpose. A release that inherited the local default would
-quietly try to reach an address on the phone itself; empty instead surfaces "no server configured"
-on the sign-in screen. Supply it from the release pipeline:
+quietly try to reach an address on the phone itself; empty instead prevents a release artifact from
+being produced. Supply it from the release pipeline:
 
 ```bash
 apps/android/gradlew -p apps/android :app:assembleRelease \
   -Plinonward.apiBaseUrl.release=https://api.example.com
 ```
+
+CI compiles the release variant and runs the instrumentation suite on an emulator. The device tests
+cover the Compose sign-in contract and Android Keystore persistence; keep framework-dependent
+behaviour there and pure state transitions in the faster JVM suite.
+
+Local and remote CI share `scripts/android-ci.sh` as their canonical entry point. It uses
+`https://api.ci.invalid` for the non-deployable release verification build by default; override it
+with `LINONWARD_ANDROID_RELEASE_API_BASE_URL` when deliberately verifying another HTTPS origin.
 
 Signing in additionally needs the API's authentication variables set; see
 [`apps/api/.env.example`](../api/.env.example).

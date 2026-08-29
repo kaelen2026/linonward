@@ -73,7 +73,9 @@ class AuthenticationViewModel(
 
   fun sendVerificationCode() {
     val service = service ?: return failWithoutService()
-    val email = _state.value.trimmedEmail
+    val current = _state.value
+    if (current.step != AuthenticationState.Step.Email || !current.canSendCode) return
+    val email = current.trimmedEmail
     _state.update { it.beginRequest() }
 
     viewModelScope.launch {
@@ -85,13 +87,17 @@ class AuthenticationViewModel(
   fun verifyCode() {
     val service = service ?: return failWithoutService()
     val current = _state.value
+    if (current.step != AuthenticationState.Step.Code || !current.canVerifyCode) return
     _state.update { it.beginRequest() }
 
     viewModelScope.launch {
       when (val result = service.signIn(email = current.email, code = current.code)) {
         is AuthenticationResult.Success -> {
-          tokens.write(result.value.token)
-          _state.update { it.signedIn(result.value.user) }
+          if (tokens.write(result.value.token)) {
+            _state.update { it.signedIn(result.value.user) }
+          } else {
+            _state.update { it.failed(AuthenticationError.Storage) }
+          }
         }
         is AuthenticationResult.Failure -> _state.update { it.failed(result.error) }
       }

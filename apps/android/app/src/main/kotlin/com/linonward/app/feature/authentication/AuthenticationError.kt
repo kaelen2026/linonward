@@ -17,6 +17,9 @@ enum class AuthenticationError {
   /** The request never reached the API, or the reply was unreadable. */
   Network,
 
+  /** The session credential could not be persisted securely on this device. */
+  Storage,
+
   /** The code was wrong. */
   InvalidCode,
 
