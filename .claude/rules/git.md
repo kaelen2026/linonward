@@ -199,12 +199,14 @@ over a failing check. After every check, including the automated pull-request re
      'flatten[] | select(.user.login == "linonward-bot[bot]" and
        ((.body // "") | contains($marker))) | {id, state, body}'
    gh api --paginate --slurp "repos/$repo/pulls/<n>/comments" | jq \
-     'flatten[] | {pull_request_review_id, path, line, body}'
+     'flatten[] | {pull_request_review_id, path, line, original_line, body}'
    ```
 
    The summary containing `$marker` is the authoritative evidence that the current head was
-   reviewed. Read every inline comment returned by the paginated query; older unresolved comments
-   remain relevant until they are explicitly addressed.
+   reviewed. If it is absent for any reason, stop and ask a human collaborator to close and reopen
+   the PR, then repeat the checks and queries. Read every inline comment returned by the paginated
+   query and explicitly determine whether it was addressed; the REST response does not expose
+   review-thread resolution state.
 2. Resolve every blocking or correctness finding before merging.
 3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit. The
    rerun depends on a non-bot actor triggering the workflows. If a bot pushed the fix or the
