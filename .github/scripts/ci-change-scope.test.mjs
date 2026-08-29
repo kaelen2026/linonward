@@ -76,7 +76,6 @@ test("routes shared Node dependency changes to the relevant jobs", () => {
     ...none,
     verify: true,
     integration: true,
-    ios: true,
     e2e: true,
   });
 });

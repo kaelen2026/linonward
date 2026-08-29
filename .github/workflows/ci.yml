@@ -233,27 +233,28 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
       - name: Install XcodeGen
         run: brew install xcodegen
 
       - name: Regenerate Xcode project
-        run: pnpm ios:generate
+        run: xcodegen generate
+        working-directory: apps/ios
 
       - name: Check generated project is current
         run: git diff --exit-code -- apps/ios/LinOnward.xcodeproj
 
       - name: Build
-        run: pnpm ios:build
+        run: >-
+          xcodebuild
+          -project apps/ios/LinOnward.xcodeproj
+          -scheme LinOnward
+          -configuration Debug
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+          build
 
       - name: Test
-        run: pnpm ios:test
+        run: apps/ios/scripts/test.sh
 
   e2e:
     name: End-to-end
