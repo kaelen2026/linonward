@@ -8,6 +8,7 @@ const defaultRateLimit = 5;
 const defaultRateWindowSeconds = 3_600;
 
 export type ApiConfig = {
+  administratorEmails: readonly string[];
   /** Browser origins allowed to call the API. Empty disables CORS entirely. */
   allowedOrigins: readonly string[];
   /** Better Auth is optional for zero-config local API work and required in production. */
@@ -52,6 +53,7 @@ export function loadApiConfig(environment: Record<string, string | undefined>): 
   const auth = readAuthConfig(environment, databaseUrl, google);
 
   return {
+    administratorEmails: readEmailList(environment.INTERNAL_CONSOLE_ADMIN_EMAILS),
     allowedOrigins: readAllowedOrigins(environment.CORS_ALLOWED_ORIGINS),
     auth,
     databaseUrl,
@@ -69,6 +71,17 @@ export function loadApiConfig(environment: Record<string, string | undefined>): 
     trustedProxyIps: readTrustedProxyIps(environment.TRUSTED_PROXY_IPS),
     version: environment.API_VERSION?.trim() || defaultVersion,
   };
+}
+
+function readEmailList(value: string | undefined): readonly string[] {
+  return [
+    ...new Set(
+      (value ?? "")
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
 }
 
 function readAuthConfig(

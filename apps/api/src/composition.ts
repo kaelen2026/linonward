@@ -6,14 +6,15 @@ import { Resend } from "resend";
 
 import { createApp } from "./app.js";
 import type { ApiConfig } from "./config.js";
-import { createAuthHandler } from "./modules/auth/auth.js";
-import { type AuthHandler, createAuthModule } from "./modules/auth/index.js";
+import { createAuthRuntime } from "./modules/auth/auth.js";
+import { type AuthRuntime, createAuthModule } from "./modules/auth/index.js";
 import { createContactModule } from "./modules/contact/index.js";
 import { createPostgresInquiryRepository } from "./modules/contact/postgres-repository.js";
 import {
   createInMemoryInquiryRepository,
   type InquiryRepository,
 } from "./modules/contact/repository.js";
+import { createContentModule } from "./modules/content/index.js";
 import { createHealthModule } from "./modules/health/index.js";
 import type { DependencyProbes } from "./modules/health/service.js";
 import { clientIp } from "./shared/client-ip.js";
@@ -34,7 +35,9 @@ export type ApiDependencies = {
   inquiries: InquiryRepository;
   inquiryRateLimiter: RateLimiter;
   probes: DependencyProbes;
-  authHandler?: AuthHandler;
+  auth?: AuthRuntime;
+  contentDatabase?: DatabaseConnection["db"];
+  administratorEmails?: readonly string[];
   trustedProxyIps: readonly string[];
   /** Closed on shutdown; empty when everything is in-memory. */
   close: () => Promise<void>;
@@ -108,10 +111,12 @@ export async function createDefaultDependencies(
     inquiryRateLimiter: redis
       ? createRedisRateLimiter(redis, config.inquiryRateLimit)
       : createInMemoryRateLimiter(config.inquiryRateLimit, clock),
-    authHandler:
+    auth:
       postgres && config.auth
-        ? createAuthHandler(config.auth, postgres.db, new Resend(config.auth.resendApiKey))
+        ? createAuthRuntime(config.auth, postgres.db, new Resend(config.auth.resendApiKey))
         : undefined,
+    contentDatabase: postgres?.db,
+    administratorEmails: config.administratorEmails,
     probes,
     trustedProxyIps: config.trustedProxyIps,
     close: () => closeResources(closers),
@@ -148,8 +153,17 @@ export function createApiModules(dependencies: ApiDependencies): ApiModule[] {
       ),
     }),
   ];
-  if (dependencies.authHandler)
-    modules.push(createAuthModule({ handler: dependencies.authHandler }));
+  if (dependencies.contentDatabase)
+    modules.push(
+      createContentModule({
+        database: dependencies.contentDatabase,
+        authenticate: dependencies.auth?.getSession,
+        administratorEmails: dependencies.administratorEmails ?? [],
+        clock: dependencies.clock,
+        nextId: () => `art_${randomUUID()}`,
+      }),
+    );
+  if (dependencies.auth) modules.push(createAuthModule({ handler: dependencies.auth.handler }));
   return modules;
 }
 

@@ -4,7 +4,7 @@ import { bearer, emailOTP } from "better-auth/plugins";
 import type { AuthConfig } from "../../shared/auth-config.js";
 import { authSchema, type Database } from "../../shared/database.js";
 import { createEmailOtpSender } from "./email.js";
-import type { AuthHandler } from "./index.js";
+import type { AuthRuntime } from "./index.js";
 
 type EmailClient = Parameters<typeof createEmailOtpSender>[0];
 
@@ -31,11 +31,11 @@ export function googleProvider({ clientId, clientSecret, iosClientId }: GoogleCo
   return { clientId: iosClientId ? [clientId, iosClientId] : clientId, clientSecret };
 }
 
-export function createAuthHandler(
+export function createAuthRuntime(
   config: AuthConfig,
   database: Database,
   email: EmailClient,
-): AuthHandler {
+): AuthRuntime {
   const auth = betterAuth({
     appName: "LinOnward Web",
     baseURL: config.baseUrl,
@@ -65,5 +65,5 @@ export function createAuthHandler(
       }),
     ],
   });
-  return auth.handler;
+  return { handler: auth.handler, getSession: (headers) => auth.api.getSession({ headers }) };
 }

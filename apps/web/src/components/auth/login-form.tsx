@@ -31,7 +31,7 @@ const defaultClient: LoginFormClient = {
 export function LoginForm({
   auth = defaultClient,
   googleEnabled,
-  onAuthenticated = () => window.location.assign("/"),
+  onAuthenticated = () => window.location.assign("/admin"),
 }: {
   auth?: LoginFormClient;
   googleEnabled: boolean;

@@ -8,7 +8,10 @@ const nextConfig: NextConfig = {
       /\/+$/,
       "",
     );
-    return [{ source: "/api/auth/:path*", destination: `${apiOrigin}/api/auth/:path*` }];
+    return [
+      { source: "/api/auth/:path*", destination: `${apiOrigin}/api/auth/:path*` },
+      { source: "/api/content/:path*", destination: `${apiOrigin}/api/content/:path*` },
+    ];
   },
 };
 

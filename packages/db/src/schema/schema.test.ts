@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   account,
   accountRelations,
+  articles,
   inquiries,
   session,
   sessionRelations,
@@ -15,12 +16,13 @@ import {
 
 describe("database schema", () => {
   it("keeps every deployed table in the central schema", () => {
-    expect([user, session, account, verification, inquiries].map(getTableName)).toEqual([
+    expect([user, session, account, verification, inquiries, articles].map(getTableName)).toEqual([
       "user",
       "session",
       "account",
       "verification",
       "inquiries",
+      "articles",
     ]);
   });
 
