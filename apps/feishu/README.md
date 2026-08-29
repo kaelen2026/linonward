@@ -55,6 +55,19 @@ one long-lived process with outbound access to Feishu and GitHub, plus its Redis
 6. Set the repository secrets used by the workflow itself:
    `CLAUDE_CODE_OAUTH_TOKEN`, `LARKSUITE_CLI_APP_ID`, and `LARKSUITE_CLI_APP_SECRET`.
 
+### Request a pull request review
+
+Every opened or reopened pull request automatically receives the `bot-review` label and requests a
+read-only review from `linonward-bot`. The bot submits a `COMMENT` review and optional inline
+findings; it never approves, requests changes, or replaces the human reviewer responsible for the
+final decision. While the label remains attached, each new head commit triggers one new review.
+Draft pull requests receive the label immediately but wait until they are marked ready. Removing
+the label disables later automatic reviews; reopening the pull request opts it back in.
+
+Each completed review includes the pull request head SHA in a hidden marker. Repeated delivery of
+the same label or synchronization event reconciles against that marker and does not create a
+duplicate review.
+
 `workflow_dispatch` requires `linonward-bot.yml` to exist on `main` before the relay can invoke
 it. Set `GITHUB_WORKFLOW_REF` only when deliberately dispatching a different ref.
 
