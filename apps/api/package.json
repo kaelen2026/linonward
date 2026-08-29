@@ -14,7 +14,7 @@
     "pretest": "pnpm --filter @linonward/db --filter @linonward/contracts build",
     "test": "vitest run",
     "pretest:integration": "pnpm migrate",
-    "test:integration": "vitest run src/modules/contact/repository.test.ts src/modules/content/audit.integration.test.ts src/shared/redis.integration.test.ts",
+    "test:integration": "vitest run src/modules/contact/repository.test.ts src/modules/content/audit.integration.test.ts src/modules/content/authorization.integration.test.ts src/shared/redis.integration.test.ts",
     "pretest:watch": "pnpm --filter @linonward/db --filter @linonward/contracts build",
     "test:watch": "vitest",
     "clean": "rm -rf dist .turbo node_modules",

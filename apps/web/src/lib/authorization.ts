@@ -1,3 +1,8 @@
+import {
+  type ContentAccess,
+  type ContentCapability,
+  contentCapabilities,
+} from "@linonward/contracts/content";
 import type { WebSession } from "@linonward/contracts/session";
 
 /**
@@ -22,4 +27,15 @@ export function readAdministratorEmails(value: string | undefined): readonly str
         .filter(Boolean),
     ),
   ];
+}
+
+export function bootstrapAdministratorAccess(): ContentAccess {
+  return { roles: ["administrator"], capabilities: [...contentCapabilities] };
+}
+
+export function hasContentCapability(
+  access: ContentAccess,
+  capability: ContentCapability,
+): boolean {
+  return access.capabilities.includes(capability);
 }

@@ -65,9 +65,10 @@ NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=false
 INTERNAL_CONSOLE_ADMIN_EMAILS=<the same sign-in email>
 ```
 
-The value is intentionally configured in both applications. The API protects administrator data,
-while the Web server protects console routes. Both variables are server-only and must never use a
-`NEXT_PUBLIC_` prefix.
+The value is intentionally configured in both applications. It bootstraps an administrator and
+provides an emergency access path; normal content editors are assigned through the database-backed
+role model after their first sign-in. The API protects content data, while the Web server protects
+console routes. Both variables are server-only and must never use a `NEXT_PUBLIC_` prefix.
 
 ## 5. Apply migrations
 
@@ -75,7 +76,7 @@ while the Web server protects console routes. Both variables are server-only and
 pnpm --filter @linonward/api migrate
 ```
 
-This creates or updates the Better Auth `user`, `session`, `account`, and `verification` tables.
+This creates or updates the Better Auth tables and the content role-assignment table.
 
 ## 6. Start and verify
 

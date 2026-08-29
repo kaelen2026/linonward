@@ -10,6 +10,14 @@ export const articleLimits = {
 
 export const articleLocales = ["zh", "en"] as const;
 export const articleStatuses = ["draft", "published"] as const;
+export const contentRoles = ["administrator", "editor"] as const;
+export const contentCapabilities = [
+  "article.view",
+  "article.createDraft",
+  "article.updateDraft",
+  "article.publish",
+  "article.delete",
+] as const;
 
 const articleContentSchema = z.record(z.string(), z.unknown());
 
@@ -39,6 +47,13 @@ export const articleSchema = articleInputSchema.extend({
 export const articleResponseSchema = articleSchema;
 export const articlesResponseSchema = z.object({ articles: z.array(articleSchema) });
 export const singleArticleResponseSchema = z.object({ article: articleSchema });
+export const contentAccessSchema = z.object({
+  roles: z.array(z.enum(contentRoles)),
+  capabilities: z.array(z.enum(contentCapabilities)),
+});
 
 export type ArticleInput = z.infer<typeof articleInputSchema>;
 export type Article = z.infer<typeof articleSchema>;
+export type ContentRole = (typeof contentRoles)[number];
+export type ContentCapability = (typeof contentCapabilities)[number];
+export type ContentAccess = z.infer<typeof contentAccessSchema>;

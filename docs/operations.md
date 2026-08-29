@@ -19,11 +19,28 @@ waits rather than applying the same migration concurrently.
 
 ## Access and audit boundary
 
-`apps/web` is an internal administrator console. Its server-only
-`INTERNAL_CONSOLE_ADMIN_EMAILS` allow-list is the current administrator role;
-an authenticated account not on that list receives `/unauthorized`. Keep this
-environment variable in the deployment secret store, never in a
-`NEXT_PUBLIC_*` variable.
+`apps/web` is an internal content and operations console. Content access has two bounded roles:
+
+- `administrator` can view, create, update, publish, unpublish, and delete articles;
+- `editor` can view, create drafts, and update drafts, but cannot change published articles.
+
+Assignments live in `content_role_assignments` and reference the Better Auth user ID. Removing a
+user cascades their assignments. `INTERNAL_CONSOLE_ADMIN_EMAILS` remains a server-only bootstrap
+and emergency administrator path in both API and Web deployments; keep it in the secret store and
+never use a `NEXT_PUBLIC_*` variable. Operational status and observability pages remain bootstrap
+administrator-only.
+
+Until a separately audited role-management use case exists, operators assign a role after the user
+has signed in once and has a Better Auth user row:
+
+```sql
+insert into content_role_assignments (user_id, role, assigned_by_email)
+select id, 'editor', 'operator@example.com' from "user" where email = 'editor@example.com'
+on conflict do nothing;
+```
+
+Only assign the literal roles documented above. The API ignores unknown stored roles and denies
+access when no recognized role remains.
 
 Content create, update, and delete attempts write an append-only `content_audit_events` row with
 the normalized actor email, action, target ID, request ID, outcome, stable error code, and time. A

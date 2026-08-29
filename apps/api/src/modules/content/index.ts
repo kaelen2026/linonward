@@ -1,15 +1,26 @@
-import { articleInputSchema } from "@linonward/contracts/content";
+import { articleInputSchema, type ContentRole, contentRoles } from "@linonward/contracts/content";
 import { and, desc, eq } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { ApiError } from "../../shared/api-error.js";
-import { articles, contentAuditEvents, type Database } from "../../shared/database.js";
+import {
+  articles,
+  contentAuditEvents,
+  contentRoleAssignments,
+  type Database,
+} from "../../shared/database.js";
 import type { ApiModule, AppEnv } from "../../shared/module.js";
 import {
   type ContentAuditAction,
   type ContentAuditEvent,
   executeAuditedContentMutation,
 } from "./audit.js";
-import { type ContentSession, requireContentAdministrator } from "./authorization.js";
+import {
+  authorizeContent,
+  type ContentPrincipal,
+  type ContentSession,
+  capabilitiesFor,
+  contentPrincipal,
+} from "./authorization.js";
 
 type Options = {
   database: Database;
@@ -32,24 +43,34 @@ async function appendAudit(database: ContentDatabase, event: ContentAuditEvent):
 
 export function createContentModule(options: Options): ApiModule {
   const routes = new Hono<AppEnv>();
-  const administrator = async (headers: Headers) => {
+  const principal = async (headers: Headers): Promise<ContentPrincipal> => {
     if (!options.authenticate)
       throw new ApiError(503, "auth_unavailable", "Authentication is unavailable");
-    return requireContentAdministrator(
-      await options.authenticate(headers),
-      options.administratorEmails,
-    );
+    const session = await options.authenticate(headers);
+    if (!session) return contentPrincipal(session, [], options.administratorEmails);
+    const email = session.user.email.trim().toLowerCase();
+    if (options.administratorEmails.includes(email)) {
+      return contentPrincipal(session, [], options.administratorEmails);
+    }
+    const assignments = await options.database
+      .select({ role: contentRoleAssignments.role })
+      .from(contentRoleAssignments)
+      .where(eq(contentRoleAssignments.userId, session.user.id));
+    const roles = assignments
+      .map(({ role }) => role)
+      .filter((role): role is ContentRole => contentRoles.includes(role as ContentRole));
+    return contentPrincipal(session, roles, options.administratorEmails);
   };
   const auditedMutation = async <T>(
     c: Context<AppEnv>,
+    actor: ContentPrincipal,
     action: ContentAuditAction,
     targetId: string,
     operation: (database: ContentDatabase) => Promise<T>,
   ) => {
-    const session = await administrator(c.req.raw.headers);
     return executeAuditedContentMutation({
       action,
-      actorEmail: session.user.email.trim().toLowerCase(),
+      actorEmail: actor.user.email,
       targetId,
       requestId: c.var.requestId,
       occurredAt: options.clock(),
@@ -90,16 +111,25 @@ export function createContentModule(options: Options): ApiModule {
     return c.json({ article });
   });
   routes.get("/admin/articles", async (c) => {
-    await administrator(c.req.raw.headers);
+    authorizeContent(await principal(c.req.raw.headers), "article.view");
     return c.json({
       articles: await options.database.select().from(articles).orderBy(desc(articles.updatedAt)),
     });
   });
+  routes.get("/admin/access", async (c) => {
+    const actor = authorizeContent(await principal(c.req.raw.headers), "article.view");
+    return c.json({ roles: actor.roles, capabilities: capabilitiesFor(actor) });
+  });
   routes.post("/admin/articles", async (c) => {
+    const actor = await principal(c.req.raw.headers);
     const id = options.nextId();
-    const article = await auditedMutation(c, "article.create", id, async (database) => {
+    const article = await auditedMutation(c, actor, "article.create", id, async (database) => {
       const parsed = articleInputSchema.safeParse(await c.req.json().catch(() => undefined));
       if (!parsed.success) throw new ApiError(400, "invalid_article", "Article fields are invalid");
+      authorizeContent(
+        actor,
+        parsed.data.status === "published" ? "article.publish" : "article.createDraft",
+      );
       const now = options.clock();
       const [created] = await database
         .insert(articles)
@@ -116,16 +146,23 @@ export function createContentModule(options: Options): ApiModule {
     return c.json({ article }, 201);
   });
   routes.put("/admin/articles/:id", async (c) => {
+    const actor = await principal(c.req.raw.headers);
     const id = c.req.param("id");
-    const article = await auditedMutation(c, "article.update", id, async (database) => {
+    const article = await auditedMutation(c, actor, "article.update", id, async (database) => {
       const parsed = articleInputSchema.safeParse(await c.req.json().catch(() => undefined));
       if (!parsed.success) throw new ApiError(400, "invalid_article", "Article fields are invalid");
       const [existing] = await database
-        .select({ publishedAt: articles.publishedAt })
+        .select({ publishedAt: articles.publishedAt, status: articles.status })
         .from(articles)
         .where(eq(articles.id, id))
         .limit(1);
       if (!existing) throw new ApiError(404, "article_not_found", "Article not found");
+      authorizeContent(
+        actor,
+        existing.status === "published" || parsed.data.status === "published"
+          ? "article.publish"
+          : "article.updateDraft",
+      );
       const [updated] = await database
         .update(articles)
         .set({
@@ -141,8 +178,10 @@ export function createContentModule(options: Options): ApiModule {
     return c.json({ article });
   });
   routes.delete("/admin/articles/:id", async (c) => {
+    const actor = await principal(c.req.raw.headers);
     const id = c.req.param("id");
-    await auditedMutation(c, "article.delete", id, async (database) => {
+    await auditedMutation(c, actor, "article.delete", id, async (database) => {
+      authorizeContent(actor, "article.delete");
       const deleted = await database
         .delete(articles)
         .where(eq(articles.id, id))

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { articleInputSchema, articleResponseSchema, articlesResponseSchema } from "./content.js";
+import {
+  articleInputSchema,
+  articleResponseSchema,
+  articlesResponseSchema,
+  contentAccessSchema,
+} from "./content.js";
 
 const article = {
   id: "art_1",
@@ -31,5 +36,20 @@ describe("content contract", () => {
   it("enforces the write-side field limits", () => {
     expect(() => articleInputSchema.parse({ ...article, title: "" })).toThrow();
     expect(() => articleInputSchema.parse({ ...article, slug: "Not URL Safe" })).toThrow();
+  });
+
+  it("describes the bounded roles and capabilities returned to the console", () => {
+    expect(
+      contentAccessSchema.parse({
+        roles: ["editor"],
+        capabilities: ["article.view", "article.createDraft", "article.updateDraft"],
+      }),
+    ).toEqual({
+      roles: ["editor"],
+      capabilities: ["article.view", "article.createDraft", "article.updateDraft"],
+    });
+    expect(() =>
+      contentAccessSchema.parse({ roles: ["owner"], capabilities: ["article.view"] }),
+    ).toThrow();
   });
 });

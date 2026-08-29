@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   articleInputSchema,
   articlesResponseSchema,
+  contentAccessSchema,
   singleArticleResponseSchema,
 } from "./content.js";
 import { healthReportSchema } from "./health.js";
@@ -99,6 +100,19 @@ export const openApiDocument = {
         },
       },
     },
+    "/api/content/admin/access": {
+      get: {
+        operationId: "getContentAccess",
+        responses: {
+          "200": {
+            description: "Current content roles and capabilities",
+            ...json(reference("ContentAccess")),
+          },
+          "401": { description: "Authentication required" },
+          "403": { description: "Content role required" },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -106,6 +120,7 @@ export const openApiDocument = {
       ArticleInput: z.toJSONSchema(articleInputSchema),
       ArticleResponse: z.toJSONSchema(singleArticleResponseSchema),
       ArticlesResponse: z.toJSONSchema(articlesResponseSchema),
+      ContentAccess: z.toJSONSchema(contentAccessSchema),
     },
   },
 } as const;

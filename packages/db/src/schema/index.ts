@@ -1,9 +1,11 @@
+import { contentRoleAssignments } from "./access.js";
 import { contentAuditEvents } from "./audit.js";
 import { account, session, user, verification } from "./auth.js";
 import { inquiries } from "./contact.js";
 import { articles } from "./content.js";
 import { accountRelations, sessionRelations, userRelations } from "./relations.js";
 
+export { contentRoleAssignments } from "./access.js";
 export { contentAuditEvents } from "./audit.js";
 export { account, session, user, verification } from "./auth.js";
 export { inquiries } from "./contact.js";
@@ -20,4 +22,10 @@ export const authSchema = {
   verification,
 };
 
-export const schema = { ...authSchema, articles, contentAuditEvents, inquiries };
+export const schema = {
+  ...authSchema,
+  articles,
+  contentAuditEvents,
+  contentRoleAssignments,
+  inquiries,
+};
