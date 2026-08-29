@@ -1,3 +1,5 @@
+import { requestJson } from "@/lib/api";
+
 const prometheusUrl = (process.env.PROMETHEUS_URL ?? "http://localhost:9090").replace(/\/+$/, "");
 const tempoUrl = (process.env.TEMPO_URL ?? "http://localhost:3200").replace(/\/+$/, "");
 
@@ -45,9 +47,10 @@ const queries = {
 async function prometheusQuery(query: string): Promise<PrometheusResult[]> {
   const url = new URL("/api/v1/query", prometheusUrl);
   url.searchParams.set("query", query);
-  const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(3_000) });
-  if (!response.ok) throw new Error(`Prometheus returned ${response.status}`);
-  const body = (await response.json()) as PrometheusResponse;
+  const body = await requestJson<PrometheusResponse>(url, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(3_000),
+  });
   if (body.status !== "success") throw new Error("Prometheus query failed");
   return body.data?.result ?? [];
 }
@@ -59,9 +62,10 @@ async function prometheusRangeQuery(query: string): Promise<number[]> {
   url.searchParams.set("start", String(end - 15 * 60));
   url.searchParams.set("end", String(end));
   url.searchParams.set("step", "30");
-  const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(3_000) });
-  if (!response.ok) throw new Error(`Prometheus returned ${response.status}`);
-  const body = (await response.json()) as PrometheusRangeResponse;
+  const body = await requestJson<PrometheusRangeResponse>(url, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(3_000),
+  });
   if (body.status !== "success") throw new Error("Prometheus range query failed");
   return (body.data?.result?.[0]?.values ?? []).map((entry) => Number(entry[1]) || 0);
 }
@@ -76,11 +80,9 @@ async function fetchRecentTraces(): Promise<TraceSummary[]> {
     const url = new URL("/api/search", tempoUrl);
     url.searchParams.set("q", '{ resource.service.name = "linonward-api" }');
     url.searchParams.set("limit", "8");
-    const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(3_000) });
-    if (!response.ok) return [];
-    const body = (await response.json()) as {
+    const body = await requestJson<{
       traces?: { traceID?: unknown; rootTraceName?: unknown; durationMs?: unknown }[];
-    };
+    }>(url, { cache: "no-store", signal: AbortSignal.timeout(3_000) });
     return (body.traces ?? []).flatMap((trace) =>
       typeof trace.traceID === "string"
         ? [

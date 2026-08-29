@@ -34,6 +34,24 @@ These rules apply to both Next.js applications. App-specific instructions take p
 
 - Do not assume `apps/www` components, brand tokens, localization model, or Base UI dependency also exist in this app.
 - Follow the patterns and dependencies already present in `apps/web` unless the task explicitly introduces a shared frontend package.
+- Use TanStack Query for remote server state in client-side features. Put query keys, query/mutation
+  options, cache invalidation, and request-state handling in feature hooks or query modules; do not
+  reproduce them with ad hoc `useEffect` and local state.
+- Route every HTTP request through the app's shared request client. Direct `fetch` calls are forbidden
+  outside the single low-level request adapter that implements that client, including in components,
+  hooks, route-facing feature modules, and server-side data modules. Keep base URL resolution,
+  credentials, headers, serialization, response parsing, timeouts, and normalized errors in that
+  shared request layer instead of repeating them at call sites.
+- Keep transport functions independent of TanStack Query and UI concerns: request modules expose
+  typed domain operations, while query modules compose those operations into queries and mutations.
+  Components must not construct endpoints, parse transport responses, or know cache keys.
+- Separate presentation from behavior. Presentation components receive render-ready data and event
+  callbacks through props and remain free of requests, query/mutation orchestration, navigation,
+  persistence, and business rules. Place those concerns in page/container components, feature hooks,
+  query modules, or domain services, and test each layer at its own boundary.
+- When modifying an existing flow that violates these rules, migrate the touched request and its
+  affected UI boundary to this structure rather than adding another direct request or extending the
+  coupling. A repository-wide migration is not required unless the task explicitly calls for one.
 
 ## Verification
 

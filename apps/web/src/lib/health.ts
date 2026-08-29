@@ -1,6 +1,6 @@
 import { healthReportSchema } from "@linonward/contracts/health";
 
-import { apiUrl } from "@/lib/api";
+import { ApiRequestError, apiUrl, requestJson } from "@/lib/api";
 
 /**
  * What `GET /health` on `apps/api` answered, narrowed to what this app shows.
@@ -13,13 +13,8 @@ export type ApiHealth =
 export async function fetchApiHealth(): Promise<ApiHealth> {
   try {
     // Liveness is a point-in-time fact; a cached one is worse than none.
-    const response = await fetch(apiUrl("/health"), { cache: "no-store" });
-
-    if (!response.ok) {
-      return { reachable: false, reason: `HTTP ${response.status}` };
-    }
-
-    const parsed = healthReportSchema.safeParse(await response.json());
+    const payload = await requestJson<unknown>(apiUrl("/health"), { cache: "no-store" });
+    const parsed = healthReportSchema.safeParse(payload);
     if (!parsed.success) {
       return { reachable: false, reason: "API returned an invalid health report" };
     }
@@ -32,6 +27,14 @@ export async function fetchApiHealth(): Promise<ApiHealth> {
       uptimeSeconds: report.uptimeSeconds,
     };
   } catch (error) {
-    return { reachable: false, reason: error instanceof Error ? error.message : "unknown error" };
+    return {
+      reachable: false,
+      reason:
+        error instanceof ApiRequestError
+          ? `HTTP ${error.status}`
+          : error instanceof Error
+            ? error.message
+            : "unknown error",
+    };
   }
 }

@@ -25,6 +25,17 @@ export function importViolation(file, specifier) {
   return undefined;
 }
 
+export function sourceViolation(file, source) {
+  if (
+    file.startsWith("apps/web/src/") &&
+    file !== "apps/web/src/lib/api.ts" &&
+    /\bfetch\s*\(/.test(source)
+  ) {
+    return "web-direct-fetch";
+  }
+  return undefined;
+}
+
 async function sourceFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const nested = await Promise.all(
@@ -67,6 +78,10 @@ export async function architectureViolations() {
   for (const absoluteFile of files) {
     const file = path.relative(repositoryRoot, absoluteFile);
     const source = await readFile(absoluteFile, "utf8");
+    const directSourceRule = sourceViolation(file, source);
+    if (directSourceRule) {
+      violations.push({ file, specifier: "fetch", rule: directSourceRule });
+    }
     for (const match of source.matchAll(importPattern)) {
       const specifier = match[1];
       if (!specifier) continue;

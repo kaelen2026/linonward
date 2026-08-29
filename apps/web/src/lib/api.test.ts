@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { apiBaseUrl, apiUrl } from "@/lib/api";
+import { apiBaseUrl, apiUrl, requestJson } from "@/lib/api";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("apiUrl", () => {
   it("hangs the path off the configured origin", () => {
@@ -19,5 +23,45 @@ describe("apiUrl", () => {
 
   it("keeps a base path that is part of the origin", () => {
     expect(apiUrl("/health", "https://example.com/api")).toBe("https://example.com/api/health");
+  });
+});
+
+describe("requestJson", () => {
+  it("returns the parsed JSON response through the shared transport", async () => {
+    const fetchMock = vi.fn(async () => Response.json({ status: "ok" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(requestJson<{ status: string }>("/health")).resolves.toEqual({ status: "ok" });
+    expect(fetchMock).toHaveBeenCalledWith("/health", expect.objectContaining({}));
+  });
+
+  it("normalizes unsuccessful responses into an HTTP error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 403 })),
+    );
+
+    await expect(requestJson("/protected")).rejects.toEqual(
+      expect.objectContaining({ status: 403 }),
+    );
+  });
+
+  it("forwards request configuration and adds JSON content type for a body", async () => {
+    const fetchMock = vi.fn(async () => Response.json({ saved: true }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await requestJson("/articles", {
+      body: JSON.stringify({ title: "Draft" }),
+      method: "POST",
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/articles",
+      expect.objectContaining({
+        body: JSON.stringify({ title: "Draft" }),
+        headers: expect.objectContaining({ "content-type": "application/json" }),
+        method: "POST",
+      }),
+    );
   });
 });
