@@ -33,6 +33,17 @@ struct HomeView: View {
           .padding(.vertical, 12)
           .background(.thinMaterial, in: .rect(cornerRadius: 14))
           .accessibilityIdentifier("home.greeting")
+
+        NavigationLink {
+          ArticleReaderView()
+        } label: {
+          Label("article.reader.open", systemImage: "doc.text.image")
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Color.brandNavy)
+        .controlSize(.large)
+        .accessibilityIdentifier("article.reader.open")
       }
       .frame(maxWidth: 560, alignment: .leading)
       .padding(.horizontal, 24)

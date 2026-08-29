@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 
 import { createApiApp, createDefaultDependencies } from "./composition.js";
 import { loadApiConfig } from "./config.js";
+import { shutdownTelemetry } from "./shared/telemetry.js";
 
 const config = loadApiConfig(process.env);
 const dependencies = await createDefaultDependencies(config);
@@ -30,8 +31,7 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
     }, 30_000);
     deadline.unref();
     server.close(() => {
-      void dependencies
-        .close()
+      void Promise.all([dependencies.close(), shutdownTelemetry()])
         .catch((error: unknown) => {
           console.error("Unable to close API dependencies", error);
           process.exitCode = 1;

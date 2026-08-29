@@ -19,6 +19,7 @@ services:
       DATABASE_URL: postgres://linonward:${POSTGRES_PASSWORD:-linonward}@postgres:5432/linonward
       REDIS_URL: redis://redis:6379
       HOST: 0.0.0.0
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     image: linonward-api:local
     init: true
     ports:
@@ -76,6 +77,52 @@ services:
       - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    profiles: ["observability"]
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    restart: unless-stopped
+    volumes:
+      - ./observability/prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:12.3.0
+    profiles: ["observability"]
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-linonward}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3003}:3000"
+    restart: unless-stopped
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+
+  tempo:
+    image: grafana/tempo:2.7.2
+    profiles: ["observability"]
+    command: ["-config.file=/etc/tempo.yml"]
+    ports:
+      - "127.0.0.1:${TEMPO_PORT:-3200}:3200"
+    restart: unless-stopped
+    volumes:
+      - ./observability/tempo.yml:/etc/tempo.yml:ro
+      - tempo-data:/var/tempo
+
 volumes:
+  grafana-data:
+    name: linonward-grafana-data
   postgres-data:
     name: linonward-postgres-data
+  prometheus-data:
+    name: linonward-prometheus-data
+  tempo-data:
+    name: linonward-tempo-data

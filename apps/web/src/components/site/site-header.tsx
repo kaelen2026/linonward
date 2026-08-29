@@ -6,6 +6,7 @@ export const navItems = [
   { href: "/", label: "概览" },
   { href: "/editor", label: "编辑器" },
   { href: "/status", label: "状态" },
+  { href: "/observability", label: "可观测性" },
 ] as const;
 
 /**
@@ -16,12 +17,15 @@ export const navItems = [
 export function SiteHeader({ pathname, userEmail }: { pathname: string; userEmail?: string }) {
   return (
     <header className="border-b border-border">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-2 px-4 sm:gap-6 sm:px-6">
+      <div className="mx-auto flex min-h-14 max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-2 sm:flex-nowrap sm:gap-6 sm:px-6 sm:py-0">
         <Link className="whitespace-nowrap text-sm font-semibold tracking-tight" href="/">
           LinOnward Web
         </Link>
 
-        <nav aria-label="主导航" className="flex items-center gap-1">
+        <nav
+          aria-label="主导航"
+          className="order-3 flex w-full items-center justify-between gap-1 border-t border-border pt-2 sm:order-none sm:w-auto sm:justify-start sm:border-0 sm:pt-0"
+        >
           {navItems.map((item) => {
             const active = item.href === pathname;
             return (

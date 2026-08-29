@@ -1,6 +1,48 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "article.reader.error.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close the article and try again." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请关闭文章后重试。" } }
+      }
+    },
+    "article.reader.error.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Article unavailable" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "文章暂不可用" } }
+      }
+    },
+    "article.reader.imagePreview" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Image" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "图片" } }
+      }
+    },
+    "article.reader.navigationTitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Article" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "文章" } }
+      }
+    },
+    "article.reader.open" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Read the featured article" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "阅读精选文章" } }
+      }
+    },
+    "article.reader.unavailable.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This build has no approved article-reader origin." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此版本未配置可信的文章页面地址。" } }
+      }
+    },
+    "article.reader.unavailable.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reader not configured" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "阅读器未配置" } }
+      }
+    },
     "app.name" : {
       "localizations" : {
         "en" : {
@@ -159,6 +201,18 @@
             "value" : "取消"
           }
         }
+      }
+    },
+    "common.dismiss" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dismiss" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "关闭" } }
+      }
+    },
+    "common.done" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "完成" } }
       }
     },
     "home.account" : {
