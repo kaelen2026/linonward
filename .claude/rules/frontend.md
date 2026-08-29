@@ -13,7 +13,12 @@ These rules apply to both Next.js applications. App-specific instructions take p
 - Read the relevant documentation from `<app>/node_modules/next/dist/docs/` before changing Next.js APIs, conventions, routing, caching, or rendering behavior.
 - Preserve generated route typing. Each app's `typecheck` must run `next typegen` before `tsc`; do not replace generated `PageProps` or `LayoutProps` with handwritten substitutes.
 - Prefer server components. Add `"use client"` only at the smallest boundary that needs browser APIs, state, effects, or event handlers.
-- Reuse local components and design tokens before adding dependencies or one-off primitives.
+- Before adding a component, inspect the target app's existing implementation first: search its
+  component directories, shared packages, imports, and `components.json` when present. Reuse or
+  extend an existing component when it already covers the same semantic role; do not create a
+  second component of the same type under another name or path. Add a new component only after
+  confirming that no equivalent implementation exists, then reuse local design tokens and
+  primitives before adding dependencies or one-off markup.
 - Keep accessible names, landmarks, keyboard behavior, focus states, and semantic elements intact.
 
 ## Official site: `apps/www`
