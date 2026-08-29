@@ -78,6 +78,11 @@ describe("submitInquiry", () => {
     const [url, init] = fetch.mock.calls[0] ?? [];
     expect(url).toBe("https://api.example.com/contact/inquiries");
     expect(init).toMatchObject({ method: "POST" });
+    expect(init?.headers).toMatchObject({
+      "content-type": "application/json",
+      "x-request-id": expect.any(String),
+      traceparent: expect.stringMatching(/^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/),
+    });
     expect(JSON.parse(String(init?.body))).toEqual({
       name: "林望",
       email: "lin@example.com",

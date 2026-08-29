@@ -7,7 +7,7 @@ repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 app_root="$repo_root/apps/harmony"
 
 : "${HARMONY_CLI_HOME:?Set HARMONY_CLI_HOME to the installed HarmonyOS Command Line Tools directory.}"
-: "${DEVECO_SDK_HOME:?Set DEVECO_SDK_HOME to a DevEco/HarmonyOS SDK installation compatible with API 12.}"
+: "${DEVECO_SDK_HOME:?Set DEVECO_SDK_HOME to the SDK root (for Command Line Tools, HARMONY_CLI_HOME/sdk).}"
 
 node_bin="$HARMONY_CLI_HOME/tool/node/bin/node"
 ohpm_bin="$HARMONY_CLI_HOME/bin/ohpm"
@@ -20,6 +20,14 @@ for tool in "$node_bin" "$ohpm_bin" "$codelinter_bin" "$hvigor_bin"; do
     exit 1
   fi
 done
+
+sdk_manifest="$DEVECO_SDK_HOME/default/sdk-pkg.json"
+if [ ! -f "$sdk_manifest" ]; then
+  echo "Invalid HarmonyOS SDK root: $DEVECO_SDK_HOME" >&2
+  echo "Expected SDK manifest: $sdk_manifest" >&2
+  echo "For Command Line Tools, set DEVECO_SDK_HOME to HARMONY_CLI_HOME/sdk, not its default/openharmony subdirectory." >&2
+  exit 1
+fi
 
 "$repo_root/scripts/prepare-harmony-profile.sh"
 

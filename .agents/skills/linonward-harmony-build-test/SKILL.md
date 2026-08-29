@@ -10,12 +10,24 @@ description: Sync, build, test, launch, or diagnose the LinOnward HarmonyOS app 
 - The DevEco Studio project root is `apps/harmony`; run hvigor commands from that directory.
 - Run `scripts/prepare-harmony-profile.sh` before opening or building a fresh checkout. It creates the ignored root `build-profile.json5` from the tracked template without overwriting local signing.
 - The app is a stage-model HarmonyOS project compatible with API 12 (`5.0.0(12)`). Its module is `entry`, product is `default`, and targets are `default` and `ohosTest`.
-- A fresh clone has no `hvigorw`. Open and sync `apps/harmony` in DevEco Studio 5.0.5 or newer first; sync generates the wrapper and downloads `.hvigor/`, both of which are intentionally gitignored.
+- Prefer `scripts/harmony-ci.sh verify` when HarmonyOS Command Line Tools are installed. Set `HARMONY_CLI_HOME` to the extracted tools directory and `DEVECO_SDK_HOME` to its `sdk` directory, not `sdk/default/openharmony`. The bundled hvigor does not require a project-level wrapper.
+- A fresh clone has no project-level `hvigorw`. DevEco Studio 5.0.5 or newer can generate it and `.hvigor/` during sync; both are intentionally gitignored, but this is an alternative to the Command Line Tools workflow rather than a prerequisite.
 - Check the installed DevEco Studio, HarmonyOS SDK, project sync, emulator/device availability, and developer-mode connection when a failure may be environmental. Distinguish missing proprietary tooling from a repository defect.
 
 ## Build and test
 
-After DevEco sync has generated the wrapper, use the repository-documented commands:
+With Command Line Tools, run the repository verification script from the repository root:
+
+```bash
+HARMONY_CLI_HOME=/path/to/command-line-tools \
+DEVECO_SDK_HOME=/path/to/command-line-tools/sdk \
+scripts/harmony-ci.sh verify
+```
+
+It runs Code Linter, `assembleHap`, and host tests. Run `scripts/harmony-ci.sh device` separately
+when an emulator or developer-mode device is available.
+
+After DevEco sync has generated the project wrapper, these direct commands are also available:
 
 ```bash
 cd apps/harmony
@@ -32,13 +44,14 @@ For focused diagnosis, narrow to the affected module, target, suite, or task usi
 
 ## Diagnose by layer
 
-1. Missing wrapper or `.hvigor`: the project has not completed DevEco sync; do not add generated wrapper or SDK artifacts to Git.
-2. Project or profile failure: inspect the tracked root `build-profile.template.json5`, ignored local root `build-profile.json5`, and module `build-profile.json5` before changing ArkTS. Never print the local profile because DevEco may have written signing material into it.
-3. Resource failure: verify `$r(...)` names exist in `base` and that locale/dark overrides use the same resource names.
-4. ArkTS compile failure: report the first actionable compiler diagnostic and source location, not only the final hvigor failure.
-5. Host-test failure: rerun the affected Hypium suite and inspect its assertion or thrown error.
-6. Instrumented-test or launch failure: confirm the target device is connected and compatible, then separate deployment, permission, ability-lifecycle, locator, and assertion failures.
-7. Signing failure: determine whether the task requires a local debug signature or release-pipeline signing. Never commit the machine-generated certificate configuration as a fix.
+1. Missing project wrapper or `.hvigor`: use the bundled Command Line Tools through `scripts/harmony-ci.sh`, or complete DevEco sync. Do not add generated wrapper or SDK artifacts to Git.
+2. SDK path failure (`00303312`): ensure `DEVECO_SDK_HOME` names the SDK root containing `default/sdk-pkg.json`; with bundled Command Line Tools this is `$HARMONY_CLI_HOME/sdk`, not its `default/openharmony` child.
+3. Project or profile failure: inspect the tracked root `build-profile.template.json5`, ignored local root `build-profile.json5`, and module `build-profile.json5` before changing ArkTS. Never print the local profile because DevEco may have written signing material into it.
+4. Resource failure: verify `$r(...)` names exist in `base` and that locale/dark overrides use the same resource names.
+5. ArkTS compile failure: report the first actionable compiler diagnostic and source location, not only the final hvigor failure.
+6. Host-test failure: rerun the affected Hypium suite and inspect its assertion or thrown error.
+7. Instrumented-test or launch failure: confirm the target device is connected and compatible, then separate deployment, permission, ability-lifecycle, locator, and assertion failures.
+8. Signing failure: determine whether the task requires a local debug signature or release-pipeline signing. Never commit the machine-generated certificate configuration as a fix.
 
 Do not delete `.hvigor`, SDK caches, emulator data, or generated signing state as a first response. Use cleanup only when evidence identifies corrupted generated state, and disclose exactly what was removed.
 
@@ -50,6 +63,6 @@ Do not delete `.hvigor`, SDK caches, emulator data, or generated signing state a
 
 ## CI and reporting
 
-GitHub-hosted CI does not build or test `apps/harmony`, because it has no HarmonyOS SDK and the toolchain is not available for unauthenticated installation. Repository-wide pnpm checks therefore do not prove HarmonyOS correctness.
+GitHub-hosted CI does not build or test `apps/harmony`, because it has no HarmonyOS SDK. Repository-wide pnpm checks therefore do not prove HarmonyOS correctness; installed Command Line Tools can verify it locally or on a suitably configured self-hosted runner.
 
 Report the DevEco Studio and SDK versions when known, exact hvigor commands, product/build mode, emulator or device when relevant, and build, host-test, and instrumented-test results separately. If local HarmonyOS tooling is unavailable, say which checks could not run; do not imply CI covered them.

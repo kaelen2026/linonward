@@ -1,0 +1,28 @@
+groups:
+  - name: linonward-api
+    rules:
+      - alert: LinOnwardApiUnavailable
+        expr: up{job="linonward-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: LinOnward API metrics endpoint is unavailable
+      - alert: LinOnwardApiHighErrorRate
+        expr: |
+          sum(rate(linonward_http_requests_total{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(linonward_http_requests_total[5m])), 0.001) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: LinOnward API 5xx rate is above 5%
+      - alert: LinOnwardApiHighP95Latency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(linonward_http_request_duration_milliseconds_bucket[5m]))) > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: LinOnward API p95 latency is above one second

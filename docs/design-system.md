@@ -22,6 +22,7 @@ source. Generated outputs are:
 - HarmonyOS light and dark `color.json` resources
 - `apps/www/src/app/design-tokens.generated.css`
 - `apps/web/src/app/design-tokens.generated.css`
+- `apps/h5/src/design-tokens.generated.css`
 
 The shared source carries both OKLCH values for browsers and sRGB HEX values for native platforms.
 The generator emits the appropriate representation for each target.

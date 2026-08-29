@@ -189,6 +189,7 @@ private val AuthenticationError.messageRes: Int
     when (this) {
       AuthenticationError.NotConfigured -> R.string.auth_error_not_configured
       AuthenticationError.Network -> R.string.auth_error_network
+      AuthenticationError.Storage -> R.string.auth_error_storage
       AuthenticationError.InvalidCode -> R.string.auth_error_invalid_code
       AuthenticationError.ExpiredCode -> R.string.auth_error_expired_code
       AuthenticationError.TooManyAttempts -> R.string.auth_error_too_many_attempts

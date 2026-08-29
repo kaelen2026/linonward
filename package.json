@@ -26,6 +26,7 @@
     "android:build": "apps/android/gradlew -p apps/android :app:assembleDebug",
     "android:test": "apps/android/gradlew -p apps/android :app:testDebugUnitTest",
     "android:lint": "apps/android/gradlew -p apps/android :app:lintDebug",
+    "ci:android": "scripts/android-ci.sh",
     "db:generate": "pnpm --filter @linonward/db db:generate",
     "db:check": "pnpm --filter @linonward/db db:check",
     "db:studio": "pnpm --filter @linonward/db db:studio",

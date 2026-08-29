@@ -9,8 +9,8 @@ task for it.
 
 ## Requirements
 
-- DevEco Studio 5.0.5 or newer
-- HarmonyOS SDK API 12 or newer
+- DevEco Studio 5.0.5 or newer, or HarmonyOS Command Line Tools
+- HarmonyOS SDK API 12 or newer (bundled with current Command Line Tools)
 - A HarmonyOS emulator or a device in developer mode
 
 ## Open and build
@@ -22,10 +22,25 @@ scripts/prepare-harmony-profile.sh
 ```
 
 The script copies `build-profile.template.json5` only when `build-profile.json5` is absent. It
-never overwrites an existing profile, so DevEco-managed local signing remains intact. Open
-`apps/harmony` as the project root in DevEco Studio and let it sync. The sync is what
-generates the `hvigorw` wrapper and downloads hvigor into `.hvigor/`; both are gitignored, so a
-fresh clone has no command line until it has been synced once. After that, from `apps/harmony`:
+never overwrites an existing profile, so DevEco-managed local signing remains intact.
+
+For a complete local verification with Command Line Tools, point `HARMONY_CLI_HOME` at the
+extracted tools directory and `DEVECO_SDK_HOME` at its **SDK root**. Do not point it at the
+`default/openharmony` subdirectory:
+
+```bash
+HARMONY_CLI_HOME="$HOME/Downloads/command-line-tools" \
+DEVECO_SDK_HOME="$HOME/Downloads/command-line-tools/sdk" \
+scripts/harmony-ci.sh verify
+```
+
+This runs Code Linter, builds the HAP, and runs host Hypium tests without DevEco Studio or a
+project-level wrapper. Use `scripts/harmony-ci.sh device` for instrumented tests after connecting
+an emulator or developer-mode device.
+
+Alternatively, open `apps/harmony` as the project root in DevEco Studio and let it sync. DevEco
+generates the project-level `hvigorw` wrapper and downloads `.hvigor/`; both are gitignored. After
+sync, run these commands from `apps/harmony`:
 
 ```bash
 ./hvigorw assembleHap --mode module -p product=default   # build the HAP
@@ -33,11 +48,10 @@ fresh clone has no command line until it has been synced once. After that, from 
 ./hvigorw ohosTest                                       # instrumented tests, needs a device
 ```
 
-There is **no CI job for this app.** GitHub-hosted runners carry no HarmonyOS SDK and Huawei does
-not publish the toolchain for unauthenticated download, so `.github/workflows/ci.yml` cannot gate
-it the way the `ios` job gates Xcode. Until a self-hosted runner with the SDK exists, building and
-testing this app before opening a PR is a manual step — say so in the PR description rather than
-implying CI covered it.
+There is **no hosted CI job for this app.** GitHub-hosted runners carry no HarmonyOS SDK, so
+`.github/workflows/ci.yml` cannot gate it the way the `ios` job gates Xcode. Run the Command Line
+Tools verification locally, or add a self-hosted runner with the SDK; say which checks actually
+ran in the PR description rather than implying hosted CI covered them.
 
 ## Signing
 

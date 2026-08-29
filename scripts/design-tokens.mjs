@@ -185,6 +185,55 @@ ${semantic("dark", "    ")}
 `;
 }
 
+function generateH5CSS() {
+  const ramps = Object.entries(tokens.color.cssRamp)
+    .flatMap(([family, ramp]) =>
+      Object.entries(ramp).map(([step, value]) => `  --${family}-${step}: ${value};`),
+    )
+    .join("\n");
+  const readerTheme = (mode, indent = "  ") => {
+    const semantic = tokens.color.semantic[mode];
+    return [
+      ["page", semantic.background],
+      ["text", semantic.foreground],
+      ["body-text", semantic.foreground],
+      ["muted-text", semantic.mutedForeground],
+      ["rule", semantic.border],
+      ["quote-bg", semantic.muted],
+    ]
+      .map(
+        ([name, reference]) =>
+          `${indent}--${name}: ${cssColor(reference).replaceAll("--color-", "--")};`,
+      )
+      .join("\n");
+  };
+
+  return `/* ${notice} */
+:root {
+  color-scheme: light dark;
+${ramps}
+${readerTheme("light")}
+  --reader-font-scale: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+${readerTheme("dark", "    ")}
+  }
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+${readerTheme("light")}
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+${readerTheme("dark")}
+}
+`;
+}
+
 function generateHarmonyDimensions() {
   const values = Object.entries({
     ...Object.fromEntries(
@@ -223,6 +272,7 @@ const outputs = new Map([
   ],
   ["apps/www/src/app/design-tokens.generated.css", generateWebCSS()],
   ["apps/web/src/app/design-tokens.generated.css", generateWebCSS()],
+  ["apps/h5/src/design-tokens.generated.css", generateH5CSS()],
 ]);
 
 let drifted = false;

@@ -1,0 +1,10 @@
+apiVersion: 1
+
+providers:
+  - name: LinOnward
+    folder: LinOnward
+    type: file
+    disableDeletion: true
+    editable: false
+    options:
+      path: /var/lib/grafana/dashboards

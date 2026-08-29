@@ -23,6 +23,7 @@
 
     <string name="auth_error_not_configured">此版本未配置服务器地址，请重新安装官方版本。</string>
     <string name="auth_error_network">无法连接 LinOnward，请检查网络后重试。</string>
+    <string name="auth_error_storage">无法安全保存登录状态，请重试。</string>
     <string name="auth_error_invalid_code">验证码不正确，请检查后重试。</string>
     <string name="auth_error_expired_code">验证码已过期，请重新获取。</string>
     <string name="auth_error_too_many_attempts">尝试次数过多，请重新获取验证码。</string>
