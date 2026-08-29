@@ -1,12 +1,14 @@
 import type { Hono } from "hono";
 import type { RequestIdVariables } from "hono/request-id";
 
+import type { TraceContext } from "./telemetry.js";
+
 /**
  * The context every module can rely on. Keeping it in the shared kernel is what
  * lets a module read `c.var.requestId` without knowing how the root app is built.
  */
 export type AppEnv = {
-  Variables: RequestIdVariables;
+  Variables: RequestIdVariables & { trace: TraceContext };
 };
 
 /**

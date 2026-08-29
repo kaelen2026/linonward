@@ -82,6 +82,19 @@ type SubmitOptions = {
   fetch?: typeof globalThis.fetch;
 };
 
+function randomHex(bytes: number): string {
+  const values = crypto.getRandomValues(new Uint8Array(bytes));
+  return Array.from(values, (value) => value.toString(16).padStart(2, "0")).join("");
+}
+
+/** Starts the browser edge of the W3C trace consumed by the API. */
+function correlationHeaders(): Record<string, string> {
+  return {
+    traceparent: `00-${randomHex(16)}-${randomHex(8)}-01`,
+    "x-request-id": crypto.randomUUID(),
+  };
+}
+
 function isInquiryField(value: unknown): value is InquiryField {
   return (inquiryFields as readonly unknown[]).includes(value);
 }
@@ -145,7 +158,7 @@ export async function submitInquiry(
   try {
     response = await fetch(`${baseUrl.replace(/\/+$/, "")}/contact/inquiries`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...correlationHeaders() },
       body: JSON.stringify(body),
     });
   } catch {

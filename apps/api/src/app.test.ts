@@ -72,6 +72,19 @@ describe("createApp", () => {
     expect(body.error.requestId).not.toBe("");
   });
 
+  it("continues browser trace context and exposes correlation headers", async () => {
+    const traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+    const response = await createApp({ modules: [failing], allowedOrigins: [] }).request(
+      "/failing/ok",
+      { headers: { traceparent: `00-${traceId}-00f067aa0ba902b7-01` } },
+    );
+
+    expect(response.headers.get("x-trace-id")).toBe(traceId);
+    expect(response.headers.get("traceparent")).toMatch(
+      new RegExp(`^00-${traceId}-[0-9a-f]{16}-01$`),
+    );
+  });
+
   it("lets a configured browser origin read the response", async () => {
     const response = await createApp({
       modules: [failing],
@@ -99,8 +112,10 @@ describe("createApp", () => {
 
     await app.request("/health");
     const metrics = await app.request("/metrics");
-    expect(await metrics.text()).toContain(
-      'linonward_http_requests_total{method="GET",path="/health",status="404"} 1',
+    const metricsBody = await metrics.text();
+    expect(metricsBody).toContain(
+      'linonward_http_requests_total{method="GET",route="_unmatched",status="404"} 1',
     );
+    expect(metricsBody).toContain("linonward_http_request_duration_milliseconds");
   });
 });
