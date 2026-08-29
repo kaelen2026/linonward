@@ -191,13 +191,14 @@ over a failing check. After every check, including the automated pull-request re
 1. Resolve the repository and current head, then read reviews and every inline comment:
 
    ```bash
-   pr=$(gh pr view --json number --jq .number)
+   printf 'PR number: '
+   IFS= read -r pr
    repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
    head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
    marker="<!-- linonward-bot-review:$head -->"
    gh api --paginate --slurp "repos/$repo/pulls/$pr/reviews" | jq -e \
      --arg marker "$marker" \
-     'flatten[] | select(.user.login == "linonward-bot[bot]" and
+     'flatten[] | select(.user.login == "linonward-bot[bot]" and .state == "COMMENTED" and
        ((.body // "") | contains($marker))) | {id, state, body}'
    gh api --paginate --slurp "repos/$repo/pulls/$pr/comments" | jq \
      --arg head "$head" \
@@ -206,19 +207,23 @@ over a failing check. After every check, including the automated pull-request re
    ```
 
    The summary containing `$marker` is the authoritative evidence that the current head was
-   reviewed. If it is absent for any reason, stop and ask a human collaborator to close and reopen
-   the PR, then repeat the checks and queries. A draft PR must first be marked ready for review;
-   closing and reopening a draft does not produce a review. Read every inline comment returned by
-   the paginated query and explicitly determine whether it was addressed; the REST response does
-   not expose review-thread resolution state. For comments marked `current: false`, determine
-   whether the underlying finding still applies to the current diff instead of discarding it as
-   outdated.
+   reviewed. If it is absent, stop. A draft PR must first be marked ready for review; closing and
+   reopening a draft does not produce a review. If the `bot-review` label was deliberately removed,
+   respect that opt-out and ask a human collaborator whether to restore it; this repository's merge
+   policy requires the label and a completed current-head automated review before merging.
+   Otherwise, ask a human collaborator to close and reopen the PR, then repeat the checks and
+   queries. Read every inline comment returned by the paginated query and explicitly determine
+   whether it was addressed; the REST response does not expose review-thread resolution state. For
+   comments marked `current: false`, determine whether the underlying finding still applies to the
+   current diff instead of discarding it as outdated.
 2. Resolve every blocking or correctness finding before merging.
 3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit. The
-   rerun depends on a non-bot actor triggering the workflows. If a bot pushed the fix or the
-   `bot-review` label is missing, do not attempt to repair the trigger with agent credentials. Stop
-   and ask a human collaborator to close and reopen the PR; `reopened` triggers both CI and review
-   for the current head. Do not continue until the current-head marker described in step 1 exists.
+   rerun depends on a non-bot actor triggering the workflows. Do not attempt to repair a missing
+   trigger with agent credentials. If the label was deliberately removed, stop and ask a human
+   collaborator whether to restore it; applying it requests review without silently overriding the
+   opt-out. Otherwise, ask a human collaborator to close and reopen the PR; `reopened` triggers both
+   CI and review for the current head. Do not continue until the current-head marker described in
+   step 1 exists.
 4. Re-read the new review output; an earlier review does not approve a later commit.
 
 Only when the final head commit has green CI, a completed automated review, and no unresolved
