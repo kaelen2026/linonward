@@ -5,7 +5,7 @@ struct ReadingView: View {
 
   var body: some View {
     ScrollView {
-      LazyVStack(spacing: 16) {
+      LazyVStack(spacing: DesignTokens.Spacing.lg) {
         ForEach(ArticleCatalog.articles(locale: locale), id: \.id) { article in
           NavigationLink {
             ArticleReaderView(article: article)
@@ -16,9 +16,9 @@ struct ReadingView: View {
           .accessibilityIdentifier("reading.article.\(article.id)")
         }
       }
-      .frame(maxWidth: 680)
-      .padding(.horizontal, 20)
-      .padding(.vertical, 16)
+      .frame(maxWidth: DesignTokens.Size.contentMaximumWidth)
+      .padding(.horizontal, DesignTokens.Spacing.xl)
+      .padding(.vertical, DesignTokens.Spacing.lg)
     }
     .background(Color(.systemGroupedBackground))
     .navigationTitle("reading.title")
@@ -29,7 +29,7 @@ private struct ArticleRow: View {
   let article: ReaderArticle
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 14) {
+    VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
       ZStack(alignment: .bottomLeading) {
         LinearGradient(
           colors: [Color.brandNavy, Color.brandNavy.opacity(0.78), Color.brandTeal.opacity(0.8)],
@@ -40,19 +40,19 @@ private struct ArticleRow: View {
         Image(systemName: "text.book.closed.fill")
           .font(.system(size: 42, weight: .medium))
           .foregroundStyle(.white.opacity(0.9))
-          .padding(20)
+          .padding(DesignTokens.Spacing.xl)
       }
       .frame(height: 138)
-      .clipShape(.rect(cornerRadius: 18))
+      .clipShape(.rect(cornerRadius: DesignTokens.Radius.card))
       .accessibilityHidden(true)
 
-      VStack(alignment: .leading, spacing: 8) {
+      VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
         Text(article.title)
           .font(.title3.weight(.semibold))
           .foregroundStyle(.primary)
           .multilineTextAlignment(.leading)
 
-        HStack(spacing: 12) {
+        HStack(spacing: DesignTokens.Spacing.md) {
           if let author = article.author {
             Label(author, systemImage: "person")
           }
@@ -64,10 +64,10 @@ private struct ArticleRow: View {
         .foregroundStyle(.secondary)
       }
     }
-    .padding(14)
-    .background(.background, in: .rect(cornerRadius: 22))
+    .padding(DesignTokens.Spacing.md)
+    .background(.background, in: .rect(cornerRadius: DesignTokens.Radius.card))
     .overlay {
-      RoundedRectangle(cornerRadius: 22)
+      RoundedRectangle(cornerRadius: DesignTokens.Radius.card)
         .stroke(.separator.opacity(0.35), lineWidth: 0.5)
     }
   }

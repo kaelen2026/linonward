@@ -10,7 +10,7 @@ struct ProfileView: View {
   var body: some View {
     List {
       Section {
-        HStack(spacing: 16) {
+        HStack(spacing: DesignTokens.Spacing.lg) {
           Text(initials)
             .font(.title2.bold())
             .foregroundStyle(Color.brandNavy)
@@ -18,7 +18,7 @@ struct ProfileView: View {
             .background(Color.brandTeal.opacity(0.2), in: .circle)
             .accessibilityHidden(true)
 
-          VStack(alignment: .leading, spacing: 4) {
+          VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
             Text(user.name)
               .font(.headline)
             Text(user.email)
@@ -26,7 +26,7 @@ struct ProfileView: View {
               .foregroundStyle(.secondary)
           }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, DesignTokens.Spacing.sm)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("profile.user")
       }

@@ -54,11 +54,13 @@ describe("native article flow", () => {
     expect(await screen.findByRole("heading", { name: "Native article" })).toBeInTheDocument();
     expect(screen.getByText("Safe body")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("link", { name: "Open source" }));
-    expect(postMessage).toHaveBeenLastCalledWith({
-      type: "article:link",
-      sessionId,
-      payload: { href: "https://linonward.com/" },
-    });
+    await waitFor(() =>
+      expect(postMessage).toHaveBeenLastCalledWith({
+        type: "article:link",
+        sessionId,
+        payload: { href: "https://linonward.com/" },
+      }),
+    );
     bridge.destroy();
   });
 });

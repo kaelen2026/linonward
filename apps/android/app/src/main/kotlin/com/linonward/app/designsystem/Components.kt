@@ -61,7 +61,7 @@ fun ScreenScaffold(
     Box(modifier = Modifier.fillMaxSize().padding(insets), contentAlignment = Alignment.TopCenter) {
       // 560dp is where a line of text stops being comfortable to read; past it
       // a tablet would stretch the form across the whole screen.
-      content(Modifier.widthIn(max = 560.dp).fillMaxSize())
+      content(Modifier.widthIn(max = DesignTokens.Size.ContentMaximumWidth.dp).fillMaxSize())
     }
   }
 }
@@ -83,7 +83,8 @@ fun PrimaryButton(
     // A busy button is disabled whatever the caller says: the flow's own guards
     // already refuse a second submission, and a tappable spinner invites one.
     enabled = enabled && !busy,
-    modifier = modifier.fillMaxWidth().heightIn(min = 48.dp),
+    modifier =
+      modifier.fillMaxWidth().heightIn(min = DesignTokens.Size.PrimaryButtonMinimumHeight.dp),
   ) {
     if (busy) {
       CircularProgressIndicator(

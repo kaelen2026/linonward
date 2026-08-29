@@ -1,5 +1,6 @@
 import { API_BASE_URL, apiIsConfigured } from '../config/ApiConfiguration';
 import { BrandMark } from '../designsystem/BrandMark';
+import { DesignTokens } from '../designsystem/DesignTokens.generated';
 
 /**
  * The launch screen. Deliberately one page and no router: the shell should grow
@@ -12,10 +13,10 @@ struct Index {
 
   build() {
     Scroll() {
-      Column({ space: 28 }) {
+      Column({ space: DesignTokens.spacingXxxl }) {
         BrandMark()
 
-        Column({ space: 12 }) {
+        Column({ space: DesignTokens.spacingMd }) {
           Text($r('app.string.home_eyebrow'))
             .fontSize(14)
             .fontWeight(FontWeight.Medium)
@@ -51,15 +52,20 @@ struct Index {
         }
         .alignItems(HorizontalAlign.Start)
         .width('100%')
-        .padding(16)
+        .padding(DesignTokens.spacingLg)
         .backgroundColor($r('app.color.surface'))
-        .borderRadius(14)
+        .borderRadius(DesignTokens.radiusBrandMark)
         .borderWidth(1)
         .borderColor($r('app.color.border'))
       }
       .alignItems(HorizontalAlign.Start)
-      .constraintSize({ maxWidth: 560 })
-      .padding({ left: 24, right: 24, top: 40, bottom: 40 })
+      .constraintSize({ maxWidth: DesignTokens.sizeContentMaximumWidth })
+      .padding({
+        left: DesignTokens.spacingXxl,
+        right: DesignTokens.spacingXxl,
+        top: DesignTokens.spacingXxxxl,
+        bottom: DesignTokens.spacingXxxxl
+      })
     }
     .width('100%')
     .height('100%')

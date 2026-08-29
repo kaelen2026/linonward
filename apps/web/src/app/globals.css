@@ -2,32 +2,10 @@
 @import "prosemirror-view/style/prosemirror.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./design-tokens.generated.css";
 
-/* ---------------------------------------------------------------------------
- * A deliberately small slice of the brand system.
- *
- * The full ramp, its sampling from the logo, and the contrast table live in
- * `apps/www/src/app/globals.css` and docs/design-system.md. This app only needs
- * a surface, a text colour, a muted pair, a border and the brand accent, so it
- * carries those and nothing else. Growing a second consumer of the full system
- * is the point at which to extract a shared package rather than copy it again.
- *
- * As in www there is no `@custom-variant dark` override: Tailwind v4's built-in
- * `dark:` variant is `@media (prefers-color-scheme: dark)`, which is what the
- * token block below is keyed on.
- * ------------------------------------------------------------------------- */
-@theme {
-  --color-navy-50: oklch(0.975 0.01 253.54);
-  --color-navy-200: oklch(0.895 0.032 253.54);
-  --color-navy-400: oklch(0.76 0.066 253.54);
-  --color-navy-700: oklch(0.5 0.076 253.54);
-  --color-navy-800: oklch(0.39 0.073 253.54);
-  --color-navy-900: oklch(0.273 0.081 253.54);
-  --color-navy-950: oklch(0.18 0.066 253.54);
-
-  --color-teal-500: oklch(0.692 0.117 195.52);
-}
-
+/* Brand ramps and semantic theme values come from design/tokens.json through
+ * the generated import above. Component-specific composition stays here. */
 @theme inline {
   /* No `next/font` here: this app ships no latin display face, so the stack is
    * declared once, in CSS, with the same system CJK fallback www appends. */
@@ -77,80 +55,6 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-:root {
-  /* Lets the UA theme scrollbars, form controls and the canvas to match. */
-  color-scheme: light dark;
-  --background: oklch(1 0 0);
-  --foreground: var(--color-navy-900);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--color-navy-900);
-  --popover: oklch(1 0 0);
-  --popover-foreground: var(--color-navy-900);
-  --primary: var(--color-navy-900);
-  --primary-foreground: var(--color-navy-50);
-  --secondary: var(--color-navy-50);
-  --secondary-foreground: var(--color-navy-900);
-  --muted: var(--color-navy-50);
-  --muted-foreground: var(--color-navy-700);
-  --accent: var(--color-navy-50);
-  --accent-foreground: var(--color-navy-900);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: var(--color-navy-200);
-  --input: var(--color-navy-200);
-  --ring: var(--color-navy-700);
-  /* teal-500 is 2.61:1 on white — a surface, never text on a light background.
-   * Its label is navy-900, the pairing the logo itself uses (5.73:1). */
-  --brand: var(--color-teal-500);
-  --brand-foreground: var(--color-navy-900);
-  --radius: 0.75rem;
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--color-navy-950);
-    --foreground: var(--color-navy-50);
-    --card: var(--color-navy-900);
-    --card-foreground: var(--color-navy-50);
-    --popover: var(--color-navy-900);
-    --popover-foreground: var(--color-navy-50);
-    --primary: var(--color-teal-500);
-    --primary-foreground: var(--color-navy-950);
-    --secondary: var(--color-navy-800);
-    --secondary-foreground: var(--color-navy-50);
-    --muted: var(--color-navy-800);
-    --muted-foreground: var(--color-navy-400);
-    --accent: var(--color-navy-800);
-    --accent-foreground: var(--color-navy-50);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 12%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: var(--color-navy-400);
-    --brand: var(--color-teal-500);
-    --brand-foreground: var(--color-navy-950);
-    --sidebar: var(--color-navy-900);
-    --sidebar-foreground: var(--color-navy-50);
-    --sidebar-primary: var(--color-teal-500);
-    --sidebar-primary-foreground: var(--color-navy-950);
-    --sidebar-accent: var(--color-navy-800);
-    --sidebar-accent-foreground: var(--color-navy-50);
-    --sidebar-border: oklch(1 0 0 / 12%);
-    --sidebar-ring: var(--color-navy-400);
-  }
 }
 
 @layer base {
