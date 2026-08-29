@@ -209,6 +209,36 @@ what changed, why, and how it was verified. End with:
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
+### Automated review rounds
+
+Automated review may run once initially and then at most **two re-review rounds** after fixes are
+pushed. The initial review does not count toward this agent-side limit; the workflow itself still
+runs on every labeled PR update. Automated review is advisory and never part of the merge gate.
+Do not delay merge because the `pull-request-review` check is pending or failed, and do not treat
+review findings as blocking.
+Apply useful findings at your discretion within the round limit; otherwise record them for follow-up.
+
+Track only pushes made specifically to address automated review, not unrelated branch updates.
+Immediately after each such push, add a durable, exact-body PR marker:
+
+```bash
+gh pr comment <n> --body '<!-- linonward-agent-rereview:1 -->' # first re-review
+gh pr comment <n> --body '<!-- linonward-agent-rereview:2 -->' # second re-review
+```
+
+Before another review-driven push, count unique markers authored by the automation bot:
+
+```bash
+gh api 'repos/{owner}/{repo}/issues/<n>/comments' --paginate | jq \
+  '[.[] | select(.user.login == "linonward-bot[bot]" and
+    (.body | test("^<!-- linonward-agent-rereview:[12] -->$")))] |
+    unique_by(.body) | length'
+```
+
+Do not reset the count when the branch changes. Once it reaches two, do not push another revision
+driven by review. Record any remaining suggestions for follow-up. Review status and findings do not
+override the separate requirement that non-review CI checks pass before merge.
+
 ### Merging
 
 Check CI first — the PR gate is the reason this flow exists, and `commitlint`
@@ -218,8 +248,9 @@ runs in CI only on `pull_request`, so a PR is the only place it sees the branch:
 gh pr checks <n>
 ```
 
-Anything red or still running means not yet; `gh run view --log-failed` for the
-failure. Never merge over a failing check.
+Ignore `pull-request-review` when deciding merge readiness. Any other selected check that is red or
+still running means not yet; use `gh run view --log-failed` for the failure. Never merge over a
+failing non-review check.
 
 Then merge with **squash**, so each PR lands on `main` as exactly one commit:
 
