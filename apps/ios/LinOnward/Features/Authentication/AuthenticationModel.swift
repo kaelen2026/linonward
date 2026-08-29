@@ -58,7 +58,15 @@ final class AuthenticationModel {
       state.failed(.notConfigured)
       return
     }
-    guard let token = tokens.read() else {
+    let token: String?
+    do {
+      token = try tokens.read()
+    } catch {
+      state.signedOut()
+      state.failed(.credentialStorage)
+      return
+    }
+    guard let token else {
       state.signedOut()
       return
     }
@@ -68,7 +76,7 @@ final class AuthenticationModel {
       state.signedIn(user)
     case .success(nil):
       // The API is the authority and it says this token is spent.
-      tokens.clear()
+      try? tokens.clear()
       state.signedOut()
     case .failure(let failure):
       // Being offline is not being signed out. The token stays put so the next
@@ -80,6 +88,7 @@ final class AuthenticationModel {
   }
 
   func sendVerificationCode() async {
+    guard !state.isBusy else { return }
     guard let service else {
       state.failed(.notConfigured)
       return
@@ -94,6 +103,7 @@ final class AuthenticationModel {
   }
 
   func verifyCode() async {
+    guard !state.isBusy else { return }
     guard let service else {
       state.failed(.notConfigured)
       return
@@ -102,8 +112,7 @@ final class AuthenticationModel {
 
     switch await service.signIn(email: state.email, code: state.code) {
     case .success(let session):
-      tokens.write(session.token)
-      state.signedIn(session.user)
+      persist(session)
     case .failure(let failure):
       state.failed(failure)
     }
@@ -116,6 +125,7 @@ final class AuthenticationModel {
   /// environment, which only the view can reach — the model is built at launch,
   /// long before there is a scene to present anything in.
   func signInWithGoogle(presentedBy browser: any WebAuthenticationBrowser) async {
+    guard !state.isBusy else { return }
     guard let service, let google else {
       state.failed(.notConfigured)
       return
@@ -136,8 +146,7 @@ final class AuthenticationModel {
 
     switch await service.signIn(google: identity) {
     case .success(let session):
-      tokens.write(session.token)
-      state.signedIn(session.user)
+      persist(session)
     case .failure(let failure):
       state.failed(failure)
     }
@@ -153,12 +162,28 @@ final class AuthenticationModel {
   /// network is slow, and a revocation that fails leaves a token the app has
   /// already forgotten — it expires on its own.
   func signOut() async {
-    let token = tokens.read()
-    tokens.clear()
+    let token = try? tokens.read()
+    do {
+      try tokens.clear()
+    } catch {
+      state.signedOut()
+      state.failed(.credentialStorage)
+      return
+    }
     state.signedOut()
 
     if let service, let token {
       _ = await service.signOut(token: token)
+    }
+  }
+
+  private func persist(_ session: AuthenticatedSession) {
+    do {
+      try tokens.write(session.token)
+      state.signedIn(session.user)
+    } catch {
+      state.signedOut()
+      state.failed(.credentialStorage)
     }
   }
 }

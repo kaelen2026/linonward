@@ -11,9 +11,9 @@
       self.token = token
     }
 
-    func read() -> String? { token }
-    func write(_ token: String) {}
-    func clear() {}
+    func read() throws -> String? { token }
+    func write(_ token: String) throws {}
+    func clear() throws {}
   }
 
   /// An auth service that answers immediately with whatever the preview needs.

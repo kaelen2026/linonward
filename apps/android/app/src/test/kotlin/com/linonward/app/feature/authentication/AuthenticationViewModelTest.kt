@@ -114,6 +114,43 @@ class AuthenticationViewModelTest {
   }
 
   @Test
+  fun `a session is not entered when its token cannot be persisted`() = runTest {
+    val tokens = InMemoryTokenStore(writeSucceeds = false)
+    val service =
+      FakeAuthenticationService(
+        signIn =
+          AuthenticationResult.Success(AuthenticatedSession(user = ada, token = "fresh-token"))
+      )
+    val viewModel = viewModel(service = service, tokens = tokens)
+    viewModel.restore()
+    viewModel.onEmailChange("ada@example.com")
+    viewModel.sendVerificationCode()
+    viewModel.onCodeChange("123456")
+
+    viewModel.verifyCode()
+
+    assertEquals(AuthenticationState.Step.Code, viewModel.state.value.step)
+    assertEquals(AuthenticationError.Storage, viewModel.state.value.error)
+  }
+
+  @Test
+  fun `invalid and duplicate commands never reach the service`() = runTest {
+    val service = ControllableAuthenticationService()
+    val viewModel = viewModel(service = service, tokens = InMemoryTokenStore())
+    viewModel.restore()
+
+    viewModel.sendVerificationCode()
+    viewModel.onEmailChange("ada@example.com")
+    viewModel.sendVerificationCode()
+    viewModel.sendVerificationCode()
+    viewModel.verifyCode()
+
+    assertEquals(1, service.sendCodeCalls)
+    assertEquals(0, service.signInCalls)
+    assertEquals(AuthenticationState.Step.Code, viewModel.state.value.step)
+  }
+
+  @Test
   fun `signing out forgets the token even before the API is told`() = runTest {
     val tokens = InMemoryTokenStore("stored-token")
     val service = FakeAuthenticationService(signOut = AuthenticationError.Network)
@@ -132,16 +169,43 @@ class AuthenticationViewModelTest {
   ) = AuthenticationViewModel(service = service, tokens = tokens)
 }
 
-private class InMemoryTokenStore(private var token: String? = null) : SessionTokenStore {
+private class InMemoryTokenStore(
+  private var token: String? = null,
+  private val writeSucceeds: Boolean = true,
+) : SessionTokenStore {
   override fun read() = token
 
-  override fun write(token: String) {
+  override fun write(token: String): Boolean {
+    if (!writeSucceeds) return false
     this.token = token
+    return true
   }
 
   override fun clear() {
     token = null
   }
+}
+
+private class ControllableAuthenticationService : AuthenticationService {
+  var sendCodeCalls = 0
+  var signInCalls = 0
+
+  override suspend fun sendVerificationCode(email: String): AuthenticationError? {
+    sendCodeCalls += 1
+    return null
+  }
+
+  override suspend fun signIn(
+    email: String,
+    code: String,
+  ): AuthenticationResult<AuthenticatedSession> {
+    signInCalls += 1
+    return AuthenticationResult.Failure(AuthenticationError.Unavailable)
+  }
+
+  override suspend fun currentUser(token: String) = AuthenticationResult.Success(null)
+
+  override suspend fun signOut(token: String): AuthenticationError? = null
 }
 
 private class FakeAuthenticationService(

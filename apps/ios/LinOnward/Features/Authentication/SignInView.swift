@@ -109,8 +109,8 @@ struct SignInView: View {
     }
     .font(.footnote)
     .foregroundStyle(.red)
-    // VoiceOver announces the failure as it appears instead of leaving it to be
-    // discovered by swiping.
+    // Keep the error exposed as text with a stable automation contract. Active
+    // VoiceOver announcement is verified separately with assistive technology.
     .accessibilityAddTraits(.isStaticText)
     .accessibilityIdentifier("signIn.error")
     .transition(.opacity)

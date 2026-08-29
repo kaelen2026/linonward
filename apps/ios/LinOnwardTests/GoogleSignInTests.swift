@@ -256,6 +256,20 @@ struct GoogleSignInFlowTests {
     )
   }
 
+  @Test("does not enter the app when the session token could not be stored")
+  func rejectsUnstoredSession() async {
+    let model = await signedOutModel(
+      service: StubAuthenticationService(googleSignInResult: .success(session)),
+      outcome: .identity(GoogleIdentity(idToken: "h.p.s", nonce: "n")),
+      tokens: RecordingTokenStore(writeFailure: true)
+    )
+
+    await model.signInWithGoogle(presentedBy: StubWebAuthenticationBrowser())
+
+    #expect(model.state.step == .email)
+    #expect(model.state.error == .credentialStorage)
+  }
+
   @Test("says nothing at all when the person closes the browser")
   func staysQuietOnDecline() async {
     let model = await signedOutModel(outcome: .declined)
@@ -346,10 +360,18 @@ private struct StubWebAuthenticationBrowser: WebAuthenticationBrowser {
 /// conformance cannot satisfy.
 private final class RecordingTokenStore: SessionTokenStore {
   private let token = Mutex<String?>(nil)
+  private let writeFailure: Bool
+
+  init(writeFailure: Bool = false) {
+    self.writeFailure = writeFailure
+  }
 
   var written: String? { token.withLock { $0 } }
 
-  func read() -> String? { token.withLock { $0 } }
-  func write(_ value: String) { token.withLock { $0 = value } }
-  func clear() { token.withLock { $0 = nil } }
+  func read() throws -> String? { token.withLock { $0 } }
+  func write(_ value: String) throws {
+    if writeFailure { throw SessionTokenStoreError.unavailable }
+    token.withLock { $0 = value }
+  }
+  func clear() throws { token.withLock { $0 = nil } }
 }

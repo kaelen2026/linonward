@@ -3,9 +3,13 @@ import Security
 
 /// Where the session token lives between launches.
 protocol SessionTokenStore: Sendable {
-  func read() -> String?
-  func write(_ token: String)
-  func clear()
+  func read() throws -> String?
+  func write(_ token: String) throws
+  func clear() throws
+}
+
+enum SessionTokenStoreError: Error, Equatable, Sendable {
+  case unavailable
 }
 
 /// Keychain-backed storage.
@@ -23,33 +27,41 @@ struct KeychainSessionTokenStore: SessionTokenStore {
     self.service = service
   }
 
-  func read() -> String? {
+  func read() throws -> String? {
     var query = baseQuery
     query[kSecReturnData as String] = true
     query[kSecMatchLimit as String] = kSecMatchLimitOne
 
     var item: CFTypeRef?
-    guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
+    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    if status == errSecItemNotFound { return nil }
+    guard status == errSecSuccess,
       let data = item as? Data,
       let token = String(data: data, encoding: .utf8),
       !token.isEmpty
-    else { return nil }
+    else { throw SessionTokenStoreError.unavailable }
     return token
   }
 
-  func write(_ token: String) {
-    // `SecItemAdd` refuses a duplicate and `SecItemUpdate` refuses a missing
-    // item, so deleting first is what makes writing a second token idempotent.
-    _ = SecItemDelete(baseQuery as CFDictionary)
+  func write(_ token: String) throws {
+    let attributes: [String: Any] = [kSecValueData as String: Data(token.utf8)]
+    let updateStatus = SecItemUpdate(baseQuery as CFDictionary, attributes as CFDictionary)
+    if updateStatus == errSecSuccess { return }
+    guard updateStatus == errSecItemNotFound else { throw SessionTokenStoreError.unavailable }
 
-    var query = baseQuery
-    query[kSecValueData as String] = Data(token.utf8)
-    query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-    _ = SecItemAdd(query as CFDictionary, nil)
+    var item = baseQuery
+    item.merge(attributes) { _, new in new }
+    item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+    guard SecItemAdd(item as CFDictionary, nil) == errSecSuccess else {
+      throw SessionTokenStoreError.unavailable
+    }
   }
 
-  func clear() {
-    _ = SecItemDelete(baseQuery as CFDictionary)
+  func clear() throws {
+    let status = SecItemDelete(baseQuery as CFDictionary)
+    guard status == errSecSuccess || status == errSecItemNotFound else {
+      throw SessionTokenStoreError.unavailable
+    }
   }
 
   private var baseQuery: [String: Any] {

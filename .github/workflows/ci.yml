@@ -176,7 +176,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v7
 
@@ -196,14 +196,16 @@ jobs:
       - name: Install Android API 37.1
         run: sdkmanager "platforms;android-37.1" "build-tools;37.0.0"
 
-      - name: Lint
-        run: apps/android/gradlew -p apps/android :app:lintDebug
+      - name: Lint, unit tests, and builds
+        run: scripts/android-ci.sh
 
-      - name: Unit tests
-        run: apps/android/gradlew -p apps/android :app:testDebugUnitTest
-
-      - name: Debug build
-        run: apps/android/gradlew -p apps/android :app:assembleDebug
+      - name: Device tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: true
+          script: apps/android/gradlew -p apps/android :app:connectedDebugAndroidTest
 
   harmony:
     name: HarmonyOS build and host tests
@@ -225,16 +227,25 @@ jobs:
         run: scripts/harmony-ci.sh verify
 
   ios:
-    name: iOS build and test
+    name: iOS build and test (${{ matrix.family }})
     needs: changes
     if: needs.changes.outputs.ios == 'true'
     runs-on: macos-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        family: [iPhone, iPad]
     steps:
       - uses: actions/checkout@v7
 
       - name: Install XcodeGen
         run: brew install xcodegen
+
+      - name: Verify iOS toolchain
+        run: |
+          xcodebuild -version | grep -q '^Xcode 26\.'
+          test "$(xcodegen --version)" = 'Version: 2.46.0'
 
       - name: Regenerate Xcode project
         run: xcodegen generate
@@ -255,6 +266,8 @@ jobs:
 
       - name: Test
         run: apps/ios/scripts/test.sh
+        env:
+          IOS_SIMULATOR_FAMILY: ${{ matrix.family }}
 
   e2e:
     name: End-to-end

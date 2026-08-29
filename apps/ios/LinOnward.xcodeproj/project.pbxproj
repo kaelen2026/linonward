@@ -28,6 +28,7 @@
 		A081A0D378CE9DF738FC6B9F /* ArticleBridgeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CFF205A1B490CFA176D4D0 /* ArticleBridgeProtocol.swift */; };
 		A518A2A395B10B5956AE4C74 /* ArticleReaderModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9AC01F2941C5104CEA3E4E /* ArticleReaderModels.swift */; };
 		A762B68854281BE1A8809DCF /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533E0F68C206549019E9C2AC /* SignInView.swift */; };
+		A839D940C6A1D7ABE1118C75 /* AuthenticationModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB858E0903DCF69410DC0FB6 /* AuthenticationModelTests.swift */; };
 		C2D7FCE89FA9DFE624DA868F /* AuthenticationResponseDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452281C3A2191B19159F8764 /* AuthenticationResponseDecoder.swift */; };
 		C69965A582C8F9485B6E146B /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4DFAF1E282AF077A78399A /* HomeView.swift */; };
 		CC07012A0E4706846ED09DE4 /* AuthenticationRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3A12A2BA5526DE36206BA0 /* AuthenticationRequest.swift */; };
@@ -84,6 +85,7 @@
 		A823299181EEDD1981821382 /* WebAuthenticationBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticationBrowser.swift; sourceTree = "<group>"; };
 		AAB4CD022FFF05E8731675FC /* AuthenticationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModels.swift; sourceTree = "<group>"; };
 		B5CFF205A1B490CFA176D4D0 /* ArticleBridgeProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleBridgeProtocol.swift; sourceTree = "<group>"; };
+		CB858E0903DCF69410DC0FB6 /* AuthenticationModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModelTests.swift; sourceTree = "<group>"; };
 		DCDBB30A3F6EA2A3981FAAA5 /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
 		EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinOnwardApp.swift; sourceTree = "<group>"; };
 		F1B3AF6D159ABCA116A18D9C /* AuthenticationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationStateTests.swift; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 			isa = PBXGroup;
 			children = (
 				95746541013FB13AD7B85EFF /* ArticleReaderTests.swift */,
+				CB858E0903DCF69410DC0FB6 /* AuthenticationModelTests.swift */,
 				F1B3AF6D159ABCA116A18D9C /* AuthenticationStateTests.swift */,
 				89DA051A009A29FA33301267 /* AuthenticationTests.swift */,
 				543BE6E91383901E61E38513 /* GoogleSignInTests.swift */,
@@ -376,6 +379,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F001B83B27A4444D73739313 /* ArticleReaderTests.swift in Sources */,
+				A839D940C6A1D7ABE1118C75 /* AuthenticationModelTests.swift in Sources */,
 				CDC49AD57458E181364D0056 /* AuthenticationStateTests.swift in Sources */,
 				D191893291B13F6B26E4BBB5 /* AuthenticationTests.swift in Sources */,
 				9D3C942B3F9766FD980DB326 /* GoogleSignInTests.swift in Sources */,
@@ -486,7 +490,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -600,7 +604,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
