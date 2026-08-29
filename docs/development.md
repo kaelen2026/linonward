@@ -15,7 +15,7 @@ Node 24 is required. With nvm: `nvm use` picks up `.nvmrc`.
 pnpm dev                             # all JavaScript apps except the Feishu relay
 pnpm --filter @linonward/www dev     # just the website        (3000)
 pnpm --filter @linonward/api dev     # backend API             (3001)
-pnpm --filter @linonward/web dev     # internal console        (3002)
+pnpm --filter @linonward/web dev     # consumer Web app        (3002)
 pnpm --filter @linonward/h5 dev      # native article reader   (3003)
 pnpm dev:feishu                      # Feishu relay (requires apps/feishu/.env)
 pnpm build

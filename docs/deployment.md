@@ -21,11 +21,11 @@ The H5 build uses relative asset paths and a restrictive CSP, so the same `dist/
 URL prefix or inside a native bundle. iOS release builds require an explicit HTTPS
 `LINONWARD_ARTICLE_READER_URL`; the development default is `http://localhost:3003/`.
 
-## Public website and internal console
+## Public website and consumer Web app
 
 Both frontend apps are standard Next.js server builds and require Node.js 24. They are separate
 deployments: `www` serves the bilingual public site on port 3000 by default, while `web` serves
-the authenticated internal console on port 3002.
+the consumer-facing application, including its protected administration routes, on port 3002.
 
 `NEXT_PUBLIC_API_URL` is inlined by `next build` in both apps. Set it for the target environment
 at build time; changing it after the build does not retarget an existing artifact. For `www`, add
@@ -110,9 +110,9 @@ pnpm build
 
 `e2e` installs Chromium and runs `pnpm test:e2e` against the production builds of both Next apps.
 `apps/www` covers public routing, responsive navigation, and contact submission; `apps/web` covers
-the unauthenticated console redirect. The browser cache is keyed by the resolved Playwright
-version; system dependencies are still installed on cache hits. The www HTML report uploads on
-every non-cancelled run and is retained for seven days.
+the unauthenticated administration-route redirect. The browser cache is keyed by the resolved
+Playwright version; system dependencies are still installed on cache hits. The www HTML report
+uploads on every non-cancelled run and is retained for seven days.
 
 `integration` starts PostgreSQL and Redis service containers, applies the complete migration
 history to an empty database, and runs the production adapter contracts against both services.

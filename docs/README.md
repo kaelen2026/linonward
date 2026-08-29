@@ -5,7 +5,7 @@
 | [architecture.md](./architecture.md) | Repository layout, workspaces, the Turborepo task graph |
 | [capabilities.md](./capabilities.md) | Cross-platform support levels and compatibility policy |
 | [development.md](./development.md) | Local setup, day-to-day commands, adding apps/packages |
-| [local-authentication.md](./local-authentication.md) | Configure and troubleshoot internal-console email OTP login |
+| [local-authentication.md](./local-authentication.md) | Configure and troubleshoot Web app email OTP login |
 | [conventions.md](./conventions.md) | Code style, commit format, the pre-commit pipeline |
 | [design-system.md](./design-system.md) | The logo-derived palette, semantic tokens, contrast rules, typography |
 | [testing.md](./testing.md) | Vitest and Playwright, what is worth testing, the RSC limitation |

@@ -18,7 +18,7 @@ pnpm --filter @linonward/www dev
 ```
 
 The website runs at http://localhost:3000, the API at http://localhost:3001, the
-internal console at http://localhost:3002, and the H5 reader at http://localhost:3003. The
+consumer Web app at http://localhost:3002, and the H5 reader at http://localhost:3003. The
 command above starts only the website; run `pnpm dev` for every JavaScript app except the Feishu
 relay, or start the API separately when exercising the contact form.
 The optional Grafana profile also defaults to port 3003; when running it beside H5, set
@@ -45,7 +45,7 @@ Tools. HarmonyOS verification runs only when the repository's self-hosted runner
 │   ├── h5/                     # React article reader embedded by native clients
 │   ├── harmony/                # Native ArkTS application for HarmonyOS
 │   ├── ios/                    # Native SwiftUI application for iPhone and iPad
-│   ├── web/                    # Internal console — Next.js 16 App Router
+│   ├── web/                    # Consumer Web application — Next.js 16 App Router
 │   ├── worker/                 # BullMQ asynchronous job worker backed by Redis
 │   └── www/                    # Official website — Next.js App Router
 ├── packages/

@@ -47,7 +47,7 @@ xcodebuild … LINONWARD_API_BASE_URL='https:/$()/api.example.com'
 The Google button appears only when the build carries a client id, and is hidden otherwise — the
 default in every configuration, because an OAuth client is tied to one bundle id.
 
-1. In the same Google Cloud project the console uses, create an **iOS** OAuth client for
+1. In the same Google Cloud project the Web application uses, create an **iOS** OAuth client for
    `com.linonward.app`. A web client will not do: Google refuses to redirect one to a custom URL
    scheme. It has no client secret, which is why the app uses PKCE.
 2. Give the API the same client id as `GOOGLE_IOS_CLIENT_ID` (see
