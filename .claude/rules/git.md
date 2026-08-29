@@ -222,11 +222,19 @@ Anything red or still running means not yet; `gh run view --log-failed` for the
 failure. Never merge over a failing check.
 
 Automated review may run once initially and then at most **two re-review rounds** after fixes are
-pushed. The initial review does not count toward this limit. Track each new automated review of a
-new head commit as one re-review round; do not reset the count when the branch changes again. If the
-second re-review still reports a blocking issue or leaves a required check failing, stop the review-
-fix loop, report the remaining issue to the user, and do not merge without their direction. Record
-non-blocking suggestions instead of pushing another revision solely to trigger a third re-review.
+pushed. The initial review does not count toward this agent-side limit; the workflow itself still
+runs on every labeled PR update. Before pushing a review-driven fix, count completed review heads:
+
+```bash
+gh pr view <n> --json reviews --jq \
+  '[.reviews[] | select(.body | contains("linonward-bot-review:")) | .commit.oid] | unique'
+```
+
+One unique head is the initial review, two includes the first re-review, and three includes the
+second. Do not reset the count when the branch changes. Once three heads have completed review, do
+not push another review-driven revision: record non-blocking suggestions, or report remaining
+blocking issues and required-check failures to the user. Required checks must still pass before
+merge; user direction does not override that rule.
 
 Then merge with **squash**, so each PR lands on `main` as exactly one commit:
 
