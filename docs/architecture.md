@@ -339,9 +339,10 @@ native clients. Details in
 and secret, accepts text messages only from configured open IDs, and owns the only Bot connection.
 Normal text invokes the unified `linonward-bot` workflow through GitHub Actions
 `workflow_dispatch`; `/内容` and `/content` requests go to an optional loopback-only Hermes API.
-Topics map to stable sessions on either route. Redis atomically claims message IDs for 24 hours,
-which makes delivery retries safe across process restarts and replicas. It needs no public callback
-URL. Deployment and environment configuration live in [the app README](../apps/feishu/README.md).
+Topics map to stable sessions on either route. The relay is intentionally stateless and dispatches
+every delivery immediately, so it runs as a single instance and does not recover interrupted work.
+It needs no public callback URL. Deployment and environment configuration live in
+[the app README](../apps/feishu/README.md).
 
 ## TypeScript
 

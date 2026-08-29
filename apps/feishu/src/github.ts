@@ -22,6 +22,7 @@ export function createGitHubDispatcher(
     const response = await fetcher(endpoint, {
       body: JSON.stringify({
         inputs: {
+          ...(task.imageKeys?.length ? { feishu_image_keys: JSON.stringify(task.imageKeys) } : {}),
           feishu_message_id: task.messageId,
           feishu_sender: task.senderOpenId ?? "",
           feishu_sender_name: "",

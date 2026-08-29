@@ -16,6 +16,10 @@ on:
         description: "Feishu message id to reply to (empty for manual dispatches)"
         required: false
         default: ""
+      feishu_image_keys:
+        description: "JSON array of Feishu image resource keys"
+        required: false
+        default: "[]"
       feishu_sender:
         description: "Feishu sender open_id (empty for manual dispatches)"
         required: false
@@ -252,6 +256,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Download Feishu images
+        if: github.event_name == 'workflow_dispatch' && inputs.feishu_image_keys != '[]'
+        env:
+          FEISHU_IMAGE_KEYS: ${{ inputs.feishu_image_keys }}
+          LARKSUITE_CLI_APP_ID: ${{ secrets.LARKSUITE_CLI_APP_ID }}
+          LARKSUITE_CLI_APP_SECRET: ${{ secrets.LARKSUITE_CLI_APP_SECRET }}
+          MESSAGE_ID: ${{ inputs.feishu_message_id }}
+        run: node .github/scripts/feishu-download-images.mjs
+
       # The private key is the only GitHub App credential kept as a secret. The
       # client ID is intentionally a repository variable because it is public.
       - name: Validate linonward-bot App configuration
@@ -316,6 +329,7 @@ jobs:
         id: build-prompt
         if: github.event_name == 'workflow_dispatch'
         env:
+          FEISHU_IMAGE_KEYS: ${{ inputs.feishu_image_keys }}
           SESSION_MODE: ${{ steps.session-mode.outputs.mode }}
           USER_PROMPT: ${{ inputs.prompt }}
         run: |
@@ -329,6 +343,9 @@ jobs:
               printf '当前运行在全新的 GitHub Actions Runner；只恢复了 Claude 会话，没有恢复上次 Runner 的工作目录或未提交改动。继续前必须检查 git status、远端分支和相关文件的当前内容；若上次运行中断，重新完成未落入远端提交的修改，禁止假设历史工具调用的文件状态仍然存在。\n'
             elif [ "$SESSION_MODE" = "fresh" ]; then
               printf '\n这是本话题的首次会话；同一话题的后续消息会自动接续本次上下文。\n'
+            fi
+            if [ "${FEISHU_IMAGE_KEYS:-[]}" != "[]" ]; then
+              printf '\n飞书消息附带的图片已下载到当前工作区的 `.feishu-images/` 目录。处理任务时必须查看并结合这些图片。\n'
             fi
             printf '\n<task>\n%s\n</task>\n' "$USER_PROMPT"
             printf '%s\n' "$delimiter"

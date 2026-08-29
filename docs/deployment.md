@@ -10,7 +10,7 @@ code consumed by the API, not a separately deployed service.
 | `apps/www` | `.next/`; `pnpm --filter @linonward/www start` | Stateless; browser calls `apps/api` directly |
 | `apps/web` | `.next/`; `pnpm --filter @linonward/web start` | Stateless; server and auth proxy call `apps/api` |
 | `apps/api` | `dist/`; `pnpm --filter @linonward/api start` | PostgreSQL and Redis are mandatory in production |
-| `apps/feishu` | `dist/`; `pnpm --filter @linonward/feishu start` | PostgreSQL outbox, Redis, and outbound Feishu/GitHub access |
+| `apps/feishu` | `dist/`; `pnpm --filter @linonward/feishu start` | Outbound Feishu/GitHub access; intentionally stateless |
 | `apps/h5` | `dist/`; host as static files or bundle with native | No server state; communicates with its native host through the reader bridge |
 
 Build everything from the repository root with `pnpm build`, or build one deployable with its
@@ -75,8 +75,8 @@ is available at `GET /health/ready`; liveness at `GET /health` deliberately touc
 
 ## Feishu relay
 
-The relay is not an HTTP service and exposes no port. Redis claims each delivery before dispatch,
-so it is safe against retries and replica overlap. It owns the Feishu long connection and dispatches normal messages to the `linonward-bot` GitHub
+The relay is not an HTTP service and exposes no port. It owns the Feishu long connection and
+dispatches every delivery directly to the `linonward-bot` GitHub
 Actions workflow. Its standalone Compose definition is
 [`apps/feishu/compose.yml`](../apps/feishu/compose.yml), with setup and live verification in
 [`apps/feishu/README.md`](../apps/feishu/README.md).
@@ -84,6 +84,9 @@ Actions workflow. Its standalone Compose definition is
 If the optional Hermes route is enabled, Hermes remains bound to loopback on the host. The relay
 container reaches it through `host.docker.internal`; do not expose that API publicly or configure
 Hermes as a second Feishu gateway.
+
+The relay keeps no queue or deduplication state. Run exactly one instance; a duplicate Feishu
+delivery triggers a duplicate downstream task, and an interrupted process does not recover work.
 
 ## CI gate
 
