@@ -57,7 +57,9 @@ one long-lived process with outbound access to Feishu and GitHub, plus its Redis
 
 ### Request a pull request review
 
-Every opened or reopened pull request automatically receives the `bot-review` label. For a non-bot
+When the trusted base revision contains the review routing script and prompt, every opened or
+reopened pull request automatically receives the `bot-review` label. A stacked pull request whose
+base predates that support must first be rebased or retargeted onto a supported base. For a non-bot
 actor, opening or reopening also requests a read-only review from `linonward-bot`. The bot submits a
 `COMMENT` review and optional inline findings; it never approves, requests changes, or replaces the
 human reviewer responsible for the final decision. While the label remains attached, a new head
