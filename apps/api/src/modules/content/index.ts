@@ -1,26 +1,10 @@
+import { articleInputSchema } from "@linonward/contracts/content";
 import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { z } from "zod";
 import { ApiError } from "../../shared/api-error.js";
 import { articles, type Database } from "../../shared/database.js";
 import type { ApiModule, AppEnv } from "../../shared/module.js";
 import { type ContentSession, requireContentAdministrator } from "./authorization.js";
-
-const inputSchema = z.object({
-  title: z.string().trim().min(1).max(180),
-  slug: z
-    .string()
-    .trim()
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-    .max(160),
-  excerpt: z.string().trim().min(1).max(400),
-  content: z.record(z.string(), z.unknown()),
-  coverImageUrl: z.url().nullable(),
-  locale: z.enum(["zh", "en"]),
-  status: z.enum(["draft", "published"]),
-  authorName: z.string().trim().min(1).max(80),
-  seoDescription: z.string().trim().min(1).max(320),
-});
 
 type Options = {
   database: Database;
@@ -74,7 +58,7 @@ export function createContentModule(options: Options): ApiModule {
   });
   routes.post("/admin/articles", async (c) => {
     await administrator(c.req.raw.headers);
-    const parsed = inputSchema.safeParse(await c.req.json().catch(() => undefined));
+    const parsed = articleInputSchema.safeParse(await c.req.json().catch(() => undefined));
     if (!parsed.success) throw new ApiError(400, "invalid_article", "Article fields are invalid");
     const now = options.clock();
     const [article] = await options.database
@@ -91,7 +75,7 @@ export function createContentModule(options: Options): ApiModule {
   });
   routes.put("/admin/articles/:id", async (c) => {
     await administrator(c.req.raw.headers);
-    const parsed = inputSchema.safeParse(await c.req.json().catch(() => undefined));
+    const parsed = articleInputSchema.safeParse(await c.req.json().catch(() => undefined));
     if (!parsed.success) throw new ApiError(400, "invalid_article", "Article fields are invalid");
     const [existing] = await options.database
       .select({ publishedAt: articles.publishedAt })

@@ -8,6 +8,10 @@
       "types": "./dist/contact.d.ts",
       "import": "./dist/contact.js"
     },
+    "./content": {
+      "types": "./dist/content.d.ts",
+      "import": "./dist/content.js"
+    },
     "./health": {
       "types": "./dist/health.d.ts",
       "import": "./dist/health.js"

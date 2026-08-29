@@ -106,16 +106,14 @@ history to an empty database, and runs the production adapter contracts against 
 `ios` regenerates the Xcode project, confirms the checked-in project is current, then builds and
 tests the iOS app on macOS.
 
-`apps/android` has **no CI job yet**, so nothing in this workflow covers it. Verify it locally with
-`pnpm android:lint`, `pnpm android:test` and `pnpm android:build` before merging a change that
-touches it. The job it needs is an `ubuntu-latest` one running those same three commands after
-`actions/setup-java` (temurin 17) and `gradle/actions/setup-gradle`; no emulator is involved,
-because every Android test is a JVM test by design.
+`android` runs lint, JVM tests, debug and release builds on Ubuntu, then runs the framework-dependent
+suite on an Android emulator. The release artifact uses a non-deployable HTTPS API origin unless CI
+is explicitly given another one.
 
-`apps/harmony` has **no** job. GitHub-hosted runners carry no HarmonyOS SDK and Huawei does not
-publish the toolchain for unauthenticated download, so nothing gates it the way `ios` gates Xcode.
-A change there has to be built and tested by hand, and the pull request should say so rather than
-let a green CI badge imply coverage it does not have.
+`harmony` runs lint, a build, and host tests on a repository-owned macOS runner with the proprietary
+SDK when `HARMONY_CI_ENABLED` is true. Fork pull requests never execute on that runner. Device tests
+remain a separately dispatched workflow because they require attached hardware; if the repository
+variable is disabled, a green hosted CI run does not cover HarmonyOS.
 
 pnpm comes from `pnpm/action-setup`, which reads `packageManager`; Node comes from `.nvmrc`. A new
 push cancels an in-flight pull-request run, but pushes to `main` are not cancelled.

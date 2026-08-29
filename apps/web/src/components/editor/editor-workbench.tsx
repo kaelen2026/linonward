@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Article, ArticleInput } from "@/lib/articles";
+import {
+  type Article,
+  type ArticleInput,
+  parseArticleResponse,
+  parseArticlesResponse,
+} from "@/lib/articles";
 import { highlightPlugin } from "./highlight-plugin";
 import { RichTextEditor } from "./rich-text-editor";
 import { starterDocument } from "./rich-text-schema";
@@ -31,7 +36,7 @@ export function EditorWorkbench({ authorName }: { authorName: string }) {
   const [message, setMessage] = useState("尚未保存");
   useEffect(() => {
     request("/articles").then(async (response) => {
-      if (response.ok) setArticles(((await response.json()) as { articles: Article[] }).articles);
+      if (response.ok) setArticles(parseArticlesResponse(await response.json()));
     });
   }, []);
   function select(article: Article) {
@@ -56,7 +61,7 @@ export function EditorWorkbench({ authorName }: { authorName: string }) {
       setMessage("保存失败，请检查必填项和 URL 别名");
       return;
     }
-    const article = ((await response.json()) as { article: Article }).article;
+    const article = parseArticleResponse(await response.json());
     setSelectedId(article.id);
     setDraft(article);
     setArticles((current) => [article, ...current.filter((item) => item.id !== article.id)]);
