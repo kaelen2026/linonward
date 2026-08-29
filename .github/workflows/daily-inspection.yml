@@ -1,0 +1,208 @@
+name: Daily inspection
+
+on:
+  schedule:
+    # GitHub Actions uses UTC; this is 09:00 in Asia/Shanghai.
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-inspection
+  cancel-in-progress: false
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
+
+jobs:
+  workspace:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  integration:
+    name: Postgres and Redis integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: linonward
+          POSTGRES_USER: linonward
+          POSTGRES_PASSWORD: linonward
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U linonward -d linonward"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://linonward:linonward@127.0.0.1:5432/linonward
+      REDIS_URL: redis://127.0.0.1:6379
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations and verify infrastructure adapters
+        run: pnpm --filter @linonward/api test:integration
+
+  end-to-end:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm --filter @linonward/www exec playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: pnpm test:e2e
+
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: daily-playwright-report
+          path: apps/www/playwright-report/
+          retention-days: 7
+
+  android:
+    name: Android build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+          cache-dependency-path: |
+            apps/android/**/*.gradle.kts
+            apps/android/gradle/libs.versions.toml
+            apps/android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android API 37.1
+        run: sdkmanager "platforms;android-37.1" "build-tools;37.0.0"
+
+      - name: Lint, unit tests, and builds
+        run: scripts/android-ci.sh
+
+  ios:
+    name: iOS build and test (${{ matrix.family }})
+    runs-on: macos-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        family: [iPhone, iPad]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Verify iOS toolchain
+        run: |
+          xcodebuild -version | grep -q '^Xcode 26\.'
+          test "$(xcodegen --version)" = 'Version: 2.46.0'
+
+      - name: Regenerate Xcode project
+        run: xcodegen generate
+        working-directory: apps/ios
+
+      - name: Check generated project is current
+        run: git diff --exit-code -- apps/ios/LinOnward.xcodeproj
+
+      - name: Build
+        run: >-
+          xcodebuild
+          -project apps/ios/LinOnward.xcodeproj
+          -scheme LinOnward
+          -configuration Debug
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+          build
+
+      - name: Test
+        run: apps/ios/scripts/test.sh
+        env:
+          IOS_SIMULATOR_FAMILY: ${{ matrix.family }}
+
+  harmony:
+    name: HarmonyOS build and host tests
+    if: vars.HARMONY_CI_ENABLED == 'true'
+    runs-on: [self-hosted, macos, harmonyos-api12]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Lint, build, and run host tests
+        env:
+          HARMONY_CLI_HOME: ${{ vars.HARMONY_CLI_HOME }}
+          DEVECO_SDK_HOME: ${{ vars.DEVECO_SDK_HOME }}
+        run: scripts/harmony-ci.sh verify
