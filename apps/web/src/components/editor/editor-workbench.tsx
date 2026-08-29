@@ -18,7 +18,6 @@ const blank: ArticleInput = {
   content: starterDocument,
   coverImageUrl: null,
   locale: "zh",
-  status: "draft",
   authorName: "LinOnward 编辑部",
   seoDescription: "",
 };
@@ -57,22 +56,43 @@ export function EditorWorkbench({
     setEditorKey((value) => value + 1);
     setMessage("新文章");
   }
-  async function save(status: "draft" | "published") {
+  async function saveDraft(): Promise<Article | null> {
     setMessage("正在保存…");
     const response = await request(selectedId ? `/articles/${selectedId}` : "/articles", {
       method: selectedId ? "PUT" : "POST",
-      body: JSON.stringify({ ...draft, status }),
+      body: JSON.stringify(draft),
     });
     if (!response.ok) {
-      setMessage("保存失败，请检查必填项和 URL 别名");
-      return;
+      setMessage(
+        response.status === 403 ? "你没有权限修改这篇文章" : "保存失败，请检查必填项和 URL 别名",
+      );
+      return null;
     }
     const article = parseArticleResponse(await response.json());
     setSelectedId(article.id);
     setDraft(article);
     setArticles((current) => [article, ...current.filter((item) => item.id !== article.id)]);
-    setMessage(status === "published" ? "已发布" : "草稿已保存");
+    setMessage("草稿已保存");
+    return article;
   }
+  async function changePublication(status: "draft" | "published") {
+    const saved = await saveDraft();
+    if (!saved) return;
+    setMessage(status === "published" ? "正在发布…" : "正在撤回…");
+    const response = await request(
+      `/articles/${saved.id}/${status === "published" ? "publish" : "unpublish"}`,
+      { method: "POST" },
+    );
+    if (!response.ok) {
+      setMessage(response.status === 403 ? "你没有发布权限" : "状态变更失败，请稍后重试");
+      return;
+    }
+    const article = parseArticleResponse(await response.json());
+    setDraft(article);
+    setArticles((current) => [article, ...current.filter((item) => item.id !== article.id)]);
+    setMessage(status === "published" ? "已发布" : "已撤回为草稿");
+  }
+  const selectedArticle = articles.find((article) => article.id === selectedId);
   return (
     <div className="admin-workbench">
       <aside className="admin-nav">
@@ -107,7 +127,7 @@ export function EditorWorkbench({
           <div className="flex gap-2">
             <button
               className="rounded-md border border-border px-3 py-2 text-sm"
-              onClick={() => save("draft")}
+              onClick={() => void saveDraft()}
               type="button"
             >
               保存草稿
@@ -115,10 +135,14 @@ export function EditorWorkbench({
             {canPublish ? (
               <button
                 className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-brand-foreground"
-                onClick={() => save("published")}
+                onClick={() =>
+                  void changePublication(
+                    selectedArticle?.status === "published" ? "draft" : "published",
+                  )
+                }
                 type="button"
               >
-                发布
+                {selectedArticle?.status === "published" ? "撤回" : "发布"}
               </button>
             ) : null}
           </div>
