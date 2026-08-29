@@ -189,6 +189,8 @@ the site's origin has to be listed. The other half of that handshake is `NEXT_PU
 For the internal console, `BETTER_AUTH_URL` is the browser-visible Web origin (locally
 `http://localhost:3002`). Register `${BETTER_AUTH_URL}/api/auth/callback/google` as the Google
 OAuth redirect URI. Web proxies `/api/auth/*` here so session cookies remain first-party.
+For a complete local email-OTP setup and its verification commands, follow
+[`docs/local-authentication.md`](../../docs/local-authentication.md).
 
 `apps/ios` cannot use that client: Google refuses to redirect a *web* client to a custom URL
 scheme, which is the only address a phone has. The app carries an **iOS** client of its own from

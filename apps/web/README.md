@@ -29,7 +29,9 @@ an unreachable API is reported, not thrown.
 The console requires a Better Auth session. `/login` supports a Resend-delivered email OTP and,
 when enabled, Google OAuth. `next.config.ts` rewrites `/api/auth/*` to `apps/api`, keeping browser
 requests and session cookies first-party. Set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` only when
-the matching Google credentials are configured on the API.
+the matching Google credentials are configured on the API. Follow the
+[local administrator authentication guide](../../docs/local-authentication.md) to configure
+PostgreSQL, Resend, both administrator allow-lists, migrations, and runtime verification.
 
 ## Layout
 
