@@ -1,33 +1,13 @@
+import {
+  articlesResponseSchema,
+  type Article as ContractArticle,
+  singleArticleResponseSchema,
+} from "@linonward/contracts/content";
 import type { RichTextDocument } from "@/components/editor/rich-text-schema";
 import { apiUrl } from "./api";
 
-export type Article = {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: RichTextDocument;
-  coverImageUrl: string | null;
-  locale: "zh" | "en";
-  status: "draft" | "published";
-  authorName: string;
-  seoDescription: string;
-  publishedAt: string | null;
-  updatedAt: string;
-};
-
-export type ArticleInput = Pick<
-  Article,
-  | "title"
-  | "slug"
-  | "excerpt"
-  | "content"
-  | "coverImageUrl"
-  | "locale"
-  | "status"
-  | "authorName"
-  | "seoDescription"
->;
+export type Article = Omit<ContractArticle, "content"> & { content: RichTextDocument };
+export type { ArticleInput } from "@linonward/contracts/content";
 
 const previewArticle: Article = {
   id: "preview",
@@ -79,6 +59,7 @@ const previewArticle: Article = {
   authorName: "LinOnward 编辑部",
   seoDescription: "以系统思维构建可持续产品。",
   publishedAt: "2026-08-20T08:00:00.000Z",
+  createdAt: "2026-08-20T07:00:00.000Z",
   updatedAt: "2026-08-20T08:00:00.000Z",
 };
 
@@ -86,34 +67,47 @@ function previewArticles(locale: "zh" | "en") {
   return process.env.NODE_ENV === "development" && locale === "zh" ? [previewArticle] : [];
 }
 
+export function parseArticlesResponse(payload: unknown): Article[] {
+  return articlesResponseSchema.parse(payload).articles as Article[];
+}
+
+export function parseArticleResponse(payload: unknown): Article {
+  return singleArticleResponseSchema.parse(payload).article as Article;
+}
+
 export async function fetchArticles(locale: "zh" | "en" = "zh"): Promise<Article[]> {
+  let payload: unknown;
   try {
     const response = await fetch(apiUrl(`/api/content/articles?locale=${locale}`), {
       next: { revalidate: 60 },
     });
     if (!response.ok) return previewArticles(locale);
-    const articles = ((await response.json()) as { articles: Article[] }).articles;
-    return articles.length > 0 ? articles : previewArticles(locale);
+    payload = await response.json();
   } catch {
     return previewArticles(locale);
   }
+  const articles = parseArticlesResponse(payload);
+  return articles.length > 0 ? articles : previewArticles(locale);
 }
 
 export async function fetchArticle(
   slug: string,
   locale: "zh" | "en" = "zh",
 ): Promise<Article | null> {
+  let payload: unknown;
   try {
     const response = await fetch(
       apiUrl(`/api/content/articles/${encodeURIComponent(slug)}?locale=${locale}`),
       { next: { revalidate: 60 } },
     );
-    return response.ok
-      ? ((await response.json()) as { article: Article }).article
-      : (previewArticles(locale).find((article) => article.slug === slug) ?? null);
+    if (!response.ok) {
+      return previewArticles(locale).find((article) => article.slug === slug) ?? null;
+    }
+    payload = await response.json();
   } catch {
     return previewArticles(locale).find((article) => article.slug === slug) ?? null;
   }
+  return parseArticleResponse(payload);
 }
 
 export function readingMinutes(document: RichTextDocument): number {

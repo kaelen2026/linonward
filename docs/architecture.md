@@ -236,11 +236,17 @@ the Drizzle half after the legacy lock has already been released.
 ## `packages/contracts`
 
 `@linonward/contracts` owns data that crosses the HTTP boundary: DTO types, stable field limits,
-and runtime response schemas. It deliberately contains no database tables, Hono routes, React
-components, or service behavior. The API remains authoritative, while clients can validate what
-arrived over the network instead of trusting a TypeScript assertion. Subpath exports keep the
-public website's contact-form bundle independent from the Zod-backed health contract used by the
-server-rendered internal console.
+runtime request and response schemas, and the application-owned OpenAPI document. It deliberately
+contains no database tables, Hono routes, React components, or service behavior. The API remains
+authoritative, while clients validate what arrived over the network instead of trusting a
+TypeScript assertion. Subpath exports keep browser bundles independent: contact, content, health,
+and session consumers load only their own contract.
+
+The root architecture test enforces two dependency rules: client workspaces cannot import
+`@linonward/db`, and the contracts package cannot import storage, HTTP, Next.js, or React runtime
+code. API module isolation remains independently enforced by `apps/api/src/modules/boundaries.test.ts`.
+The cross-platform capability and compatibility lifecycle is recorded in
+[`capabilities.md`](./capabilities.md).
 
 ## `apps/web`
 
