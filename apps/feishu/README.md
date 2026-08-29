@@ -1,9 +1,17 @@
 # Feishu relay
 
+The normative design for topic-group archival and task triggering is
+[`docs/feishu-bitable-task-workflow.md`](../../docs/feishu-bitable-task-workflow.md). Implementations
+must follow that contract; the setup notes below are operational guidance.
+
 This service is the single Feishu long-connection owner. It turns authorized text messages into
 either the `workflow_dispatch` input for the unified
 [`linonward-bot` workflow](../../.github/workflows/linonward-bot.yml), or a local Hermes
 content-production request.
+
+Optionally, it also archives every message from one configured topic group to a Feishu Bitable.
+This archive is independent of the task allowlist: users who cannot trigger GitHub or Hermes work
+are still included when they speak in the configured group.
 
 It immediately acknowledges every accepted request under its Feishu topic. That reply opens a
 topic for a main-stream message; follow-ups in the same topic share one Claude Code session while
@@ -54,6 +62,32 @@ one long-lived process with outbound access to Feishu and GitHub, plus its Redis
    `LINONWARD_BOT_PRIVATE_KEY`.
 6. Set the repository secrets used by the workflow itself:
    `CLAUDE_CODE_OAUTH_TOKEN`, `LARKSUITE_CLI_APP_ID`, and `LARKSUITE_CLI_APP_SECRET`.
+
+### Archive a topic group to Bitable
+
+Create a data table with these exact field names and types:
+
+| Field | Type |
+| --- | --- |
+| `内容` | Text |
+| `附件` | Attachment |
+| `时间` | Date |
+
+Add the self-built app as a collaborator with edit access to the Bitable. In the developer
+console, grant it permission to add Bitable records, read message resources, and upload Drive
+media, then publish the updated app version. Configure all three destination values together:
+
+```dotenv
+FEISHU_BITABLE_CHAT_ID=oc_topic_group_chat_id
+FEISHU_BITABLE_APP_TOKEN=bascn_base_app_token
+FEISHU_BITABLE_TABLE_ID=tbl_data_table_id
+```
+
+The service filters by the group chat ID, not by topic ID, so root messages and every reply in all
+topics of that group are archived. Text and rich-post copy is stored in `内容`; image and file
+messages are downloaded and re-uploaded to `附件`; the original message timestamp is stored in
+`时间`. Feishu's message ID is sent as the record creation client token so event retries do not
+create duplicate rows.
 
 ### Request a pull request review
 
