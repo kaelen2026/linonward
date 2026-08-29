@@ -21,7 +21,7 @@ export const contentCapabilities = [
 
 const articleContentSchema = z.record(z.string(), z.unknown());
 
-export const articleInputSchema = z.object({
+export const articleDraftInputSchema = z.object({
   title: z.string().trim().min(1).max(articleLimits.title.max),
   slug: z
     .string()
@@ -32,13 +32,13 @@ export const articleInputSchema = z.object({
   content: articleContentSchema,
   coverImageUrl: z.url().nullable(),
   locale: z.enum(articleLocales),
-  status: z.enum(articleStatuses),
   authorName: z.string().trim().min(1).max(articleLimits.authorName.max),
   seoDescription: z.string().trim().min(1).max(articleLimits.seoDescription.max),
 });
 
-export const articleSchema = articleInputSchema.extend({
+export const articleSchema = articleDraftInputSchema.extend({
   id: z.string().min(1),
+  status: z.enum(articleStatuses),
   publishedAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
@@ -52,7 +52,9 @@ export const contentAccessSchema = z.object({
   capabilities: z.array(z.enum(contentCapabilities)),
 });
 
-export type ArticleInput = z.infer<typeof articleInputSchema>;
+export const articleInputSchema = articleDraftInputSchema;
+
+export type ArticleInput = z.infer<typeof articleDraftInputSchema>;
 export type Article = z.infer<typeof articleSchema>;
 export type ContentRole = (typeof contentRoles)[number];
 export type ContentCapability = (typeof contentCapabilities)[number];

@@ -1,4 +1,8 @@
-import { articleInputSchema, type ContentRole, contentRoles } from "@linonward/contracts/content";
+import {
+  articleDraftInputSchema,
+  type ContentRole,
+  contentRoles,
+} from "@linonward/contracts/content";
 import { and, desc, eq } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { ApiError } from "../../shared/api-error.js";
@@ -21,6 +25,7 @@ import {
   capabilitiesFor,
   contentPrincipal,
 } from "./authorization.js";
+import { createDraft, setPublicationStatus, updateArticle } from "./service.js";
 
 type Options = {
   database: Database;
@@ -124,60 +129,40 @@ export function createContentModule(options: Options): ApiModule {
     const actor = await principal(c.req.raw.headers);
     const id = options.nextId();
     const article = await auditedMutation(c, actor, "article.create", id, async (database) => {
-      const parsed = articleInputSchema.safeParse(await c.req.json().catch(() => undefined));
+      const parsed = articleDraftInputSchema.safeParse(await c.req.json().catch(() => undefined));
       if (!parsed.success) throw new ApiError(400, "invalid_article", "Article fields are invalid");
-      authorizeContent(
-        actor,
-        parsed.data.status === "published" ? "article.publish" : "article.createDraft",
-      );
+      authorizeContent(actor, "article.createDraft");
       const now = options.clock();
-      const [created] = await database
-        .insert(articles)
-        .values({
-          ...parsed.data,
-          id,
-          publishedAt: parsed.data.status === "published" ? now : null,
-          createdAt: now,
-          updatedAt: now,
-        })
-        .returning();
-      return created;
+      return createDraft(database, parsed.data, id, now);
     });
     return c.json({ article }, 201);
   });
   routes.put("/admin/articles/:id", async (c) => {
     const actor = await principal(c.req.raw.headers);
     const id = c.req.param("id");
+    if (!id) throw new ApiError(400, "article_id_required", "Article id is required");
     const article = await auditedMutation(c, actor, "article.update", id, async (database) => {
-      const parsed = articleInputSchema.safeParse(await c.req.json().catch(() => undefined));
+      const parsed = articleDraftInputSchema.safeParse(await c.req.json().catch(() => undefined));
       if (!parsed.success) throw new ApiError(400, "invalid_article", "Article fields are invalid");
-      const [existing] = await database
-        .select({ publishedAt: articles.publishedAt, status: articles.status })
-        .from(articles)
-        .where(eq(articles.id, id))
-        .limit(1)
-        .for("update");
-      if (!existing) throw new ApiError(404, "article_not_found", "Article not found");
-      authorizeContent(
-        actor,
-        existing.status === "published" || parsed.data.status === "published"
-          ? "article.publish"
-          : "article.updateDraft",
+      return updateArticle(database, parsed.data, id, options.clock(), (status) =>
+        authorizeContent(actor, status === "published" ? "article.publish" : "article.updateDraft"),
       );
-      const [updated] = await database
-        .update(articles)
-        .set({
-          ...parsed.data,
-          publishedAt:
-            parsed.data.status === "published" ? (existing.publishedAt ?? options.clock()) : null,
-          updatedAt: options.clock(),
-        })
-        .where(eq(articles.id, id))
-        .returning();
-      return updated;
     });
     return c.json({ article });
   });
+  const publicationCommand = (status: "draft" | "published") => async (c: Context<AppEnv>) => {
+    const actor = await principal(c.req.raw.headers);
+    const id = c.req.param("id");
+    if (!id) throw new ApiError(400, "article_id_required", "Article id is required");
+    const action = status === "published" ? "article.publish" : "article.unpublish";
+    const article = await auditedMutation(c, actor, action, id, async (database) => {
+      authorizeContent(actor, "article.publish");
+      return setPublicationStatus(database, id, status, options.clock());
+    });
+    return c.json({ article });
+  };
+  routes.post("/admin/articles/:id/publish", publicationCommand("published"));
+  routes.post("/admin/articles/:id/unpublish", publicationCommand("draft"));
   routes.delete("/admin/articles/:id", async (c) => {
     const actor = await principal(c.req.raw.headers);
     const id = c.req.param("id");

@@ -42,10 +42,11 @@ on conflict do nothing;
 Only assign the literal roles documented above. The API ignores unknown stored roles and denies
 access when no recognized role remains.
 
-Content create, update, and delete attempts write an append-only `content_audit_events` row with
-the normalized actor email, action, target ID, request ID, outcome, stable error code, and time. A
-successful event commits in the same transaction as its article mutation; if that transaction
-fails, the API records a failure event after rollback. The table deliberately has no foreign keys:
+Content create, update, publish, unpublish, and delete attempts write an append-only
+`content_audit_events` row with the normalized actor email, action, target ID, request ID, outcome,
+stable error code, and time. A successful event commits in the same transaction as its article
+mutation; if that transaction fails, the API records a failure event after rollback. The table
+deliberately has no foreign keys:
 deleting an account or article cannot invalidate its history. It contains no article body, session
 cookie, authorization header, or raw error message.
 

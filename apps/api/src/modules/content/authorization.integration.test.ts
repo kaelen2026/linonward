@@ -72,31 +72,32 @@ describe.skipIf(!databaseUrl)("content role integration", () => {
       ],
     });
 
-  const input = (status: "draft" | "published") => ({
+  const input = () => ({
     title: "Role-scoped article",
     slug: `role-scoped-${randomUUID()}`,
     excerpt: "An article used to verify content roles.",
     content: { type: "doc" },
     coverImageUrl: null,
     locale: "en",
-    status,
     authorName: "Editor",
     seoDescription: "Role-scoped article",
   });
 
-  it("lets an assigned editor create drafts and audits refused publication", async () => {
+  it("lets an assigned editor create drafts and audits refused publication commands", async () => {
     const draft = await app().request("/api/content/admin/articles", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(input("draft")),
+      body: JSON.stringify(input()),
     });
     expect(draft.status).toBe(201);
 
-    const publication = await app().request("/api/content/admin/articles", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(input("published")),
-    });
+    const created = (await draft.json()) as { article: { id: string } };
+    const publication = await app().request(
+      `/api/content/admin/articles/${created.article.id}/publish`,
+      {
+        method: "POST",
+      },
+    );
     expect(publication.status).toBe(403);
 
     const events = await postgres.db
@@ -116,7 +117,8 @@ describe.skipIf(!databaseUrl)("content role integration", () => {
     articleIds.push(articleId);
     const now = new Date("2026-08-29T11:00:00.000Z");
     await postgres.db.insert(articles).values({
-      ...input("published"),
+      ...input(),
+      status: "published",
       id: articleId,
       publishedAt: now,
       createdAt: now,
@@ -126,7 +128,7 @@ describe.skipIf(!databaseUrl)("content role integration", () => {
     const update = await app().request(`/api/content/admin/articles/${articleId}`, {
       method: "PUT",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(input("draft")),
+      body: JSON.stringify(input()),
     });
     expect(update.status).toBe(403);
 
@@ -144,6 +146,43 @@ describe.skipIf(!databaseUrl)("content role integration", () => {
         { action: "article.update", outcome: "failure" },
         { action: "article.delete", outcome: "failure" },
       ]),
+    );
+  });
+
+  it("publishes and unpublishes through explicit administrator commands", async () => {
+    await postgres.db
+      .delete(contentRoleAssignments)
+      .where(eq(contentRoleAssignments.userId, userId));
+    await postgres.db.insert(contentRoleAssignments).values({
+      userId,
+      role: "administrator",
+      assignedByEmail: "operator@linonward.com",
+    });
+    const createdResponse = await app().request("/api/content/admin/articles", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...input(), status: "published" }),
+    });
+    expect(createdResponse.status).toBe(201);
+    const created = (await createdResponse.json()) as { article: { id: string; status: string } };
+    expect(created.article.status).toBe("draft");
+
+    const published = await app().request(
+      `/api/content/admin/articles/${created.article.id}/publish`,
+      { method: "POST" },
+    );
+    expect(published.status).toBe(200);
+    expect(((await published.json()) as { article: { status: string } }).article.status).toBe(
+      "published",
+    );
+
+    const unpublished = await app().request(
+      `/api/content/admin/articles/${created.article.id}/unpublish`,
+      { method: "POST" },
+    );
+    expect(unpublished.status).toBe(200);
+    expect(((await unpublished.json()) as { article: { status: string } }).article.status).toBe(
+      "draft",
     );
   });
 });

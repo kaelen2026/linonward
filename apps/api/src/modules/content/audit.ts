@@ -1,6 +1,11 @@
 import { ApiError } from "../../shared/api-error.js";
 
-export type ContentAuditAction = "article.create" | "article.update" | "article.delete";
+export type ContentAuditAction =
+  | "article.create"
+  | "article.update"
+  | "article.publish"
+  | "article.unpublish"
+  | "article.delete";
 export type ContentAuditEvent = {
   id: string;
   action: ContentAuditAction;

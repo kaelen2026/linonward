@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  articleInputSchema,
+  articleDraftInputSchema,
   articleResponseSchema,
   articlesResponseSchema,
   contentAccessSchema,
@@ -34,8 +34,12 @@ describe("content contract", () => {
   });
 
   it("enforces the write-side field limits", () => {
-    expect(() => articleInputSchema.parse({ ...article, title: "" })).toThrow();
-    expect(() => articleInputSchema.parse({ ...article, slug: "Not URL Safe" })).toThrow();
+    expect(() => articleDraftInputSchema.parse({ ...article, title: "" })).toThrow();
+    expect(() => articleDraftInputSchema.parse({ ...article, slug: "Not URL Safe" })).toThrow();
+  });
+
+  it("keeps publication state out of draft write commands", () => {
+    expect(articleDraftInputSchema.parse(article)).not.toHaveProperty("status");
   });
 
   it("describes the bounded roles and capabilities returned to the console", () => {

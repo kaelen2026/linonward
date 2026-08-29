@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import {
-  articleInputSchema,
+  articleDraftInputSchema,
   articlesResponseSchema,
   contentAccessSchema,
   singleArticleResponseSchema,
@@ -100,6 +100,30 @@ export const openApiDocument = {
         },
       },
     },
+    "/api/content/admin/articles/{id}/publish": {
+      post: {
+        operationId: "publishArticle",
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Article published", ...json(reference("ArticleResponse")) },
+          "401": { description: "Authentication required" },
+          "403": { description: "Publication capability required" },
+          "404": { description: "Article not found" },
+        },
+      },
+    },
+    "/api/content/admin/articles/{id}/unpublish": {
+      post: {
+        operationId: "unpublishArticle",
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Article unpublished", ...json(reference("ArticleResponse")) },
+          "401": { description: "Authentication required" },
+          "403": { description: "Publication capability required" },
+          "404": { description: "Article not found" },
+        },
+      },
+    },
     "/api/content/admin/access": {
       get: {
         operationId: "getContentAccess",
@@ -117,7 +141,7 @@ export const openApiDocument = {
   components: {
     schemas: {
       Health: z.toJSONSchema(healthReportSchema),
-      ArticleInput: z.toJSONSchema(articleInputSchema),
+      ArticleInput: z.toJSONSchema(articleDraftInputSchema),
       ArticleResponse: z.toJSONSchema(singleArticleResponseSchema),
       ArticlesResponse: z.toJSONSchema(articlesResponseSchema),
       ContentAccess: z.toJSONSchema(contentAccessSchema),

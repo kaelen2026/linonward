@@ -244,6 +244,11 @@ session, and `apps/web` uses them to shape the editor while every mutation is in
 again by the API. The configured administrator email list is a bootstrap path rather than the
 long-term role store.
 
+Article content and publication state use separate application commands. Create and update accept
+only draft fields and preserve server-owned status; publish and unpublish have dedicated endpoints,
+capability checks, and audit actions. This prevents a generic update DTO from acquiring lifecycle
+transitions as the publishing workflow evolves.
+
 ## `packages/contracts`
 
 `@linonward/contracts` owns data that crosses the HTTP boundary: DTO types, stable field limits,
