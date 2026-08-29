@@ -15,8 +15,17 @@ case "$simulator_family" in
 esac
 
 if [ -z "$simulator_id" ]; then
-  simulator_id=$(xcrun simctl list devices available | awk -F '[()]' -v family="$simulator_family" \
-    'index($0, family) { print $2; exit }')
+  simulator_id=$(xcrun simctl list devices available | awk -v family="$simulator_family" '
+    index($0, family) {
+      for (field = 1; field <= NF; field += 1) {
+        if ($field ~ /^\([0-9A-F]{8}-[0-9A-F-]{27}\)$/) {
+          gsub(/[()]/, "", $field)
+          print $field
+          exit
+        }
+      }
+    }
+  ')
 fi
 
 if [ -z "$simulator_id" ]; then
