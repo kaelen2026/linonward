@@ -23,8 +23,18 @@ waits rather than applying the same migration concurrently.
 `INTERNAL_CONSOLE_ADMIN_EMAILS` allow-list is the current administrator role;
 an authenticated account not on that list receives `/unauthorized`. Keep this
 environment variable in the deployment secret store, never in a
-`NEXT_PUBLIC_*` variable. Before adding write-capable console features, record
-the actor, action, target, request ID, and result in an append-only audit table.
+`NEXT_PUBLIC_*` variable.
+
+Content create, update, and delete attempts write an append-only `content_audit_events` row with
+the normalized actor email, action, target ID, request ID, outcome, stable error code, and time. A
+successful event commits in the same transaction as its article mutation; if that transaction
+fails, the API records a failure event after rollback. The table deliberately has no foreign keys:
+deleting an account or article cannot invalidate its history. It contains no article body, session
+cookie, authorization header, or raw error message.
+
+There is no public audit endpoint. Investigations are an operator-only database workflow until the
+internal console gains a separately authorized read capability. Decide retention and actor-email
+pseudonymization with the data owner before adding automatic deletion or export.
 
 ## Data lifecycle
 

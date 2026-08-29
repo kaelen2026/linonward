@@ -15,6 +15,13 @@
       "when": 1787932159938,
       "tag": "0001_supreme_victor_mancha",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788007340624,
+      "tag": "0002_chilly_firebird",
+      "breakpoints": true
     }
   ]
 }
