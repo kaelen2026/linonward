@@ -110,4 +110,40 @@ describe.skipIf(!databaseUrl)("content role integration", () => {
       ]),
     );
   });
+
+  it("refuses editor updates to published articles and deletion", async () => {
+    const articleId = `art_${randomUUID()}`;
+    articleIds.push(articleId);
+    const now = new Date("2026-08-29T11:00:00.000Z");
+    await postgres.db.insert(articles).values({
+      ...input("published"),
+      id: articleId,
+      publishedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const update = await app().request(`/api/content/admin/articles/${articleId}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(input("draft")),
+    });
+    expect(update.status).toBe(403);
+
+    const deletion = await app().request(`/api/content/admin/articles/${articleId}`, {
+      method: "DELETE",
+    });
+    expect(deletion.status).toBe(403);
+
+    const events = await postgres.db
+      .select({ action: contentAuditEvents.action, outcome: contentAuditEvents.outcome })
+      .from(contentAuditEvents)
+      .where(eq(contentAuditEvents.actorEmail, actorEmail));
+    expect(events).toEqual(
+      expect.arrayContaining([
+        { action: "article.update", outcome: "failure" },
+        { action: "article.delete", outcome: "failure" },
+      ]),
+    );
+  });
 });

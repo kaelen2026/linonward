@@ -155,7 +155,8 @@ export function createContentModule(options: Options): ApiModule {
         .select({ publishedAt: articles.publishedAt, status: articles.status })
         .from(articles)
         .where(eq(articles.id, id))
-        .limit(1);
+        .limit(1)
+        .for("update");
       if (!existing) throw new ApiError(404, "article_not_found", "Article not found");
       authorizeContent(
         actor,
