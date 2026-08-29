@@ -30,7 +30,7 @@ These rules apply to both Next.js applications. App-specific instructions take p
 - Keep all user-facing copy in `src/content/site.ts`. Update both `zh` and `en` for structural or content additions.
 - Preserve the `next/font` variable names and the CJK fallback contract.
 
-## Internal console: `apps/web`
+## Consumer Web application: `apps/web`
 
 - Do not assume `apps/www` components, brand tokens, localization model, or Base UI dependency also exist in this app.
 - Follow the patterns and dependencies already present in `apps/web` unless the task explicitly introduces a shared frontend package.

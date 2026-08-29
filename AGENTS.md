@@ -50,9 +50,12 @@ Report real output; don't commit over red and call it done.
 JavaScript workspaces use **Vitest**, with Testing Library for UI logic and components next to the
 code as `*.test.{ts,tsx}`. Use `pnpm test`, or a workspace's `test:watch` script for the TDD loop.
 Both Next apps also use **Playwright** in `e2e/**/*.spec.ts`: `apps/www` drives Chromium at two
-viewports, while `apps/web` covers its authentication redirect on desktop. `pnpm test:e2e` builds
-and runs both selected workspaces. Neither runner is in `pre-commit`; CI routes changed paths to
-the applicable jobs.
+viewports, while `apps/web` currently covers only the unauthenticated `/admin` redirect on desktop.
+Do not describe that single guard check as a complete authentication journey. Any change to Web
+sessions, cookies, login, or authorization must add or preserve positive authenticated coverage as
+well as unauthenticated and unauthorized coverage; see [`.claude/rules/tdd.md`](.claude/rules/tdd.md).
+`pnpm test:e2e` builds and runs both selected workspaces. Neither runner is in `pre-commit`; CI
+routes changed paths to the applicable jobs.
 
 Two traps worth knowing up front: an `async` server component cannot be rendered by Vitest at
 all (a synchronous one can), and Playwright locators must be scoped to a landmark — the header
