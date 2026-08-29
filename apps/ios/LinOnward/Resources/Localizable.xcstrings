@@ -1,6 +1,132 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "profile.about" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "关于" } }
+      }
+    },
+    "profile.appearance" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Appearance" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "外观" } }
+      }
+    },
+    "profile.appearance.system" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Follow System" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "跟随系统" } }
+      }
+    },
+    "profile.articleUpdates" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New article updates" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "新文章提醒" } }
+      }
+    },
+    "profile.language" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Language" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "语言" } }
+      }
+    },
+    "profile.language.current" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "English" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "简体中文" } }
+      }
+    },
+    "profile.settings" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "设置" } }
+      }
+    },
+    "profile.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Me" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "我的" } }
+      }
+    },
+    "profile.version" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "版本" } }
+      }
+    },
+    "profile.website" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Official website" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "官方网站" } }
+      }
+    },
+    "reading.article.growth.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "<p>Growth becomes repeatable when observations, decisions, and reviews form a dependable loop.</p><h2>Start with a shared question</h2><p>A useful metric begins with a decision the team needs to make. Define the question first, then choose the smallest signal that can answer it.</p><blockquote>A healthy system makes learning visible, not merely numbers.</blockquote><p>Review on a steady cadence, record what changed, and let each cycle improve the next.</p>" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "<p>当观察、决策和复盘形成稳定闭环，增长才会变得可持续、可重复。</p><h2>从共同问题开始</h2><p>有用的指标源于团队真正需要做出的决策。先明确问题，再选择能够回答它的最小信号。</p><blockquote>健康的增长系统让学习过程清晰可见，而不只是展示数字。</blockquote><p>保持稳定的复盘节奏，记录变化，让每一次循环都为下一次积累经验。</p>" } }
+      }
+    },
+    "reading.article.growth.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Build a growth system that keeps learning" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "构建一个持续学习的增长系统" } }
+      }
+    },
+    "reading.article.longTerm.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "<p>Long-term thinking is not passive waiting. It is the active choice to keep doing work whose value compounds over time.</p><h2>Make time your ally</h2><p>Build the foundation carefully, protect a sustainable pace, and review the direction without being distracted by every short-term fluctuation.</p><blockquote>Real compounding comes from consistently doing what remains valuable.</blockquote><p>Patience matters, but so do clear feedback and the courage to adjust.</p>" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "<p>长期主义不是被动等待，而是主动选择持续做那些价值会随时间复利的事情。</p><h2>把时间变成你的盟友</h2><p>认真打好基础，守住可持续的节奏，在不被短期波动干扰的同时不断校准方向。</p><blockquote>真正的复利，来自持续做对长期有价值的事。</blockquote><p>耐心很重要，清晰的反馈和及时调整的勇气同样重要。</p>" } }
+      }
+    },
+    "reading.article.longTerm.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Long-term thinking is more than persistence" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "长期主义，不只是坚持得更久" } }
+      }
+    },
+    "reading.article.signal.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "<p>More data does not automatically create more clarity. The hard part is separating a durable signal from temporary noise.</p><h2>Trace every metric to a source</h2><p>Ask where the number came from, what behavior could move it, and which decision would change if it moved.</p><blockquote>A signal earns attention when it can change a decision.</blockquote><p>Keep the context beside the metric so the story remains auditable over time.</p>" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "<p>更多数据不会自动带来更多清晰度，真正困难的是从短期噪声中辨认持久信号。</p><h2>让每个指标都可追溯</h2><p>追问数字来自哪里、什么行为会改变它，以及当它变化时团队会做出什么不同决策。</p><blockquote>只有能够改变决策的信号，才值得持续关注。</blockquote><p>让上下文始终和指标放在一起，使增长故事能够经得起长期验证。</p>" } }
+      }
+    },
+    "reading.article.signal.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Find the signal inside the noise" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "在噪声中找到真正的信号" } }
+      }
+    },
+    "reading.editor" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "LinOnward Editorial" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "LinOnward 编辑部" } }
+      }
+    },
+    "reading.minutes %lld" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld min" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%lld 分钟" } }
+      }
+    },
+    "reading.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reading" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "阅读" } }
+      }
+    },
+    "tab.profile" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Me" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "我的" } }
+      }
+    },
+    "tab.reading" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reading" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "阅读" } }
+      }
+    },
     "article.reader.error.body" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Close the article and try again." } },
