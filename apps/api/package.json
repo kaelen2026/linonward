@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "predev": "pnpm --filter @linonward/db --filter @linonward/contracts build",
-    "dev": "tsx --env-file-if-exists=.env watch src/index.ts",
+    "dev": "node --env-file-if-exists=.env --watch --import tsx src/index.ts",
     "prebuild": "pnpm --filter @linonward/db --filter @linonward/contracts build",
     "build": "tsc --outDir dist",
     "start": "node --env-file-if-exists=.env dist/index.js",

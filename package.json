@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=!@linonward/feishu",
+    "dev:feishu": "pnpm --filter @linonward/feishu dev",
     "start": "turbo run start",
     "lint": "scripts/check-harmony-signing-profile.sh && biome check .",
     "lint:fix": "biome check --write .",
