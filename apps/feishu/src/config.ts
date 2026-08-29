@@ -1,3 +1,4 @@
+import type { BitableConfig } from "./bitable.js";
 import type { GitHubConfig } from "./github.js";
 import type { RelayConfig } from "./relay.js";
 
@@ -9,6 +10,7 @@ const defaultRequestTimeoutMs = 30_000;
 export type FeishuConfig = {
   appId: string;
   appSecret: string;
+  bitable?: BitableConfig;
 };
 
 export type ServiceConfig = {
@@ -42,6 +44,7 @@ export function loadServiceConfig(environment: Record<string, string | undefined
     feishu: {
       appId: readRequired(environment, "FEISHU_APP_ID"),
       appSecret: readRequired(environment, "FEISHU_APP_SECRET"),
+      bitable: loadBitableConfig(environment),
     },
     github: {
       apiUrl: readApiUrl(environment.GITHUB_API_URL),
@@ -57,6 +60,21 @@ export function loadServiceConfig(environment: Record<string, string | undefined
       maxTaskLength,
     },
   };
+}
+
+function loadBitableConfig(
+  environment: Record<string, string | undefined>,
+): BitableConfig | undefined {
+  const appToken = environment.FEISHU_BITABLE_APP_TOKEN?.trim();
+  const tableId = environment.FEISHU_BITABLE_TABLE_ID?.trim();
+  const chatId = environment.FEISHU_BITABLE_CHAT_ID?.trim();
+  if (!appToken && !tableId && !chatId) return undefined;
+  if (!appToken || !tableId || !chatId) {
+    throw new Error(
+      "FEISHU_BITABLE_APP_TOKEN, FEISHU_BITABLE_TABLE_ID, and FEISHU_BITABLE_CHAT_ID must be configured together",
+    );
+  }
+  return { appToken, chatId, tableId };
 }
 
 function loadHermesConfig(

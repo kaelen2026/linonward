@@ -6,6 +6,9 @@ const environment = {
   FEISHU_ALLOWED_OPEN_IDS: "ou_first, ou_second",
   FEISHU_APP_ID: "cli_0123456789abcdef",
   FEISHU_APP_SECRET: "app-secret",
+  FEISHU_BITABLE_APP_TOKEN: "base-token",
+  FEISHU_BITABLE_CHAT_ID: "oc_topic_group",
+  FEISHU_BITABLE_TABLE_ID: "table-id",
   GITHUB_DISPATCH_TOKEN: "github-token",
   GITHUB_REPOSITORY: "kaelen2026/linonward",
   HERMES_API_KEY: "hermes-api-key",
@@ -17,6 +20,11 @@ describe("loadServiceConfig", () => {
       feishu: {
         appId: "cli_0123456789abcdef",
         appSecret: "app-secret",
+        bitable: {
+          appToken: "base-token",
+          chatId: "oc_topic_group",
+          tableId: "table-id",
+        },
       },
       github: {
         apiUrl: "https://api.github.com",
@@ -61,6 +69,12 @@ describe("loadServiceConfig", () => {
   it("requires the Feishu app secret needed for the long connection", () => {
     expect(() => loadServiceConfig({ ...environment, FEISHU_APP_SECRET: undefined })).toThrow(
       "FEISHU_APP_SECRET is required",
+    );
+  });
+
+  it("rejects a partially configured Bitable destination", () => {
+    expect(() => loadServiceConfig({ ...environment, FEISHU_BITABLE_TABLE_ID: undefined })).toThrow(
+      "FEISHU_BITABLE_APP_TOKEN, FEISHU_BITABLE_TABLE_ID, and FEISHU_BITABLE_CHAT_ID must be configured together",
     );
   });
 });

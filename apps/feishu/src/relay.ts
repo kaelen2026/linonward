@@ -24,6 +24,7 @@ export type FeishuMessageEvent = {
   message: {
     chat_id: string;
     content: string;
+    create_time?: string;
     message_id: string;
     message_type: string;
     root_id?: string;
