@@ -1,7 +1,7 @@
 # Testing
 
-Two runners in `apps/www`: **Vitest** with Testing Library for logic and single
-components, **Playwright** for end-to-end journeys against a production build.
+The JavaScript workspaces use **Vitest** for logic and component tests; both Next.js apps also use
+**Playwright** for end-to-end journeys against production builds.
 This page is the human reference for how the setup works and why.
 
 | | Vitest | Playwright |

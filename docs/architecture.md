@@ -108,10 +108,11 @@ The native client is a Swift 6 SwiftUI application targeting iOS 26 on iPhone an
 the app opens directly in Xcode. Shared build settings live in `Config/`; app composition, design
 primitives, feature code, localized resources, and UI tests remain in separate directories.
 
-The app has one `NavigationStack`, with authentication and the H5 article reader composed at the
-root. Authentication owns its state, URLSession boundary, and Keychain token store; the reader owns
-its locked-down `WKWebView` and negotiated bridge. The app stays on the HTTP side of `apps/api` and
-never imports `packages/db` or backend implementation files.
+After authentication, `HomeView` presents a `TabView` whose Reading and Profile tabs each own a
+`NavigationStack`. The Reading tab pushes the H5 article reader from its article list. Authentication
+owns its state, URLSession boundary, and Keychain token store; the reader owns its locked-down
+`WKWebView` and negotiated bridge. The app stays on the HTTP side of `apps/api` and never imports
+`packages/db` or backend implementation files.
 
 Authentication is the one feature that crosses that boundary today: an email one-time code, and —
 where the build carries a Google client — Google. The app authenticates with `Authorization:
@@ -300,12 +301,17 @@ apps/web/
 │   ├── articles/             # published article index and detail pages
 │   ├── admin/page.tsx        # capability-shaped article management
 │   ├── components/page.tsx   # design-system component catalogue
+│   ├── editor/page.tsx       # compatibility redirect to /admin
 │   ├── observability/page.tsx # Prometheus and Tempo operational view
 │   ├── status/page.tsx      # /status — GET /health, force-dynamic
 │   ├── unauthorized/page.tsx # authenticated user without console access
 │   ├── design-tokens.generated.css # generated cross-platform tokens
 │   └── globals.css          # Tailwind v4 semantic mapping and app styles
+├── src/components/articles/ # public article rendering and header
+├── src/components/auth/     # sign-in and sign-out controls
+├── src/components/design-system/ # component catalogue previews
 ├── src/components/editor/   # ProseMirror schema, plugins, toolbar, persistence UI
+├── src/components/observability/ # metrics and traces dashboard
 ├── src/components/site/     # app shell
 ├── src/components/ui/       # Base UI-backed shadcn primitives
 └── src/lib/                 # auth, capabilities, article API, health and observability

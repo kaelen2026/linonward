@@ -8,8 +8,9 @@ single-language (`zh-CN`) and not indexed. Public routes render published articl
 [`apps/api`](../api); protected routes manage content and expose operational views.
 
 The authenticated `/admin` route provides a ProseMirror-based article workbench backed by the
-content API. It creates and updates drafts, and exposes publish, unpublish, and delete actions only
-when the returned capability set permits them. The editor accepts ordered, mount-time plugins that
+content API. It creates and updates drafts, and exposes publish and unpublish actions only when the
+returned capability set permits them. The API also defines a separately authorized delete operation,
+but the current console has no delete control. The editor accepts ordered, mount-time plugins that
 can extend its schema, ProseMirror plugin stack, key bindings, toolbar, and lifecycle.
 `/editor` is retained as a redirect to `/admin`.
 
