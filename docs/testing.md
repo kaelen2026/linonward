@@ -19,7 +19,8 @@ If jsdom can answer the question, it is not an E2E test.
 Vitest, with tests beside the source they cover. Server and package workspaces use Vitest's Node
 environment; the two Next apps and the Vite H5 reader use jsdom and Testing Library for UI.
 Both Next apps also run Playwright: `apps/www` owns the broader routing and responsive journeys,
-while `apps/web` verifies its authentication redirect in desktop Chromium.
+while `apps/web` currently verifies only the unauthenticated `/admin` redirect in desktop
+Chromium. That is a protected-route guard smoke test, not a complete login journey.
 
 The three native apps run neither. `apps/ios` uses Swift Testing plus XCUITest through `pnpm
 ios:test`, `apps/android` runs JUnit and Android instrumentation tests, and `apps/harmony` uses
@@ -122,7 +123,7 @@ pnpm test:e2e                                     # build, serve, drive Chromium
 pnpm --filter @linonward/www test:e2e:ui          # the Playwright UI, for debugging
 pnpm --filter @linonward/www exec playwright test e2e/i18n.spec.ts
 pnpm --filter @linonward/www exec playwright test --project=mobile
-pnpm --filter @linonward/web test:e2e             # protected-route auth journey
+pnpm --filter @linonward/web test:e2e             # unauthenticated guard smoke test
 ```
 
 Two projects run every spec: `desktop` (Desktop Chrome) and `mobile` (Pixel 7).
@@ -171,7 +172,29 @@ In `apps/www`:
   completed form sends the expected cross-origin payload and renders the returned reference.
 
 In `apps/web`, `auth.spec.ts` verifies that an unauthenticated visit to `/admin` reaches the login
-page. Its Playwright project uses Desktop Chrome only.
+page. Its Playwright project uses Desktop Chrome only. It does not currently start the API or
+Postgres, create a Better Auth session, submit an OTP, or prove that an authenticated user reaches
+`/admin`.
+
+### Authentication coverage
+
+Authentication changes must preserve three distinct outcomes:
+
+| State | Expected result |
+| --- | --- |
+| No session | `/admin` redirects to `/login` |
+| Valid session with content access | `/admin` renders the protected page |
+| Valid session without content access | `/admin` redirects to `/unauthorized` |
+
+Vitest owns session-contract normalization and authorization decisions. Use realistic provider
+data there, including empty and whitespace-only display names. Playwright owns the browser and
+process boundary: cookie creation, forwarding to the Web server, API session lookup, and the final
+protected-route result.
+
+The positive Playwright scenario must run against controlled infrastructure — PostgreSQL, the API,
+and the production Web build — and create a test session without calling Resend or a live OAuth
+provider. Until that fixture exists, PRs that change authentication must state that the successful
+login path is not covered by E2E, even when `pnpm test:e2e` is green.
 
 ## Where tests run
 

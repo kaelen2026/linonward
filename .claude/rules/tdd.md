@@ -94,6 +94,31 @@ If jsdom can answer the question, it is not an E2E test. Do not port a component
 assertion into Playwright because it is easier to write there — it costs a
 browser and a production build every run.
 
+### Authentication and authorization changes
+
+Authentication is a multi-boundary feature: browser state, cookies, the Web server, the API,
+Better Auth, and Postgres can each succeed while the complete journey fails. Any change to a
+session contract, cookie configuration, login flow, protected route, role, or capability must
+cover all three observable outcomes:
+
+- an unauthenticated user is sent to `/login`;
+- an authenticated user with the required access reaches the protected page;
+- an authenticated user without the required access is sent to `/unauthorized` or receives the
+  documented denial.
+
+Test contract normalization and authorization decisions with Vitest, including realistic boundary
+values from the external system such as empty and whitespace-only strings. Add Playwright coverage
+when the behaviour crosses process or browser boundaries — especially `Set-Cookie`, cookie
+forwarding, session lookup, and redirects after login. A test that only proves an unauthenticated
+redirect is a guard smoke test, not an authentication journey.
+
+Positive authentication E2E must use controlled test infrastructure: start the API and database,
+create a real test session through a test fixture or non-production mail adapter, place its cookie
+in the browser, and assert the protected page renders. Never call Resend or another live identity
+provider from CI. If that infrastructure does not yet exist, add the strongest lower-level
+regression test available and report the missing positive E2E plainly; do not claim that
+`pnpm test:e2e` covered the successful login path.
+
 ## Commands
 
 | Command | Use |
