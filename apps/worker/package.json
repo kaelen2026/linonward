@@ -1,0 +1,31 @@
+{
+  "name": "@linonward/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "pnpm --filter @linonward/db build",
+    "dev": "node --env-file-if-exists=.env --watch --import tsx src/index.ts",
+    "prebuild": "pnpm --filter @linonward/db build",
+    "build": "tsc --outDir dist",
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "preenqueue:example": "pnpm --filter @linonward/db build",
+    "enqueue:example": "node --env-file-if-exists=.env --import tsx src/enqueue-example.ts",
+    "pretypecheck": "pnpm --filter @linonward/db build",
+    "typecheck": "tsc --noEmit",
+    "pretest": "pnpm --filter @linonward/db build",
+    "test": "vitest run",
+    "clean": "rm -rf dist .turbo node_modules"
+  },
+  "dependencies": {
+    "@linonward/db": "workspace:*",
+    "bullmq": "6.3.1"
+  },
+  "devDependencies": {
+    "@linonward/typescript-config": "workspace:*",
+    "@types/node": "24.13.3",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

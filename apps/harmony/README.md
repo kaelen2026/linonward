@@ -48,10 +48,16 @@ sync, run these commands from `apps/harmony`:
 ./hvigorw ohosTest                                       # instrumented tests, needs a device
 ```
 
-There is **no hosted CI job for this app.** GitHub-hosted runners carry no HarmonyOS SDK, so
-`.github/workflows/ci.yml` cannot gate it the way the `ios` job gates Xcode. Run the Command Line
-Tools verification locally, or add a self-hosted runner with the SDK; say which checks actually
-ran in the PR description rather than implying hosted CI covered them.
+GitHub-hosted runners carry no HarmonyOS SDK. When the repository variable
+`HARMONY_CI_ENABLED=true`, `.github/workflows/ci.yml` sends changed HarmonyOS paths to a
+repository-owned self-hosted macOS runner for Code Linter, an unsigned build, and host tests. Fork
+pull requests never execute on that runner. A separate scheduled/manual workflow runs device tests
+on a runner labelled `harmonyos-device`.
+
+If the variable is disabled or the runners are offline, a green hosted run does not cover this
+app. Run the Command Line Tools verification locally and say which checks actually ran in the PR
+description. Runner provisioning and trust boundaries are documented in
+[`docs/harmony-ci.md`](../../docs/harmony-ci.md).
 
 ## Signing
 

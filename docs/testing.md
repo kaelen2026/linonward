@@ -1,7 +1,7 @@
 # Testing
 
-Two runners in `apps/www`: **Vitest** with Testing Library for logic and single
-components, **Playwright** for end-to-end journeys against a production build.
+The JavaScript workspaces use **Vitest** for logic and component tests; both Next.js apps also use
+**Playwright** for end-to-end journeys against production builds.
 This page is the human reference for how the setup works and why.
 
 | | Vitest | Playwright |
@@ -14,22 +14,24 @@ This page is the human reference for how the setup works and why.
 
 If jsdom can answer the question, it is not an E2E test.
 
-`apps/api`, `apps/feishu`, `apps/web`, `packages/contracts`, and `packages/db` run Vitest only,
-with tests beside the source they cover. The Node workspaces use Vitest's Node environment; both
-Next apps use jsdom and Testing Library for components. Playwright stays on `apps/www` — it is the
-app with routing, redirects and crawler-visible output worth the cost of a browser and a production
-build on every run.
+`apps/api`, `apps/feishu`, `apps/h5`, `apps/web`, `apps/www`, `packages/contracts`, and
+`packages/db` run
+Vitest, with tests beside the source they cover. Server and package workspaces use Vitest's Node
+environment; the two Next apps and the Vite H5 reader use jsdom and Testing Library for UI.
+Both Next apps also run Playwright: `apps/www` owns the broader routing and responsive journeys,
+while `apps/web` verifies its authentication redirect in desktop Chromium.
 
-The two native apps run neither. `apps/ios` uses Swift Testing plus XCUITest through `pnpm
-ios:test`, and `apps/android` runs JUnit on the JVM through `pnpm android:test`. Both follow the
+The three native apps run neither. `apps/ios` uses Swift Testing plus XCUITest through `pnpm
+ios:test`, `apps/android` runs JUnit and Android instrumentation tests, and `apps/harmony` uses
+Hypium host and device suites through `scripts/harmony-ci.sh`. They follow the
 same rule as the rest of the repository: the logic worth testing is pulled out of the UI layer —
-`AuthenticationState` on both platforms — so the flow is covered without a simulator or an
-emulator, and neither app appears in `pnpm test`.
+`AuthenticationState` on iOS and Android, and pure endpoint logic on HarmonyOS — so most flow
+logic is covered without a device. None of the native apps appears in `pnpm test`.
 
 ## Running
 
 ```bash
-pnpm test                                  # every workspace, via Turborepo — what CI runs
+pnpm test                                  # architecture test, then every workspace via Turborepo
 pnpm --filter @linonward/www test          # one workspace, once
 pnpm --filter @linonward/www test:watch    # the TDD loop
 pnpm --filter @linonward/api test:watch    # API TDD loop
@@ -120,6 +122,7 @@ pnpm test:e2e                                     # build, serve, drive Chromium
 pnpm --filter @linonward/www test:e2e:ui          # the Playwright UI, for debugging
 pnpm --filter @linonward/www exec playwright test e2e/i18n.spec.ts
 pnpm --filter @linonward/www exec playwright test --project=mobile
+pnpm --filter @linonward/web test:e2e             # internal-console auth journey
 ```
 
 Two projects run every spec: `desktop` (Desktop Chrome) and `mobile` (Pixel 7).
@@ -153,6 +156,8 @@ page.getByRole("contentinfo").getByRole("navigation", { name: tagline });
 
 ### What the specs cover
 
+In `apps/www`:
+
 - `routing.spec.ts` — `/` redirects to `/zh`, each locale sets `<html lang>` and
   its own title, the hreflang set is complete (including `x-default`), and an
   unknown language 404s instead of guessing.
@@ -165,12 +170,15 @@ page.getByRole("contentinfo").getByRole("navigation", { name: tagline });
 - `contact-form.spec.ts` — the hydrated form rejects an empty draft without a request, and a
   completed form sends the expected cross-origin payload and renders the returned reference.
 
+In `apps/web`, `auth.spec.ts` verifies that an unauthenticated visit to `/admin` reaches the login
+page. Its Playwright project uses Desktop Chrome only.
+
 ## Where tests run
 
 `pre-commit` runs Biome on staged files only — no tests, so committing stays
-fast. CI is the gate, in three parallel jobs: `verify` (lint, typecheck, Vitest,
-build), `integration` (real Postgres, Redis, and migrations), and `e2e`
-(Playwright). The browser binary is cached on its Playwright version, and the
-HTML report uploads as an artifact on every run.
+fast. CI routes changed paths into `verify` (lint, typecheck, architecture and Vitest tests,
+build), `integration` (real Postgres, Redis, and migrations), `e2e` (Playwright), and native
+platform jobs. The HarmonyOS jobs require an enabled self-hosted runner. The browser binary is
+cached on its Playwright version, and the HTML report uploads as an artifact on every run.
 
 Running both suites locally before calling work done is on you.

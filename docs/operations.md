@@ -97,7 +97,16 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318 \
   docker compose --profile observability up -d
 ```
 
-Grafana is then available at `http://localhost:3003` (user `admin`, password
+Grafana defaults to host port 3003, which is also the H5 development server's default. To run the
+observability stack beside `pnpm dev`, move Grafana and give the Web console the matching public
+URL:
+
+```bash
+GRAFANA_PORT=3004 docker compose --profile observability up -d
+GRAFANA_URL=http://localhost:3004 pnpm --filter @linonward/web dev
+```
+
+With default ports, Grafana is then available at `http://localhost:3003` (user `admin`, password
 `linonward` unless `GRAFANA_ADMIN_PASSWORD` is set), with the provisioned
 **LinOnward API Overview** dashboard. Prometheus is bound to loopback at
 `http://localhost:9090`; Tempo receives API spans over OTLP/HTTP and is available

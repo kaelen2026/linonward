@@ -11,7 +11,7 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "passThroughEnv": ["DATABASE_URL", "REDIS_URL"]
+      "passThroughEnv": ["DATABASE_URL", "REDIS_URL", "QUEUE_PREFIX", "WORKER_CONCURRENCY"]
     },
     "start": {
       "dependsOn": ["build"],

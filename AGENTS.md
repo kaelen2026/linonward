@@ -47,11 +47,12 @@ and external-integration changes with the main agent until dedicated domain agen
 `pnpm lint` + `pnpm typecheck` + `pnpm test`, plus `pnpm build` for anything touching the build.
 Report real output; don't commit over red and call it done.
 
-Two runners in `apps/www`. **Vitest** with Testing Library for logic and components, next to
-the code as `*.test.{ts,tsx}` — `pnpm test`, or `pnpm --filter @linonward/www test:watch` for
-the TDD loop. **Playwright** for end-to-end, in `e2e/**/*.spec.ts` — `pnpm test:e2e`, which
-builds first and drives Chromium at two viewports. Neither runs in `pre-commit`; CI runs both
-in parallel jobs.
+JavaScript workspaces use **Vitest**, with Testing Library for UI logic and components next to the
+code as `*.test.{ts,tsx}`. Use `pnpm test`, or a workspace's `test:watch` script for the TDD loop.
+Both Next apps also use **Playwright** in `e2e/**/*.spec.ts`: `apps/www` drives Chromium at two
+viewports, while `apps/web` covers its authentication redirect on desktop. `pnpm test:e2e` builds
+and runs both selected workspaces. Neither runner is in `pre-commit`; CI routes changed paths to
+the applicable jobs.
 
 Two traps worth knowing up front: an `async` server component cannot be rendered by Vitest at
 all (a synchronous one can), and Playwright locators must be scoped to a landmark — the header
@@ -61,9 +62,10 @@ and footer both hold a nav and a language switcher, so a bare `getByRole` matche
 `apps/harmony` is outside all of that. Its tracked project configuration is
 `build-profile.template.json5`; `scripts/harmony-ci.sh` creates the ignored machine-local
 `build-profile.json5` before building. It has no `package.json`, so `pnpm test` and `pnpm build`
-walk straight past it, and **no hosted CI job runs it** — GitHub-hosted runners carry no
-HarmonyOS SDK. A green `pnpm lint && pnpm typecheck && pnpm test && pnpm build` says nothing about
-a change there. Verify it with installed HarmonyOS Command Line Tools by setting
+walk straight past it. GitHub-hosted runners carry no HarmonyOS SDK; CI covers it only when
+`HARMONY_CI_ENABLED=true` and the repository-owned self-hosted runner is available. A green hosted
+run can therefore say nothing about a change there. Verify it with installed HarmonyOS Command
+Line Tools by setting
 `HARMONY_CLI_HOME` to the tools directory and `DEVECO_SDK_HOME` to its `sdk` directory, then run
 `scripts/harmony-ci.sh verify`. A DevEco-synced project-level `hvigorw` is an alternative, not a
 prerequisite. See [`apps/harmony/README.md`](./apps/harmony/README.md).
@@ -77,7 +79,8 @@ manual squash merge only after that final review cycle passes.
 
 ## UI: Base UI, not Radix
 
-`apps/www` uses shadcn/ui in its `base-nova` style, built on **`@base-ui/react`**. There are no
+`apps/www` and `apps/web` use shadcn/ui in its `base-nova` style, built on
+**`@base-ui/react`**. There are no
 `@radix-ui/*` packages here, so stock shadcn/Radix snippets copied from the web will not compile.
 
 - Composition uses a **`render` prop**, not `asChild`/`Slot`:
@@ -89,21 +92,24 @@ Match the existing files. Components in `src/components/ui/` are owned in-repo a
 Add new ones with the CLI run **from inside the app**, so it reads that app's `components.json`:
 
 ```bash
-cd apps/www && pnpm dlx shadcn@latest add dialog
+cd apps/www && pnpm dlx shadcn@latest add dialog # or cd apps/web
 ```
 
 ## Tailwind v4 has no config file
 
-Theming lives in `src/app/globals.css`, in three layers. Know which one you are editing:
+Cross-platform values live in `design/tokens.json`. `pnpm design-tokens:generate` emits each
+platform's generated token file; never edit those outputs directly. In the web apps,
+`src/app/design-tokens.generated.css` contains three generated layers:
 
 - A plain `@theme` block holds the **brand ramp** (`--color-navy-*`, `--color-teal-*`), sampled
   from `public/logo.png`. Static — identical in light and dark, so no indirection.
 - `:root` plus a `@media (prefers-color-scheme: dark)` block hold the **semantic tokens**, each
-  pointing at a ramp step. This is the layer that flips. Retuning a color or radius means
-  editing here and nowhere else.
-- `@theme inline` maps `--color-primary` → `var(--primary)`. Adding a **new** semantic token means
-  editing this **and** both `:root` blocks; miss this and the utility class silently doesn't
-  exist.
+  pointing at a ramp step. This is the layer that flips.
+- Dimensions such as radius and spacing follow in the same generated file.
+
+Retune a color or dimension in `design/tokens.json`, regenerate, and commit every changed output.
+App-specific `@theme inline` mappings remain in `globals.css`; adding a new semantic token that
+needs a Tailwind utility requires a mapping there as well.
 
 Colors are `oklch()`. Dark mode follows **`prefers-color-scheme`** — the scaffold's
 `@custom-variant dark (&:is(.dark *))` override is deliberately gone, so Tailwind v4's built-in
@@ -156,9 +162,9 @@ otherwise and warns at runtime about the lost semantics.
 `pnpm android:test` and `pnpm android:build`; each shells out to the checked-in Gradle wrapper and
 needs JDK 17 plus an Android SDK. Two traps there: **AGP 9 has built-in Kotlin support**, so
 applying `org.jetbrains.kotlin.android` on top of it is a hard error rather than a redundancy, and
-both Kotlin and Android Lint treat warnings as errors — a deprecation fails the build. The brand
-ramp is duplicated as Kotlin `Color` constants in `designsystem/BrandColors.kt`; retuning a step in
-`globals.css` means editing there too. Details in
+both Kotlin and Android Lint treat warnings as errors — a deprecation fails the build. Android
+colors and dimensions in `designsystem/BrandColors.kt` are generated from `design/tokens.json`;
+regenerate them with `pnpm design-tokens:generate` rather than editing Kotlin directly. Details in
 [`apps/android/README.md`](./apps/android/README.md).
 
 ## Gotchas

@@ -1,6 +1,25 @@
 name: linonward
 
 services:
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - path: ./apps/worker/.env
+        required: false
+    environment:
+      DATABASE_URL: postgres://linonward:${POSTGRES_PASSWORD:-linonward}@postgres:5432/linonward
+      REDIS_URL: redis://redis:6379
+    image: linonward-worker:local
+    init: true
+    restart: unless-stopped
+
   api:
     build:
       context: .
@@ -65,9 +84,8 @@ services:
 
   redis:
     image: redis:8-alpine
-    # Rate-limit counters are disposable, so no persistence and a hard ceiling
-    # with LRU eviction rather than an unbounded dataset.
-    command: redis-server --save "" --appendonly no --maxmemory 128mb --maxmemory-policy allkeys-lru
+    # BullMQ requires noeviction so Redis never silently removes queued jobs.
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy noeviction
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -76,6 +94,8 @@ services:
     ports:
       - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     restart: unless-stopped
+    volumes:
+      - redis-data:/data
 
   prometheus:
     image: prom/prometheus:v3.7.3
@@ -124,5 +144,7 @@ volumes:
     name: linonward-postgres-data
   prometheus-data:
     name: linonward-prometheus-data
+  redis-data:
+    name: linonward-redis-data
   tempo-data:
     name: linonward-tempo-data
