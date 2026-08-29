@@ -1,8 +1,9 @@
-# Local administrator authentication
+# Local Web application authentication
 
-The internal console at `http://localhost:3002` uses the API's Better Auth routes and Resend to
-deliver email one-time passwords. Authentication is deliberately disabled in zero-configuration
-development, even though `GET /health` still succeeds.
+The consumer Web application at `http://localhost:3002` uses the API's Better Auth routes and
+Resend to deliver email one-time passwords. Authentication is deliberately disabled in
+zero-configuration development, even though `GET /health` still succeeds. Its content-management
+and operational routes require the appropriate protected access.
 
 ## 1. Start PostgreSQL and Redis
 
@@ -49,9 +50,9 @@ Do not commit `apps/api/.env`. Authentication configuration is all-or-nothing: a
 URL, secret, base URL, Resend key, or sender makes the API refuse to start instead of mounting a
 partly working authentication service.
 
-## 4. Configure the console
+## 4. Configure the Web application
 
-Copy the console example:
+Copy the Web application example:
 
 ```bash
 cp apps/web/.env.example apps/web/.env.local
@@ -68,7 +69,7 @@ INTERNAL_CONSOLE_ADMIN_EMAILS=<the same sign-in email>
 The value is intentionally configured in both applications. It bootstraps an administrator and
 provides an emergency access path; normal content editors are assigned through the database-backed
 role model after their first sign-in. The API protects content data, while the Web server protects
-console routes. Both variables are server-only and must never use a `NEXT_PUBLIC_` prefix.
+administration routes. Both variables are server-only and must never use a `NEXT_PUBLIC_` prefix.
 
 ## 5. Apply migrations
 
@@ -122,7 +123,7 @@ Check the API log using the response's `X-Request-Id`. The usual causes are an i
 key, an unverified sender domain, or a sender address that the Resend account cannot use. Do not log
 or paste the API key while diagnosing it.
 
-### Login succeeds but the console redirects to `/unauthorized`
+### Login succeeds but the Web application redirects to `/unauthorized`
 
 Make sure the normalized sign-in address appears in `INTERNAL_CONSOLE_ADMIN_EMAILS` in both
 `apps/api/.env` and `apps/web/.env.local`, then restart both applications.

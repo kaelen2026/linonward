@@ -122,7 +122,7 @@ pnpm test:e2e                                     # build, serve, drive Chromium
 pnpm --filter @linonward/www test:e2e:ui          # the Playwright UI, for debugging
 pnpm --filter @linonward/www exec playwright test e2e/i18n.spec.ts
 pnpm --filter @linonward/www exec playwright test --project=mobile
-pnpm --filter @linonward/web test:e2e             # internal-console auth journey
+pnpm --filter @linonward/web test:e2e             # protected-route auth journey
 ```
 
 Two projects run every spec: `desktop` (Desktop Chrome) and `mobile` (Pixel 7).

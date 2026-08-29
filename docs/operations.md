@@ -19,7 +19,8 @@ waits rather than applying the same migration concurrently.
 
 ## Access and audit boundary
 
-`apps/web` is an internal content and operations console. Content access has two bounded roles:
+`apps/web` is the consumer Web application. Its protected content-management and operational
+surfaces have two bounded roles:
 
 - `administrator` can view, create, update, publish, unpublish, and delete articles;
 - `editor` can view, create drafts, and update drafts, but cannot change published articles.
@@ -51,8 +52,9 @@ deleting an account or article cannot invalidate its history. It contains no art
 cookie, authorization header, or raw error message.
 
 There is no public audit endpoint. Investigations are an operator-only database workflow until the
-internal console gains a separately authorized read capability. Decide retention and actor-email
-pseudonymization with the data owner before adding automatic deletion or export.
+protected Web administration surface gains a separately authorized read capability. Decide
+retention and actor-email pseudonymization with the data owner before adding automatic deletion or
+export.
 
 ## Data lifecycle
 

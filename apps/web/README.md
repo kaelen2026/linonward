@@ -1,7 +1,7 @@
 # @linonward/web
 
-Internal console and article publication surface. Next.js 16 App Router, Tailwind CSS v4,
-TypeScript.
+Consumer-facing Web application and article experience. Next.js 16 App Router, Tailwind CSS v4,
+TypeScript. Protected routes also provide content management and operational tooling.
 
 Distinct from [`apps/www`](../www), which is the public bilingual website. This app is
 single-language (`zh-CN`) and not indexed. Public routes render published articles from
@@ -10,8 +10,8 @@ single-language (`zh-CN`) and not indexed. Public routes render published articl
 The authenticated `/admin` route provides a ProseMirror-based article workbench backed by the
 content API. It creates and updates drafts, and exposes publish and unpublish actions only when the
 returned capability set permits them. The API also defines a separately authorized delete operation,
-but the current console has no delete control. The editor accepts ordered, mount-time plugins that
-can extend its schema, ProseMirror plugin stack, key bindings, toolbar, and lifecycle.
+but the current management UI has no delete control. The editor accepts ordered, mount-time plugins
+that can extend its schema, ProseMirror plugin stack, key bindings, toolbar, and lifecycle.
 `/editor` is retained as a redirect to `/admin`.
 
 ## Run it
@@ -31,7 +31,7 @@ The protected status page calls the API's `GET /health`. With no configuration i
 `NEXT_PUBLIC_API_URL` (see [`.env.example`](./.env.example)). The page renders either way:
 an unreachable API is reported, not thrown.
 
-The console requires a Better Auth session. `/login` supports a Resend-delivered email OTP and,
+Protected routes require a Better Auth session. `/login` supports a Resend-delivered email OTP and,
 when enabled, Google OAuth. `next.config.ts` rewrites `/api/auth/*` to `apps/api`, keeping browser
 requests and session cookies first-party. Set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` only when
 the matching Google credentials are configured on the API. Follow the

@@ -12,7 +12,7 @@
 | `apps/h5` | `@linonward/h5` | Vite + React article reader embedded in native WebViews. |
 | `apps/harmony` | — | Native ArkTS application for HarmonyOS. DevEco Studio project, outside the pnpm task graph. |
 | `apps/ios` | — | Native SwiftUI application. XcodeGen project, outside the pnpm task graph. |
-| `apps/web` | `@linonward/web` | Internal console. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
+| `apps/web` | `@linonward/web` | Consumer Web application. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
 | `packages/contracts` | `@linonward/contracts` | Shared HTTP DTOs, field limits, and runtime response schemas. |
 | `packages/db` | `@linonward/db` | Backend database boundary: Drizzle schema, relations, client, and migrations. |
@@ -287,10 +287,10 @@ transport order live in [the app README](../apps/h5/README.md).
 
 ## `apps/web`
 
-`apps/web` is the internal console and article publication surface: a second Next.js 16 App Router
-app, single-language (`zh-CN`), `noindex`, served on port 3002 so it can run alongside `www`
-(3000) and `api` (3001). Its public routes read published content; protected routes manage the
-article lifecycle and read health, Prometheus metrics, and Tempo traces.
+`apps/web` is the consumer-facing Web application and article experience: a second Next.js 16 App
+Router app, single-language (`zh-CN`), `noindex`, served on port 3002 so it can run alongside
+`www` (3000) and `api` (3001). Its public routes read published content; protected administration
+routes manage the article lifecycle and read health, Prometheus metrics, and Tempo traces.
 
 ```
 apps/web/

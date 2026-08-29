@@ -213,7 +213,7 @@ The caller that needs it is [`apps/www`](../www): its contact form posts here fr
 the site's origin has to be listed. The other half of that handshake is `NEXT_PUBLIC_API_URL` in
 [`apps/www/.env.example`](../www/.env.example) — change one and change the other.
 
-For the internal console, `BETTER_AUTH_URL` is the browser-visible Web origin (locally
+For the consumer Web application, `BETTER_AUTH_URL` is the browser-visible Web origin (locally
 `http://localhost:3002`). Register `${BETTER_AUTH_URL}/api/auth/callback/google` as the Google
 OAuth redirect URI. Web proxies `/api/auth/*` here so session cookies remain first-party.
 For a complete local email-OTP setup and its verification commands, follow
@@ -224,8 +224,8 @@ scheme, which is the only address a phone has. The app carries an **iOS** client
 the same Google project, completes the flow itself, and posts the id token to
 `/api/auth/sign-in/social`. Name that client in `GOOGLE_IOS_CLIENT_ID` and it becomes a second
 accepted id-token audience — the browser flow stays on the web client, which is the one Better
-Auth reads first. Leave it empty and Google sign-in works in the console and is refused from the
-app. Same project means the same Google `sub`, so both routes land on one account.
+Auth reads first. Leave it empty and Google sign-in works in the Web application and is refused
+from the app. Same project means the same Google `sub`, so both routes land on one account.
 
 ## Test
 
