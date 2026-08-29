@@ -1,5 +1,6 @@
 package com.linonward.app.feature.authentication
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
@@ -15,7 +16,8 @@ import javax.crypto.spec.GCMParameterSpec
 interface SessionTokenStore {
   fun read(): String?
 
-  fun write(token: String)
+  /** Returns whether the credential was durably persisted. */
+  fun write(token: String): Boolean
 
   fun clear()
 }
@@ -40,12 +42,18 @@ class KeystoreSessionTokenStore(context: Context) : SessionTokenStore {
     // A key can disappear under the app — a lock-screen change or a restore
     // invalidates the Keystore entry — which leaves ciphertext that will never
     // decrypt. That reads as "not signed in", not as a crash on launch.
-    return runCatching { decrypt(stored) }.getOrNull()?.ifEmpty { null }
+    return runCatching { decrypt(stored) }
+      .getOrElse {
+        clear()
+        null
+      }
+      ?.ifEmpty { null }
   }
 
-  override fun write(token: String) {
-    val encrypted = runCatching { encrypt(token) }.getOrNull() ?: return
-    preferences.edit { putString(TOKEN, encrypted) }
+  @SuppressLint("UseKtx") // KTX edit returns Unit; the caller needs commit's durability result.
+  override fun write(token: String): Boolean {
+    val encrypted = runCatching { encrypt(token) }.getOrNull() ?: return false
+    return preferences.edit().putString(TOKEN, encrypted).commit()
   }
 
   override fun clear() {

@@ -1,5 +1,6 @@
 package com.linonward.app.feature.authentication
 
+import android.util.Log
 import java.net.HttpURLConnection
 import java.net.URI
 import kotlinx.coroutines.CoroutineDispatcher
@@ -111,11 +112,18 @@ class HttpAuthenticationService(
             connection.disconnect()
           }
         }
+        .onFailure { failure ->
+          // Do not log URLs, bodies, headers, or exception messages: all can
+          // carry credentials or personal data. The failure type is enough to
+          // distinguish transport, TLS, and decoding classes in diagnostics.
+          Log.w(LOG_TAG, "Request failed (${failure::class.java.simpleName})")
+        }
         .getOrNull()
     }
 
   private companion object {
     const val TIMEOUT_MILLIS = 15_000
+    const val LOG_TAG = "LinOnwardAuth"
   }
 }
 

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.net.URI
 
 plugins {
   alias(libs.plugins.android.application)
@@ -32,6 +33,7 @@ android {
     targetSdk = 37
     versionCode = 1
     versionName = "1.0"
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
   androidResources {
@@ -77,6 +79,26 @@ android {
   }
 }
 
+val validateReleaseConfiguration = tasks.register("validateReleaseConfiguration") {
+  group = "verification"
+  description = "Fails when the release API origin is missing or insecure."
+  inputs.property(
+    "apiBaseUrl",
+    providers.gradleProperty("linonward.apiBaseUrl.release").orElse(""),
+  )
+  doLast {
+    val configured = inputs.properties.getValue("apiBaseUrl").toString().trim()
+    val uri = runCatching { URI(configured) }.getOrNull()
+    require(uri?.scheme == "https" && !uri.host.isNullOrBlank()) {
+      "linonward.apiBaseUrl.release must be a non-empty HTTPS origin"
+    }
+  }
+}
+
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+  dependsOn(validateReleaseConfiguration)
+}
+
 kotlin {
   compilerOptions {
     jvmTarget = JvmTarget.JVM_17
@@ -103,4 +125,10 @@ dependencies {
 
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
+
+  androidTestImplementation(libs.androidx.test.ext.junit)
+  androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(composeBom)
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+  debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
