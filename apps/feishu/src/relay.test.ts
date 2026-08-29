@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createMessageIdDeduplicator, handleFeishuMessage, type RelayConfig } from "./relay.js";
+import { handleFeishuMessage, type RelayConfig } from "./relay.js";
 
 const config: RelayConfig = {
   allowedOpenIds: new Set(["ou_authorized"]),
@@ -51,10 +51,9 @@ describe("handleFeishuMessage", () => {
     );
   });
 
-  it("ignores a duplicate delivery of the same Feishu message", async () => {
+  it("dispatches every delivery without retaining message state", async () => {
     const dispatch = vi.fn().mockResolvedValue(undefined);
     const reply = vi.fn().mockResolvedValue(undefined);
-    const claimMessage = createMessageIdDeduplicator();
     const event = {
       message: {
         chat_id: "oc_chat",
@@ -65,42 +64,15 @@ describe("handleFeishuMessage", () => {
       sender: { sender_id: { open_id: "ou_authorized" } },
     };
 
-    await expect(
-      handleFeishuMessage(event, config, dispatch, reply, claimMessage),
-    ).resolves.toEqual({ status: "dispatched" });
-    await expect(
-      handleFeishuMessage(event, config, dispatch, reply, claimMessage),
-    ).resolves.toEqual({ status: "ignored" });
+    await expect(handleFeishuMessage(event, config, dispatch, reply)).resolves.toEqual({
+      status: "dispatched",
+    });
+    await expect(handleFeishuMessage(event, config, dispatch, reply)).resolves.toEqual({
+      status: "dispatched",
+    });
 
-    expect(dispatch).toHaveBeenCalledTimes(1);
-    expect(reply).toHaveBeenCalledTimes(1);
-  });
-
-  it("does not dispatch when the durable outbox already contains the task", async () => {
-    const dispatch = vi.fn();
-    const persistTask = vi.fn().mockResolvedValue(false);
-
-    await expect(
-      handleFeishuMessage(
-        {
-          message: {
-            chat_id: "oc_chat",
-            content: JSON.stringify({ text: "summarize the latest commit" }),
-            message_id: "om_persisted",
-            message_type: "text",
-          },
-          sender: { sender_id: { open_id: "ou_authorized" } },
-        },
-        config,
-        dispatch,
-        undefined,
-        undefined,
-        persistTask,
-      ),
-    ).resolves.toEqual({ status: "ignored" });
-
-    expect(dispatch).not.toHaveBeenCalled();
-    expect(persistTask).toHaveBeenCalledOnce();
+    expect(dispatch).toHaveBeenCalledTimes(2);
+    expect(reply).toHaveBeenCalledTimes(2);
   });
 
   it("routes a /内容 command to the local content producer", async () => {
@@ -159,6 +131,7 @@ describe("handleFeishuMessage", () => {
 
   it("ignores a message from an unauthorized sender", async () => {
     const dispatch = vi.fn();
+    const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
 
     await expect(
       handleFeishuMessage(
@@ -177,10 +150,16 @@ describe("handleFeishuMessage", () => {
     ).resolves.toEqual({ status: "ignored" });
 
     expect(dispatch).not.toHaveBeenCalled();
+    expect(info).toHaveBeenCalledWith("Ignoring unauthorized Feishu sender", {
+      messageId: "om_message",
+      openId: "ou_unknown",
+    });
+    info.mockRestore();
   });
 
-  it("acknowledges non-text messages without dispatching them", async () => {
+  it("ignores unsupported messages without dispatching them", async () => {
     const dispatch = vi.fn();
+    const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
 
     await expect(
       handleFeishuMessage(
@@ -189,7 +168,7 @@ describe("handleFeishuMessage", () => {
             chat_id: "oc_chat",
             content: "{}",
             message_id: "om_message",
-            message_type: "image",
+            message_type: "audio",
           },
           sender: { sender_id: { open_id: "ou_authorized" } },
         },
@@ -199,6 +178,75 @@ describe("handleFeishuMessage", () => {
     ).resolves.toEqual({ status: "ignored" });
 
     expect(dispatch).not.toHaveBeenCalled();
+    expect(info).toHaveBeenCalledWith("Ignoring unsupported Feishu message type", {
+      messageId: "om_message",
+      messageType: "audio",
+    });
+    info.mockRestore();
+  });
+
+  it("extracts text and images from a rich-text post", async () => {
+    const dispatch = vi.fn().mockResolvedValue(undefined);
+
+    await handleFeishuMessage(
+      {
+        message: {
+          chat_id: "oc_chat",
+          content: JSON.stringify({
+            content: [
+              [
+                { tag: "at", user_id: "ou_bot", user_name: "CTO" },
+                { tag: "text", text: " inspect this " },
+                { image_key: "img_first", tag: "img" },
+              ],
+              [{ tag: "text", text: "and summarize it" }],
+            ],
+            title: "",
+          }),
+          message_id: "om_post",
+          message_type: "post",
+          thread_id: "omt_topic",
+        },
+        sender: { sender_id: { open_id: "ou_authorized" } },
+      },
+      config,
+      dispatch,
+    );
+
+    expect(dispatch).toHaveBeenCalledWith({
+      chatId: "oc_chat",
+      imageKeys: ["img_first"],
+      messageId: "om_post",
+      route: "github",
+      senderOpenId: "ou_authorized",
+      text: "inspect this\nand summarize it",
+      threadKey: "omt_topic",
+    });
+  });
+
+  it("turns a standalone image into an image-analysis task", async () => {
+    const dispatch = vi.fn().mockResolvedValue(undefined);
+
+    await handleFeishuMessage(
+      {
+        message: {
+          chat_id: "oc_chat",
+          content: JSON.stringify({ image_key: "img_only" }),
+          message_id: "om_image",
+          message_type: "image",
+        },
+        sender: { sender_id: { open_id: "ou_authorized" } },
+      },
+      config,
+      dispatch,
+    );
+
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        imageKeys: ["img_only"],
+        text: "请分析附带的图片并根据图片内容完成任务。",
+      }),
+    );
   });
 
   it("ignores an invalid text payload without dispatching it", async () => {

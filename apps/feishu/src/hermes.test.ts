@@ -77,4 +77,54 @@ describe("createHermesDispatcher", () => {
       }),
     ).rejects.toThrow("Hermes content request failed with 502");
   });
+
+  it("passes downloaded Feishu images to Hermes", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          output: [
+            {
+              content: [{ text: "图片分析", type: "output_text" }],
+              role: "assistant",
+              type: "message",
+            },
+          ],
+          status: "completed",
+        }),
+      ),
+    );
+    const loadImages = vi.fn().mockResolvedValue(["data:image/png;base64,aW1hZ2U="]);
+    const dispatch = createHermesDispatcher(
+      {
+        apiKey: "hermes-api-key",
+        apiUrl: "http://host.docker.internal:8642/v1",
+        model: "contentchief",
+      },
+      fetcher,
+      loadImages,
+    );
+
+    await dispatch({
+      chatId: "oc_chat",
+      imageKeys: ["img_first"],
+      messageId: "om_image",
+      route: "hermes",
+      text: "根据图片写文案",
+      threadKey: "omt_topic",
+    });
+
+    const request = fetcher.mock.calls[0]?.[1];
+    expect(JSON.parse(String(request?.body))).toMatchObject({
+      input: [
+        {
+          content: [
+            { text: "根据图片写文案", type: "input_text" },
+            { image_url: "data:image/png;base64,aW1hZ2U=", type: "input_image" },
+          ],
+          role: "user",
+        },
+      ],
+    });
+    expect(loadImages).toHaveBeenCalledWith(expect.objectContaining({ messageId: "om_image" }));
+  });
 });
