@@ -75,4 +75,32 @@ describe("createGitHubDispatcher", () => {
       }),
     ).rejects.toThrow("GitHub workflow dispatch failed with 401");
   });
+
+  it("passes Feishu image keys to the workflow", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const dispatch = createGitHubDispatcher(
+      {
+        apiUrl: "https://api.github.com",
+        repository: "kaelen2026/linonward",
+        ref: "main",
+        token: "github-token",
+        workflow: "linonward-bot.yml",
+      },
+      fetcher,
+    );
+
+    await dispatch({
+      chatId: "oc_chat",
+      imageKeys: ["img_first", "img_second"],
+      messageId: "om_image",
+      route: "github",
+      text: "inspect",
+      threadKey: "omt_topic",
+    });
+
+    const request = fetcher.mock.calls[0]?.[1];
+    expect(JSON.parse(String(request?.body))).toMatchObject({
+      inputs: { feishu_image_keys: '["img_first","img_second"]' },
+    });
+  });
 });

@@ -21,8 +21,8 @@ unrelated messages receive independent sessions.
 
 | Message | Destination | Context |
 | --- | --- | --- |
-| Any normal text | GitHub Actions / Claude Code | The Feishu topic maps to one Claude session. |
-| `/内容 <需求>` or `/content <request>` | Local Hermes `contentchief` API | The Feishu topic maps to one Hermes conversation. |
+| Text, rich-text post, or image | GitHub Actions / Claude Code | The Feishu topic maps to one Claude session; attached images are downloaded into the runner workspace. |
+| `/内容 <需求>` or `/content <request>`, optionally with images | Local Hermes `contentchief` API | The Feishu topic maps to one Hermes conversation and images are sent as `input_image` content. |
 
 Hermes is never configured as a second Feishu bot. The relay receives and replies to all Feishu
 events, so there is only one long connection and every reply uses the same Bot identity.
@@ -30,7 +30,8 @@ events, so there is only one long connection and every reply uses the same Bot i
 ## Security model
 
 - The Feishu SDK authenticates the long connection with the application's ID and secret.
-- Only `im.message.receive_v1` text messages are accepted.
+- `im.message.receive_v1` text, rich-text post, and image messages are accepted. Bot mentions are
+  removed from the task text, while links and images in rich-text posts are preserved.
 - Only senders listed in `FEISHU_ALLOWED_OPEN_IDS` can trigger a task. Use open IDs, not
   display names, and keep the allowlist deliberately small.
 - The GitHub dispatch token is only used by this service to start `linonward-bot`; it is never
@@ -38,13 +39,13 @@ events, so there is only one long connection and every reply uses the same Bot i
 - Hermes is addressed through its loopback-only API server with a bearer key; it is not exposed to
   Feishu or the public network. The Docker service reaches it through `host.docker.internal`.
 - Task text defaults to 6,000 characters (set `MAX_TASK_LENGTH` to lower it, if needed).
-- Redis atomically claims each Feishu message for 24 hours, so retries, restarts, and accidental
-  replica overlap cannot dispatch the same task twice.
 - GitHub and Hermes calls time out after 30 seconds by default; set
   `EXTERNAL_REQUEST_TIMEOUT_MS` between 1,000 and 120,000 when needed.
+- The relay is intentionally stateless: every delivery is dispatched immediately, including a
+  duplicate delivery from Feishu. Run exactly one instance.
 
-Long connection mode does not expose a callback URL or an inbound HTTP endpoint. It must run as
-one long-lived process with outbound access to Feishu and GitHub, plus its Redis dependency.
+Long connection mode does not expose a callback URL or an inbound HTTP endpoint. It runs as one
+long-lived process with outbound access to Feishu and GitHub.
 
 ## Configure
 

@@ -6,11 +6,9 @@ import {
   type WriteBitableMessage,
 } from "./bitable.js";
 import type { FeishuConfig } from "./config.js";
-import { createRedisMessageDeduplicator, type RedisClient } from "./redis.js";
 import {
   type DispatchTask,
   handleFeishuMessage,
-  type PersistTask,
   type RelayConfig,
   type ReplyTask,
 } from "./relay.js";
@@ -19,10 +17,7 @@ export async function startLongConnection(
   feishuConfig: FeishuConfig,
   relayConfig: RelayConfig,
   dispatch: DispatchTask,
-  redis: Pick<RedisClient, "eval">,
-  persistTask: PersistTask,
 ): Promise<Lark.WSClient> {
-  const claimMessage = createRedisMessageDeduplicator(redis);
   const messageClient = new Lark.Client({
     appId: feishuConfig.appId,
     appSecret: feishuConfig.appSecret,
@@ -52,7 +47,7 @@ export async function startLongConnection(
           console.error("Unable to write Feishu message to Bitable", error);
         }
       }
-      return handleFeishuMessage(event, relayConfig, dispatch, reply, claimMessage, persistTask);
+      return handleFeishuMessage(event, relayConfig, dispatch, reply);
     },
   });
   const client = new Lark.WSClient({

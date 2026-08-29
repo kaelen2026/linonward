@@ -18,8 +18,6 @@ export type ServiceConfig = {
   github: GitHubConfig;
   hermes?: HermesConfig;
   relay: RelayConfig;
-  databaseUrl: string;
-  redisUrl: string;
 };
 
 export type HermesConfig = {
@@ -61,8 +59,6 @@ export function loadServiceConfig(environment: Record<string, string | undefined
       allowedOpenIds,
       maxTaskLength,
     },
-    databaseUrl: readDatabaseUrl(readRequired(environment, "DATABASE_URL")),
-    redisUrl: readRedisUrl(readRequired(environment, "REDIS_URL")),
   };
 }
 
@@ -79,22 +75,6 @@ function loadBitableConfig(
     );
   }
   return { appToken, chatId, tableId };
-}
-
-function readDatabaseUrl(value: string): string {
-  const url = new URL(value);
-  if (url.protocol !== "postgres:" && url.protocol !== "postgresql:") {
-    throw new Error("DATABASE_URL must use postgres or postgresql");
-  }
-  return url.toString();
-}
-
-function readRedisUrl(value: string): string {
-  const url = new URL(value);
-  if (url.protocol !== "redis:" && url.protocol !== "rediss:") {
-    throw new Error("REDIS_URL must use redis or rediss");
-  }
-  return url.toString();
 }
 
 function loadHermesConfig(

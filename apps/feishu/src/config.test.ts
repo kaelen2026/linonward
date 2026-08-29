@@ -12,8 +12,6 @@ const environment = {
   GITHUB_DISPATCH_TOKEN: "github-token",
   GITHUB_REPOSITORY: "kaelen2026/linonward",
   HERMES_API_KEY: "hermes-api-key",
-  DATABASE_URL: "postgres://localhost:5432/linonward",
-  REDIS_URL: "redis://localhost:6379",
 };
 
 describe("loadServiceConfig", () => {
@@ -28,7 +26,6 @@ describe("loadServiceConfig", () => {
           tableId: "table-id",
         },
       },
-      databaseUrl: "postgres://localhost:5432/linonward",
       github: {
         apiUrl: "https://api.github.com",
         ref: "main",
@@ -47,7 +44,6 @@ describe("loadServiceConfig", () => {
         allowedOpenIds: new Set(["ou_first", "ou_second"]),
         maxTaskLength: 6_000,
       },
-      redisUrl: "redis://localhost:6379",
     });
   });
 

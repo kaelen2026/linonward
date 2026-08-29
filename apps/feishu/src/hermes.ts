@@ -1,7 +1,8 @@
 import type { HermesConfig } from "./config.js";
-import type { DispatchTask } from "./relay.js";
+import type { DispatchTask, Task } from "./relay.js";
 
 type Fetcher = (input: string, init: RequestInit) => Promise<Response>;
+export type LoadTaskImages = (task: Task) => Promise<string[]>;
 
 type HermesResponse = {
   output?: Array<{
@@ -15,14 +16,27 @@ type HermesResponse = {
 export function createHermesDispatcher(
   config: HermesConfig,
   fetcher: Fetcher = fetch,
+  loadImages: LoadTaskImages = async () => [],
 ): DispatchTask {
   const endpoint = `${config.apiUrl}/responses`;
 
   return async (task) => {
+    const images = task.imageKeys?.length ? await loadImages(task) : [];
     const response = await fetcher(endpoint, {
       body: JSON.stringify({
         conversation: `feishu:${task.threadKey}`,
-        input: task.text,
+        input:
+          images.length > 0
+            ? [
+                {
+                  content: [
+                    { text: task.text, type: "input_text" },
+                    ...images.map((imageUrl) => ({ image_url: imageUrl, type: "input_image" })),
+                  ],
+                  role: "user",
+                },
+              ]
+            : task.text,
         model: config.model,
         store: true,
       }),
