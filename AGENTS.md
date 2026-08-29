@@ -47,13 +47,6 @@ and external-integration changes with the main agent until dedicated domain agen
 `pnpm lint` + `pnpm typecheck` + `pnpm test`, plus `pnpm build` for anything touching the build.
 Report real output; don't commit over red and call it done.
 
-## Pull request merge gate
-
-Never enable auto-merge while an automated review is pending. A PR may be merged only after every
-CI check and automated review job has completed, the review summary and inline comments have been
-read, and all blocking or correctness findings have been resolved. Any pushed fix starts the gate
-again for the new head commit. Use a manual squash merge only after that final review cycle passes.
-
 Two runners in `apps/www`. **Vitest** with Testing Library for logic and components, next to
 the code as `*.test.{ts,tsx}` — `pnpm test`, or `pnpm --filter @linonward/www test:watch` for
 the TDD loop. **Playwright** for end-to-end, in `e2e/**/*.spec.ts` — `pnpm test:e2e`, which
@@ -74,6 +67,13 @@ a change there. Verify it with installed HarmonyOS Command Line Tools by setting
 `HARMONY_CLI_HOME` to the tools directory and `DEVECO_SDK_HOME` to its `sdk` directory, then run
 `scripts/harmony-ci.sh verify`. A DevEco-synced project-level `hvigorw` is an alternative, not a
 prerequisite. See [`apps/harmony/README.md`](./apps/harmony/README.md).
+
+## Pull request merge gate
+
+Never enable auto-merge while an automated review is pending. A PR may be merged only after every
+CI check and automated review job has completed, the review summary and inline comments have been
+read, and all blocking or correctness findings have been resolved. Any pushed fix starts the gate
+again for the new head commit. Use a manual squash merge only after that final review cycle passes.
 
 ## UI: Base UI, not Radix
 

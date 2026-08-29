@@ -188,9 +188,22 @@ gh pr checks <n>
 Anything red or still running means not yet; `gh run view --log-failed` for the failure. Never merge
 over a failing check. After every check, including the automated pull-request review, completes:
 
-1. Read the automated review summary and every inline review comment.
+1. Resolve the repository and current head, then read reviews and every inline comment:
+
+   ```bash
+   repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+   head=$(gh pr view <n> --json headRefOid --jq .headRefOid)
+   gh api "repos/$repo/pulls/<n>/reviews" \
+     --jq '.[] | {commit_id, state, user: .user.login, body}'
+   gh api "repos/$repo/pulls/<n>/comments" \
+     --paginate --jq '.[] | {commit_id, path, line, body}'
+   ```
+
+   Only automated-review output whose `commit_id` equals `$head` counts for the current cycle.
 2. Resolve every blocking or correctness finding before merging.
-3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit.
+3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit. The
+   rerun depends on the `bot-review` label; if it is absent, restore it with
+   `gh pr edit <n> --add-label bot-review`.
 4. Re-read the new review output; an earlier review does not approve a later commit.
 
 Only when the final head commit has green CI, a completed automated review, and no unresolved
