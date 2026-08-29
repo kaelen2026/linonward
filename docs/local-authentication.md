@@ -13,8 +13,10 @@ pnpm infra:up
 pnpm infra:status
 ```
 
-Both services must report healthy before continuing. Authentication stores users, sessions, and
-verification codes in PostgreSQL; there is no in-memory authentication fallback.
+PostgreSQL must report healthy before continuing. Authentication stores users, sessions, and
+verification codes there; there is no in-memory authentication fallback. Redis should also be
+healthy for the repository's normal shared rate limiting, but email OTP authentication does not
+depend on it in local development.
 
 ## 2. Prepare Resend
 
@@ -77,10 +79,14 @@ This creates or updates the Better Auth `user`, `session`, `account`, and `verif
 
 ## 6. Start and verify
 
-Restart both processes after changing environment files:
+Restart both processes after changing environment files. Run each long-lived process in its own
+terminal:
 
 ```bash
+# Terminal 1
 pnpm --filter @linonward/api dev
+
+# Terminal 2
 pnpm --filter @linonward/web dev
 ```
 
