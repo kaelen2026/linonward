@@ -207,18 +207,18 @@ over a failing check. After every check, including the automated pull-request re
    remain relevant until they are explicitly addressed.
 2. Resolve every blocking or correctness finding before merging.
 3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit. The
-   rerun depends on a non-bot actor triggering the workflow. If a bot pushed the fix, stop and ask
-   a human collaborator to retrigger the review. With human credentials, force a new labeled event
-   when needed by running these as separate operations:
+   rerun depends on a non-bot actor triggering the workflows. If a bot pushed the fix, stop and ask
+   a human collaborator to close and reopen the PR; `reopened` triggers both CI and review for the
+   current head. If a human pushed the fix but `bot-review` is missing, CI already runs from the
+   synchronize event, so restore the label to trigger the missing review:
 
    ```bash
-   gh pr edit <n> --remove-label bot-review
    gh pr edit <n> --add-label bot-review
    gh pr view <n> --json labels --jq '.labels[].name'
    ```
 
-   The final output must contain `bot-review`. If adding or verifying it fails, stop and restore the
-   label before doing anything else; without it no later push retriggers the review.
+   The final output must contain `bot-review`. If adding or verifying it fails, stop, report that
+   the label is missing, and ask a human collaborator to restore it; do not continue toward merge.
 4. Re-read the new review output; an earlier review does not approve a later commit.
 
 Only when the final head commit has green CI, a completed automated review, and no unresolved
