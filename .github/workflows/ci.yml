@@ -225,16 +225,25 @@ jobs:
         run: scripts/harmony-ci.sh verify
 
   ios:
-    name: iOS build and test
+    name: iOS build and test (${{ matrix.family }})
     needs: changes
     if: needs.changes.outputs.ios == 'true'
     runs-on: macos-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        family: [iPhone, iPad]
     steps:
       - uses: actions/checkout@v7
 
       - name: Install XcodeGen
         run: brew install xcodegen
+
+      - name: Verify iOS toolchain
+        run: |
+          xcodebuild -version | grep -q '^Xcode 26\.'
+          test "$(xcodegen --version)" = 'Version: 2.46.0'
 
       - name: Regenerate Xcode project
         run: xcodegen generate
@@ -255,6 +264,8 @@ jobs:
 
       - name: Test
         run: apps/ios/scripts/test.sh
+        env:
+          IOS_SIMULATOR_FAMILY: ${{ matrix.family }}
 
   e2e:
     name: End-to-end

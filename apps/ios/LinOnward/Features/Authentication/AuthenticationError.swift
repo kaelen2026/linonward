@@ -20,6 +20,8 @@ enum AuthenticationError: Error, Equatable, Sendable {
   /// Google sign-in could not be completed. Email still can be, which is what
   /// the message says.
   case googleUnavailable
+  /// The session credential could not be read, stored, or removed securely.
+  case credentialStorage
   /// The API answered, but not with anything the app can use.
   case unavailable
 }
@@ -65,6 +67,7 @@ extension AuthenticationError {
     case .expiredCode: "auth.error.expiredCode"
     case .tooManyAttempts: "auth.error.tooManyAttempts"
     case .googleUnavailable: "auth.error.googleUnavailable"
+    case .credentialStorage: "auth.error.credentialStorage"
     case .unavailable: "auth.error.unavailable"
     }
   }

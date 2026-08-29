@@ -1,6 +1,6 @@
 # LinOnward iOS
 
-Native SwiftUI application for iPhone and iPad. The deployment target is iOS 18 and the project is
+Native SwiftUI application for iPhone and iPad. The deployment target is iOS 26 and the project is
 generated with XcodeGen.
 
 ## Requirements
@@ -20,8 +20,9 @@ pnpm ios:test
 ```
 
 `project.yml` is the source of truth for `LinOnward.xcodeproj`; do not edit `project.pbxproj` by
-hand. `ios:test` uses the first available iPhone Simulator. Set `IOS_SIMULATOR_ID` to select a
-specific available device.
+hand. `ios:test` uses the first available iPhone Simulator. Set `IOS_SIMULATOR_FAMILY=iPad` to
+select the first iPad instead, or set `IOS_SIMULATOR_ID` to choose a specific available device.
+CI verifies the documented Xcode and XcodeGen versions and runs the suite on both device families.
 
 ## Point the app at an API
 

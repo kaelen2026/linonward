@@ -3,7 +3,7 @@ name: LinOnward
 options:
   bundleIdPrefix: com.linonward
   deploymentTarget:
-    iOS: "18.0"
+    iOS: "26.0"
   developmentLanguage: en
   xcodeVersion: "26.0"
 
