@@ -174,15 +174,28 @@ what changed, why, and how it was verified. End with:
 
 ### Merging
 
-Check CI first — the PR gate is the reason this flow exists, and `commitlint`
+Do not use `gh pr merge --auto` or otherwise enable auto-merge. An automated review check can turn
+green before its review summary and inline comments are visible, allowing GitHub to merge before
+the findings have been read.
+
+Check CI and automated review first — the PR gate is the reason this flow exists, and `commitlint`
 runs in CI only on `pull_request`, so a PR is the only place it sees the branch:
 
 ```bash
 gh pr checks <n>
 ```
 
-Anything red or still running means not yet; `gh run view --log-failed` for the
-failure. Never merge over a failing check.
+Anything red or still running means not yet; `gh run view --log-failed` for the failure. Never merge
+over a failing check. After every check, including the automated pull-request review, completes:
+
+1. Read the automated review summary and every inline review comment.
+2. Resolve every blocking or correctness finding before merging.
+3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit.
+4. Re-read the new review output; an earlier review does not approve a later commit.
+
+Only when the final head commit has green CI, a completed automated review, and no unresolved
+blocking or correctness findings may the PR be merged. A check conclusion alone is not sufficient
+evidence that its review output has been inspected.
 
 Then merge with **squash**, so each PR lands on `main` as exactly one commit:
 
