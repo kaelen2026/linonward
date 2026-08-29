@@ -1,8 +1,10 @@
+import { contentAuditEvents } from "./audit.js";
 import { account, session, user, verification } from "./auth.js";
 import { inquiries } from "./contact.js";
 import { articles } from "./content.js";
 import { accountRelations, sessionRelations, userRelations } from "./relations.js";
 
+export { contentAuditEvents } from "./audit.js";
 export { account, session, user, verification } from "./auth.js";
 export { inquiries } from "./contact.js";
 export { articles } from "./content.js";
@@ -18,4 +20,4 @@ export const authSchema = {
   verification,
 };
 
-export const schema = { ...authSchema, articles, inquiries };
+export const schema = { ...authSchema, articles, contentAuditEvents, inquiries };

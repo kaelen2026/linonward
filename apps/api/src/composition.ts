@@ -161,6 +161,7 @@ export function createApiModules(dependencies: ApiDependencies): ApiModule[] {
         administratorEmails: dependencies.administratorEmails ?? [],
         clock: dependencies.clock,
         nextId: () => `art_${randomUUID()}`,
+        nextAuditId: () => `audit_${randomUUID()}`,
       }),
     );
   if (dependencies.auth) modules.push(createAuthModule({ handler: dependencies.auth.handler }));

@@ -233,6 +233,11 @@ generated into `migrations/drizzle`. The migration executable uses a one-connect
 one session-level advisory lock across both histories, so concurrent replica startups cannot run
 the Drizzle half after the legacy lock has already been released.
 
+Content mutations also write `content_audit_events`. Success records share the article transaction,
+while failure records are inserted after rollback. Audit rows intentionally retain scalar actor and
+target identifiers instead of foreign keys, preserving operational evidence when mutable records
+are later removed.
+
 ## `packages/contracts`
 
 `@linonward/contracts` owns data that crosses the HTTP boundary: DTO types, stable field limits,

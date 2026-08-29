@@ -6,6 +6,7 @@ import {
   account,
   accountRelations,
   articles,
+  contentAuditEvents,
   inquiries,
   session,
   sessionRelations,
@@ -16,14 +17,25 @@ import {
 
 describe("database schema", () => {
   it("keeps every deployed table in the central schema", () => {
-    expect([user, session, account, verification, inquiries, articles].map(getTableName)).toEqual([
+    expect(
+      [user, session, account, verification, inquiries, articles, contentAuditEvents].map(
+        getTableName,
+      ),
+    ).toEqual([
       "user",
       "session",
       "account",
       "verification",
       "inquiries",
       "articles",
+      "content_audit_events",
     ]);
+  });
+
+  it("indexes content audit investigations without coupling events to mutable records", () => {
+    const config = getTableConfig(contentAuditEvents);
+    expect(config.indexes).toHaveLength(3);
+    expect(config.foreignKeys).toHaveLength(0);
   });
 
   it("indexes every foreign key used to join auth records", () => {
