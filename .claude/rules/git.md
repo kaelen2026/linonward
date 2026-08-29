@@ -191,8 +191,7 @@ over a failing check. After every check, including the automated pull-request re
 1. Resolve the repository and current head, then read reviews and every inline comment:
 
    ```bash
-   printf 'PR number: '
-   IFS= read -r pr
+   pr="${PR_NUMBER:?set PR_NUMBER to the pull request number}"
    repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
    head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
    marker="<!-- linonward-bot-review:$head -->"
