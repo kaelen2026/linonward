@@ -4,6 +4,7 @@ packages:
 
 allowBuilds:
   esbuild: true
+  msgpackr-extract: false
   protobufjs: true
 
 # Build scripts allowed to run on install (pnpm blocks the rest by default).

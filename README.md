@@ -41,6 +41,7 @@ and tests are a manual step; see [`apps/harmony/README.md`](./apps/harmony/READM
 │   ├── harmony/                # Native ArkTS application for HarmonyOS
 │   ├── ios/                    # Native SwiftUI application for iPhone and iPad
 │   ├── web/                    # Internal console — Next.js 16 App Router
+│   ├── worker/                 # BullMQ asynchronous job worker backed by Redis
 │   └── www/                    # Official website — Next.js App Router
 ├── packages/
 │   ├── contracts/              # Shared HTTP DTOs, limits, and runtime response schemas
@@ -87,6 +88,7 @@ pnpm --filter @linonward/www dev
 pnpm --filter @linonward/web dev
 pnpm --filter @linonward/api dev
 pnpm --filter @linonward/feishu dev
+pnpm --filter @linonward/worker dev
 ```
 
 Start only the shared local infrastructure from the repository root:
