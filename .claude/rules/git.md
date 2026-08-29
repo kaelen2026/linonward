@@ -47,9 +47,46 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
 
 ## Scope of a commit
 
-One logical change per commit. Stage paths explicitly — `git add <path>` — never
-`git add -A` or `git add .`, which sweep up unrelated work in a repo that is
-often dirty.
+### Vertical task slicing
+
+Before implementing a complex task, split it into the smallest end-to-end slices that each
+deliver one coherent behavior or capability. A slice may cross UI, API, persistence, contracts,
+and tests when those layers are all required to make that behavior complete. Do not default to
+horizontal commits such as "add all types", "add all backend code", then "add all frontend code"
+when none is independently useful or verifiable.
+
+Plan the intended commit sequence before editing when a task needs more than one commit. Order
+slices so each commit leaves the repository in a valid state and gives the next commit a stable
+base. Separate prerequisite refactors only when they are independently motivated, behavior-
+preserving, and verifiable; otherwise keep the minimum supporting change with the behavior that
+needs it.
+
+The same task may involve multiple subagents. Partition their work by the planned vertical slices
+or by clearly non-overlapping responsibilities within one slice, and assign one owner for every
+file or integration boundary before parallel edits begin. All subagents must work against the
+same declared behavior, interfaces, and commit plan; they must communicate dependency or scope
+changes before editing another owner's area.
+
+Subagent boundaries do not define commit boundaries. Do not create one commit per agent or combine
+unrelated agent output merely because it was produced in parallel. The coordinating agent owns
+integration: review the combined diff, resolve overlap, run verification for the complete slice,
+and stage only the files belonging to that atomic commit. Unless explicitly delegated, subagents
+must not commit, amend, rebase, or otherwise change shared Git history.
+
+### Atomic commits
+
+One logical change per commit. Each commit must have a single explainable intent, include the
+tests and documentation required by that intent, pass the relevant verification on its own, and
+be safe to review or revert without depending on uncommitted follow-up work. Do not mix feature
+work with unrelated refactoring, formatting, dependency upgrades, generated-file churn, or
+cleanup.
+
+Atomic does not mean one file or one architectural layer. Prefer a small vertical commit that
+completes one behavior across several files over a horizontal commit that leaves the feature
+incomplete. If a proposed commit message needs "and" to join unrelated outcomes, split it.
+
+Stage paths explicitly — `git add <path>` — never `git add -A` or `git add .`, which sweep up
+unrelated work in a repo that is often dirty.
 
 Before staging, run `git status` and `git diff` and check that everything you are
 about to include belongs to this change. Leave unrelated modified files alone.
