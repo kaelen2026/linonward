@@ -60,11 +60,12 @@ one long-lived process with outbound access to Feishu and GitHub, plus its Redis
 Every opened or reopened pull request automatically receives the `bot-review` label and requests a
 read-only review from `linonward-bot`. The bot submits a `COMMENT` review and optional inline
 findings; it never approves, requests changes, or replaces the human reviewer responsible for the
-final decision. While the label remains attached, each new head commit pushed by a non-bot actor
-triggers one new review. A commit pushed by `linonward-bot` is deliberately ignored; a human must
-close and reopen the pull request to trigger both CI and review for that head. Draft pull requests
-receive the label immediately but wait until they are marked ready. Removing the label disables
-later automatic reviews; reopening the pull request opts it back in.
+final decision. While the label remains attached, pull request events from a non-bot actor trigger
+review. A pull request opened or reopened by `linonward-bot`, or a commit pushed by it, is
+deliberately ignored; a human must close and reopen the pull request to trigger both CI and review
+for that head. Draft pull requests receive the label immediately but wait until they are marked
+ready. Removing the label disables later automatic reviews; reopening the pull request opts it back
+in.
 
 Each completed review includes the pull request head SHA in a hidden marker. Repeated delivery of
 the same label or synchronization event reconciles against that marker and does not create a

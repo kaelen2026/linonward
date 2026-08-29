@@ -191,15 +191,18 @@ over a failing check. After every check, including the automated pull-request re
 1. Resolve the repository and current head, then read reviews and every inline comment:
 
    ```bash
+   pr=<number>
    repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
-   head=$(gh pr view <n> --json headRefOid --jq .headRefOid)
+   head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
    marker="<!-- linonward-bot-review:$head -->"
-   gh api --paginate --slurp "repos/$repo/pulls/<n>/reviews" | jq \
+   gh api --paginate --slurp "repos/$repo/pulls/$pr/reviews" | jq \
      --arg marker "$marker" \
      'flatten[] | select(.user.login == "linonward-bot[bot]" and
        ((.body // "") | contains($marker))) | {id, state, body}'
-   gh api --paginate --slurp "repos/$repo/pulls/<n>/comments" | jq \
-     'flatten[] | {pull_request_review_id, path, line, original_line, body}'
+   gh api --paginate --slurp "repos/$repo/pulls/$pr/comments" | jq \
+     --arg head "$head" \
+     'flatten[] | select(.commit_id == $head) |
+       {pull_request_review_id, path, line, original_line, body}'
    ```
 
    The summary containing `$marker` is the authoritative evidence that the current head was
@@ -207,7 +210,8 @@ over a failing check. After every check, including the automated pull-request re
    the PR, then repeat the checks and queries. A draft PR must first be marked ready for review;
    closing and reopening a draft does not produce a review. Read every inline comment returned by
    the paginated query and explicitly determine whether it was addressed; the REST response does
-   not expose review-thread resolution state.
+   not expose review-thread resolution state. Comments from older heads need reconsideration only
+   when their underlying finding still applies to the current diff.
 2. Resolve every blocking or correctness finding before merging.
 3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit. The
    rerun depends on a non-bot actor triggering the workflows. If a bot pushed the fix or the
