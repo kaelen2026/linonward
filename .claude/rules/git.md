@@ -221,6 +221,13 @@ gh pr checks <n>
 Anything red or still running means not yet; `gh run view --log-failed` for the
 failure. Never merge over a failing check.
 
+Automated review may run once initially and then at most **two re-review rounds** after fixes are
+pushed. The initial review does not count toward this limit. Track each new automated review of a
+new head commit as one re-review round; do not reset the count when the branch changes again. If the
+second re-review still reports a blocking issue or leaves a required check failing, stop the review-
+fix loop, report the remaining issue to the user, and do not merge without their direction. Record
+non-blocking suggestions instead of pushing another revision solely to trigger a third re-review.
+
 Then merge with **squash**, so each PR lands on `main` as exactly one commit:
 
 ```bash
