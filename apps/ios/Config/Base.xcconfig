@@ -26,3 +26,8 @@ LINONWARD_API_BASE_URL = http:/$()/localhost:3001
 // hides the button and leaves email sign-in alone. Supply it per build, e.g.
 // `xcodebuild … LINONWARD_GOOGLE_CLIENT_ID=123-abc.apps.googleusercontent.com`.
 LINONWARD_GOOGLE_CLIENT_ID =
+
+// URL of the separately deployed Vite article reader. Debug points at the
+// local H5 development server; Release overrides this to empty so an official
+// HTTPS origin must be supplied by the release pipeline.
+LINONWARD_ARTICLE_READER_URL = http:/$()/localhost:3003/

@@ -84,6 +84,19 @@ Three details are load-bearing and easy to undo by accident:
 
 Open `apps/ios/LinOnward.xcodeproj` in Xcode for previews and interactive Simulator debugging.
 
+## Run the H5 article reader
+
+The signed-in home screen opens the Vite article reader inside a locked-down `WKWebView`. Start
+the H5 development server before opening it in a Debug Simulator build:
+
+```bash
+pnpm --filter @linonward/h5 dev
+```
+
+Debug reads `http://localhost:3003/` from `LINONWARD_ARTICLE_READER_URL`. Release deliberately
+leaves this empty and accepts only an explicitly supplied HTTPS URL. The WebView permits main-frame
+navigation only within that exact origin; article links are validated and handed to the system.
+
 ## Structure
 
 ```text
