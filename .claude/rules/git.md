@@ -174,9 +174,9 @@ what changed, why, and how it was verified. End with:
 
 ### Merging
 
-Do not use `gh pr merge --auto` or otherwise enable auto-merge. An automated review check can turn
-green before its review summary and inline comments are visible, allowing GitHub to merge before
-the findings have been read.
+Do not use `gh pr merge --auto` or otherwise enable auto-merge. The automated review job can be
+green when review delivery was skipped, so a successful check does not prove that the current head
+has a review summary and inline comments to read.
 
 Check CI and automated review first — the PR gate is the reason this flow exists, and `commitlint`
 runs in CI only on `pull_request`, so a PR is the only place it sees the branch:
