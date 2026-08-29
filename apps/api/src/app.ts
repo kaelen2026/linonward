@@ -1,4 +1,5 @@
 import { openApiDocument } from "@linonward/contracts/openapi";
+import { context, SpanStatusCode } from "@opentelemetry/api";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
@@ -7,6 +8,7 @@ import { ApiError, toErrorBody } from "./shared/api-error.js";
 import { createConsoleLogger, type Logger } from "./shared/logger.js";
 import { createInMemoryMetrics, type Metrics } from "./shared/metrics.js";
 import { type ApiModule, type AppEnv, mountModules } from "./shared/module.js";
+import { startServerTrace } from "./shared/telemetry.js";
 
 export type AppOptions = {
   modules: readonly ApiModule[];
@@ -30,17 +32,39 @@ export function createApp({
 
   app.use("*", requestId());
   app.use("*", async (c, next) => {
+    const serverTrace = startServerTrace(c.req.header("traceparent"), `HTTP ${c.req.method}`);
+    const trace = serverTrace.correlation;
+    c.set("trace", trace);
+    c.header("traceparent", trace.traceparent);
+    c.header("x-trace-id", trace.traceId);
     const startedAt = performance.now();
-    await next();
-    const durationMs = Math.round(performance.now() - startedAt);
-    metrics.observeRequest(c.req.method, c.req.path, c.res.status, durationMs);
-    logger.info("http_request", {
-      requestId: c.var.requestId,
-      method: c.req.method,
-      path: c.req.path,
-      status: c.res.status,
-      durationMs,
-    });
+    const shouldObserve = c.req.path !== "/metrics";
+    if (shouldObserve) metrics.requestStarted();
+    try {
+      await context.with(serverTrace.context, next);
+    } finally {
+      const durationMs = Math.round(performance.now() - startedAt);
+      const route = c.req.routePath === "/*" ? "_unmatched" : c.req.routePath || "_unmatched";
+      if (shouldObserve) metrics.observeRequest(c.req.method, route, c.res.status, durationMs);
+      serverTrace.span.updateName(`${c.req.method} ${route}`);
+      serverTrace.span.setAttributes({
+        "http.request.method": c.req.method,
+        "http.route": route,
+        "http.response.status_code": c.res.status,
+        "http.request.duration_ms": durationMs,
+      });
+      if (c.res.status >= 500) serverTrace.span.setStatus({ code: SpanStatusCode.ERROR });
+      serverTrace.span.end();
+      logger.info("http_request", {
+        requestId: c.var.requestId,
+        traceId: trace.traceId,
+        spanId: trace.spanId,
+        method: c.req.method,
+        route,
+        status: c.res.status,
+        durationMs,
+      });
+    }
   });
 
   app.get("/openapi.json", (c) => c.json(openApiDocument));
@@ -53,7 +77,8 @@ export function createApp({
       "*",
       cors({
         origin: [...allowedOrigins],
-        allowHeaders: ["Content-Type"],
+        allowHeaders: ["Content-Type", "Traceparent", "X-Request-Id"],
+        exposeHeaders: ["Traceparent", "X-Request-Id", "X-Trace-Id"],
         allowMethods: ["DELETE", "GET", "POST", "PUT", "OPTIONS"],
         credentials: true,
         maxAge: 600,
@@ -81,6 +106,8 @@ export function createApp({
     // string or a stack trace.
     logger.error("http_request_failed", {
       requestId: c.var.requestId,
+      traceId: c.var.trace.traceId,
+      spanId: c.var.trace.spanId,
       method: c.req.method,
       path: c.req.path,
       error: cause instanceof Error ? cause.name : "unknown",
