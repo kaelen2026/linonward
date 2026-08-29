@@ -8,12 +8,16 @@ struct AppView: View {
   @State private var auth = AuthenticationModel()
 
   var body: some View {
-    NavigationStack {
+    Group {
       switch auth.state.step {
       case .restoring:
-        RestoringView()
+        NavigationStack {
+          RestoringView()
+        }
       case .email, .code:
-        SignInView(model: auth)
+        NavigationStack {
+          SignInView(model: auth)
+        }
       case .signedIn(let user):
         HomeView(user: user) { await auth.signOut() }
       }
