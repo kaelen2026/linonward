@@ -201,8 +201,8 @@ over a failing check. After every check, including the automated pull-request re
        ((.body // "") | contains($marker))) | {id, state, body}'
    gh api --paginate --slurp "repos/$repo/pulls/$pr/comments" | jq \
      --arg head "$head" \
-     'flatten[] | select(.commit_id == $head) |
-       {pull_request_review_id, path, line, original_line, body}'
+     'flatten[] | {current: (.commit_id == $head), commit_id, original_commit_id,
+       pull_request_review_id, path, line, original_line, position, body}'
    ```
 
    The summary containing `$marker` is the authoritative evidence that the current head was
@@ -210,8 +210,9 @@ over a failing check. After every check, including the automated pull-request re
    the PR, then repeat the checks and queries. A draft PR must first be marked ready for review;
    closing and reopening a draft does not produce a review. Read every inline comment returned by
    the paginated query and explicitly determine whether it was addressed; the REST response does
-   not expose review-thread resolution state. Comments from older heads need reconsideration only
-   when their underlying finding still applies to the current diff.
+   not expose review-thread resolution state. For comments marked `current: false`, determine
+   whether the underlying finding still applies to the current diff instead of discarding it as
+   outdated.
 2. Resolve every blocking or correctness finding before merging.
 3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit. The
    rerun depends on a non-bot actor triggering the workflows. If a bot pushed the fix or the
