@@ -68,7 +68,7 @@ export function classifyChanges(paths) {
         "packages/typescript-config/",
       ]);
 
-    scopes.ios ||= path.startsWith("apps/ios/") || path === "package.json" || path === ".nvmrc";
+    scopes.ios ||= path.startsWith("apps/ios/");
     scopes.android ||= path.startsWith("apps/android/");
     scopes.harmony ||= path.startsWith("apps/harmony/") || path === "scripts/harmony-ci.sh";
   }
