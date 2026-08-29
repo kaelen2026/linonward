@@ -213,8 +213,13 @@ what changed, why, and how it was verified. End with:
 
 Automated review may run once initially and then at most **two re-review rounds** after fixes are
 pushed. The initial review does not count toward this agent-side limit; the workflow itself still
-runs on every labeled PR update. Track only pushes made specifically to address automated review,
-not unrelated branch updates. Immediately after each such push, add a durable, exact-body PR marker:
+runs on every labeled PR update. Automated review is advisory and never part of the merge gate.
+Do not delay merge because the `pull-request-review` check is pending or failed, and do not treat
+review findings as blocking.
+Apply useful findings at your discretion within the round limit; otherwise record them for follow-up.
+
+Track only pushes made specifically to address automated review, not unrelated branch updates.
+Immediately after each such push, add a durable, exact-body PR marker:
 
 ```bash
 gh pr comment <n> --body '<!-- linonward-agent-rereview:1 -->' # first re-review
@@ -231,9 +236,8 @@ gh api 'repos/{owner}/{repo}/issues/<n>/comments' --paginate | jq \
 ```
 
 Do not reset the count when the branch changes. Once it reaches two, do not push another revision
-driven by review: record non-blocking suggestions, or report remaining blocking issues and failed
-required checks to the user. Required checks must still pass before merge; user direction does not
-override that rule.
+driven by review. Record any remaining suggestions for follow-up. Review status and findings do not
+override the separate requirement that non-review CI checks pass before merge.
 
 ### Merging
 
@@ -244,8 +248,9 @@ runs in CI only on `pull_request`, so a PR is the only place it sees the branch:
 gh pr checks <n>
 ```
 
-Anything red or still running means not yet; `gh run view --log-failed` for the
-failure. Never merge over a failing check.
+Ignore `pull-request-review` when deciding merge readiness. Any other selected check that is red or
+still running means not yet; use `gh run view --log-failed` for the failure. Never merge over a
+failing non-review check.
 
 Then merge with **squash**, so each PR lands on `main` as exactly one commit:
 
