@@ -12,10 +12,10 @@ struct SignInView: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 28) {
+      VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxxl) {
         BrandMark()
 
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
           Text("signIn.title")
             .font(.largeTitle.bold())
             .accessibilityIdentifier("signIn.title")
@@ -34,16 +34,16 @@ struct SignInView: View {
           .foregroundStyle(.secondary)
         }
 
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xl) {
           emailField
           if model.state.step == .code { codeField }
           if let error = model.state.error { errorMessage(error) }
           actions
         }
       }
-      .frame(maxWidth: 560, alignment: .leading)
-      .padding(.horizontal, 24)
-      .padding(.vertical, 40)
+      .frame(maxWidth: DesignTokens.Size.contentMaximumWidth, alignment: .leading)
+      .padding(.horizontal, DesignTokens.Spacing.xxl)
+      .padding(.vertical, DesignTokens.Spacing.xxxxl)
     }
     .scrollDismissesKeyboard(.interactively)
     .background {
@@ -66,7 +66,7 @@ struct SignInView: View {
   }
 
   @ViewBuilder private var emailField: some View {
-    VStack(alignment: .leading, spacing: 6) {
+    VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
       Text("signIn.email.label")
         .font(.subheadline.weight(.medium))
 
@@ -85,7 +85,7 @@ struct SignInView: View {
   }
 
   @ViewBuilder private var codeField: some View {
-    VStack(alignment: .leading, spacing: 6) {
+    VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
       Text("signIn.code.label")
         .font(.subheadline.weight(.medium))
 
@@ -117,7 +117,7 @@ struct SignInView: View {
   }
 
   @ViewBuilder private var actions: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
       Button(action: submit) {
         // A fixed-height frame so the row does not resize when the label swaps
         // for a spinner.
@@ -149,8 +149,8 @@ struct SignInView: View {
   }
 
   @ViewBuilder private var google: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      HStack(spacing: 12) {
+    VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
+      HStack(spacing: DesignTokens.Spacing.md) {
         rule
         Text("signIn.or")
           .font(.footnote)

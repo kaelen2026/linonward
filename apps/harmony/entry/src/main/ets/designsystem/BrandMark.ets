@@ -5,13 +5,12 @@
  */
 @Component
 export struct BrandMark {
-  private markSize: number = 56;
-
   build() {
     Image($r('app.media.startIcon'))
-      .width(this.markSize)
-      .height(this.markSize)
-      .borderRadius(14)
+      .width(DesignTokens.sizeBrandMark)
+      .height(DesignTokens.sizeBrandMark)
+      .borderRadius(DesignTokens.radiusBrandMark)
       .accessibilityLevel('no')
   }
 }
+import { DesignTokens } from './DesignTokens.generated';

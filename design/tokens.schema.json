@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["color", "spacing", "radius", "size"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "color": { "type": "object" },
+    "spacing": { "$ref": "#/$defs/dimensions" },
+    "radius": { "$ref": "#/$defs/dimensions" },
+    "size": { "$ref": "#/$defs/dimensions" }
+  },
+  "$defs": {
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    }
+  }
+}

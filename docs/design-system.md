@@ -1,8 +1,34 @@
 # Design system
 
-The palette is derived from `apps/www/public/logo.png` — nothing here was picked by eye. All of
-it lives in [`apps/www/src/app/globals.css`](../apps/www/src/app/globals.css); this document
-explains the reasoning so the next change doesn't undo it.
+## Cross-platform source of truth
+
+Design values live in [`design/tokens.json`](../design/tokens.json). It is the machine-readable
+source of truth for every client: www, web/H5, iOS, Android, and HarmonyOS. It owns brand ramps,
+semantic colors, spacing, radii, and shared component sizes. Do not edit a generated platform file
+directly.
+
+After changing a token, regenerate every native target from the repository root:
+
+```bash
+pnpm design-tokens:generate
+```
+
+`pnpm lint` runs `pnpm design-tokens:check`, which fails when a generated file has drifted from the
+source. Generated outputs are:
+
+- `apps/ios/LinOnward/DesignSystem/DesignTokens.generated.swift`
+- `apps/android/app/src/main/kotlin/com/linonward/app/designsystem/BrandColors.kt`
+- `apps/harmony/entry/src/main/ets/designsystem/DesignTokens.generated.ets`
+- HarmonyOS light and dark `color.json` resources
+- `apps/www/src/app/design-tokens.generated.css`
+- `apps/web/src/app/design-tokens.generated.css`
+
+The shared source carries both OKLCH values for browsers and sRGB HEX values for native platforms.
+The generator emits the appropriate representation for each target.
+
+The palette is derived from `apps/www/public/logo.png` — nothing here was picked by eye. Both its
+web OKLCH and native sRGB representations live in `design/tokens.json`; this document explains the
+reasoning so the next change doesn't undo it.
 
 ## The two brand colours
 

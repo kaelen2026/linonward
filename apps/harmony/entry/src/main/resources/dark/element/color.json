@@ -1,16 +1,16 @@
 {
   "color": [
     {
+      "name": "border",
+      "value": "#27466B"
+    },
+    {
       "name": "page_background",
       "value": "#00112D"
     },
     {
       "name": "surface",
       "value": "#03274D"
-    },
-    {
-      "name": "border",
-      "value": "#27466B"
     },
     {
       "name": "text_primary",

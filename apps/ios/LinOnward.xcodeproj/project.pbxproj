@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		060F9213B9C997A695847F76 /* LinOnwardUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123E324A6E36B03DA29D3097 /* LinOnwardUITests.swift */; };
 		07AABE7F7A469433A2D0AC84 /* WebAuthenticationBrowser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A823299181EEDD1981821382 /* WebAuthenticationBrowser.swift */; };
+		1304D6B95460D3DAF7B42A6D /* DesignTokens.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95417825C76318B05AACABB /* DesignTokens.generated.swift */; };
 		18100FC83D41252F81747FF2 /* AuthenticationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB4CD022FFF05E8731675FC /* AuthenticationModels.swift */; };
 		1A110709F214A317F97EF169 /* LinOnwardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */; };
 		1EC686820AD47A7601E2D5A9 /* AuthenticationPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F94B8FC14FD269F55036BE /* AuthenticationPreviews.swift */; };
@@ -80,6 +81,7 @@
 		EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinOnwardApp.swift; sourceTree = "<group>"; };
 		F1B3AF6D159ABCA116A18D9C /* AuthenticationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationStateTests.swift; sourceTree = "<group>"; };
 		F6F94B8FC14FD269F55036BE /* AuthenticationPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationPreviews.swift; sourceTree = "<group>"; };
+		F95417825C76318B05AACABB /* DesignTokens.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.generated.swift; sourceTree = "<group>"; };
 		FF62723F8002FFD009CA327C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FFEA86E45D5A984019169F84 /* LinOnwardUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LinOnwardUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -180,6 +182,7 @@
 			isa = PBXGroup;
 			children = (
 				2C335805138E123B6B086C66 /* BrandMark.swift */,
+				F95417825C76318B05AACABB /* DesignTokens.generated.swift */,
 			);
 			name = DesignSystem;
 			path = LinOnward/DesignSystem;
@@ -333,6 +336,7 @@
 				214CADF45553530EF4109053 /* AuthenticationService.swift in Sources */,
 				24E3D951AF7E94FB8699F988 /* AuthenticationState.swift in Sources */,
 				E7E291780E5A98EB0D07B119 /* BrandMark.swift in Sources */,
+				1304D6B95460D3DAF7B42A6D /* DesignTokens.generated.swift in Sources */,
 				66E3DB77D5D3D82BD8F497F9 /* GoogleIdentityProvider.swift in Sources */,
 				35E0F314BDCD50FA380B5AC6 /* GoogleSignIn.swift in Sources */,
 				C69965A582C8F9485B6E146B /* HomeView.swift in Sources */,
