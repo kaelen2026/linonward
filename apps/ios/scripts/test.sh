@@ -4,13 +4,23 @@ set -eu
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 simulator_id=${IOS_SIMULATOR_ID:-}
+simulator_family=${IOS_SIMULATOR_FAMILY:-iPhone}
+
+case "$simulator_family" in
+  iPhone|iPad) ;;
+  *)
+    echo "IOS_SIMULATOR_FAMILY must be iPhone or iPad." >&2
+    exit 1
+    ;;
+esac
 
 if [ -z "$simulator_id" ]; then
-  simulator_id=$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/ { print $2; exit }')
+  simulator_id=$(xcrun simctl list devices available | awk -F '[()]' -v family="$simulator_family" \
+    'index($0, family) { print $2; exit }')
 fi
 
 if [ -z "$simulator_id" ]; then
-  echo "No available iPhone Simulator found. Set IOS_SIMULATOR_ID to an available device UUID." >&2
+  echo "No available $simulator_family Simulator found. Set IOS_SIMULATOR_ID to a device UUID." >&2
   exit 1
 fi
 

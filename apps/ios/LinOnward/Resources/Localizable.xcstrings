@@ -33,6 +33,22 @@
         }
       }
     },
+    "auth.error.credentialStorage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your secure session could not be saved. Please try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法安全保存登录状态，请重试。"
+          }
+        }
+      }
+    },
     "auth.error.googleUnavailable" : {
       "localizations" : {
         "en" : {
