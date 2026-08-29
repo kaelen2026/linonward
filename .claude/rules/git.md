@@ -209,69 +209,48 @@ what changed, why, and how it was verified. End with:
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
+### Automated review rounds
+
+Automated review may run once initially and then at most **two re-review rounds** after fixes are
+pushed. The initial review does not count toward this agent-side limit; the workflow itself still
+runs on every labeled PR update. Automated review is advisory and never part of the merge gate.
+Do not delay merge because the `pull-request-review` check is pending or failed, and do not treat
+review findings as blocking.
+Apply useful findings at your discretion within the round limit; otherwise record them for follow-up.
+
+Track only pushes made specifically to address automated review, not unrelated branch updates.
+Immediately after each such push, add a durable, exact-body PR marker:
+
+```bash
+gh pr comment <n> --body '<!-- linonward-agent-rereview:1 -->' # first re-review
+gh pr comment <n> --body '<!-- linonward-agent-rereview:2 -->' # second re-review
+```
+
+Before another review-driven push, count unique markers authored by the automation bot:
+
+```bash
+gh api 'repos/{owner}/{repo}/issues/<n>/comments' --paginate | jq \
+  '[.[] | select(.user.login == "linonward-bot[bot]" and
+    (.body | test("^<!-- linonward-agent-rereview:[12] -->$")))] |
+    unique_by(.body) | length'
+```
+
+Do not reset the count when the branch changes. Once it reaches two, do not push another revision
+driven by review. Record any remaining suggestions for follow-up. Review status and findings do not
+override the separate requirement that non-review CI checks pass before merge.
+
 ### Merging
 
-Do not use `gh pr merge --auto` or otherwise enable auto-merge. The automated review job can be
-green when review delivery was skipped, so a successful check does not prove that the current head
-has a review summary and inline comments to read.
-
-Check CI and automated review first — the PR gate is the reason this flow exists, and `commitlint`
+Check CI first — the PR gate is the reason this flow exists, and `commitlint`
 runs in CI only on `pull_request`, so a PR is the only place it sees the branch:
 
 ```bash
 gh pr checks <n>
 ```
 
-Anything red or still running means not yet; `gh run view --log-failed` for the failure. Never merge
-over a failing check. After every check, including the automated pull-request review, completes:
-
-1. Resolve the repository and current head, then read reviews and every inline comment:
-
-   ```bash
-   pr="${PR_NUMBER:?set PR_NUMBER to the pull request number}"
-   repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
-   head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
-   marker="<!-- linonward-bot-review:$head -->"
-   reviews=$(gh api --paginate --slurp "repos/$repo/pulls/$pr/reviews" | jq \
-     --arg marker "$marker" \
-     '[flatten[] | select(.user.login == "linonward-bot[bot]" and .state == "COMMENTED" and
-       ((.body // "") | contains($marker))) | {id, state, body}]')
-   printf '%s\n' "$reviews" | jq '.[]'
-   gh api --paginate --slurp "repos/$repo/pulls/$pr/comments" | jq \
-     --arg head "$head" \
-     'flatten[] | {current: (.commit_id == $head), commit_id, original_commit_id,
-       pull_request_review_id, path, line, original_line, position, body}'
-   if [ "$(printf '%s\n' "$reviews" | jq 'length')" -eq 0 ]; then
-     echo "current-head automated review: ABSENT — stop" >&2
-     false
-   fi
-   ```
-
-   The summary containing `$marker` is the authoritative evidence that the current head was
-   reviewed. If it is absent, stop. Ask a human collaborator to mark a draft PR ready for review;
-   closing and reopening a draft does not produce a review. If the trusted base revision does not
-   contain the review routing script and prompt, ask a human collaborator to rebase or retarget the
-   PR onto a base that does; reopening cannot add review support to an old base. If the `bot-review`
-   label was deliberately removed, respect that opt-out and ask a human collaborator whether to
-   restore it; this repository's merge policy requires the label and a completed current-head
-   automated review before merging. Otherwise, ask a human collaborator to close and reopen the PR,
-   then repeat the checks and queries. Read every inline comment returned by the paginated query and
-   explicitly determine whether it was addressed; the REST response does not expose review-thread
-   resolution state. For comments marked `current: false`, determine whether the underlying finding
-   still applies to the current diff instead of discarding it as outdated.
-2. Resolve every blocking or correctness finding before merging.
-3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit. The
-   push triggers CI, but automated review suppresses events from the bot itself. Do not attempt to
-   repair a missing review trigger with agent credentials. If the label was deliberately removed,
-   stop and ask a human collaborator whether to restore it; applying it requests review without
-   silently overriding the opt-out. Otherwise, ask a human collaborator to close and reopen the PR;
-   `reopened` triggers both CI and review for the current head. Do not continue until the
-   current-head marker described in step 1 exists.
-4. Re-read the new review output; an earlier review does not approve a later commit.
-
-Only when the final head commit has green CI, a completed automated review, and no unresolved
-blocking or correctness findings may the PR be merged. A check conclusion alone is not sufficient
-evidence that its review output has been inspected.
+Ignore `pull-request-review` when deciding merge readiness. Any other selected check that is red or
+still running means not yet; use `gh run view --log-failed` for the failure. Never merge over a
+failing non-review check.
 
 Then merge with **squash**, so each PR lands on `main` as exactly one commit:
 

@@ -70,13 +70,6 @@ Line Tools by setting
 `scripts/harmony-ci.sh verify`. A DevEco-synced project-level `hvigorw` is an alternative, not a
 prerequisite. See [`apps/harmony/README.md`](./apps/harmony/README.md).
 
-## Pull request merge gate
-
-Never enable auto-merge. A PR may be merged only after every CI check and automated review job has
-completed, the review summary and inline comments have been read, and all blocking or correctness
-findings have been resolved. Any pushed fix starts the gate again for the new head commit. Use a
-manual squash merge only after that final review cycle passes.
-
 ## UI: Base UI, not Radix
 
 `apps/www` and `apps/web` use shadcn/ui in its `base-nova` style, built on
