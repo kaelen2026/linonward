@@ -2,8 +2,8 @@
 
 ## Runtime inventory
 
-The repository produces four independent runtimes. `packages/db` is built code consumed by the
-API, not a separately deployed service.
+The repository produces four server runtimes plus one static H5 artifact. `packages/db` is built
+code consumed by the API, not a separately deployed service.
 
 | Runtime | Artifact / command | State and external dependencies |
 | --- | --- | --- |
@@ -11,10 +11,15 @@ API, not a separately deployed service.
 | `apps/web` | `.next/`; `pnpm --filter @linonward/web start` | Stateless; server and auth proxy call `apps/api` |
 | `apps/api` | `dist/`; `pnpm --filter @linonward/api start` | PostgreSQL and Redis are mandatory in production |
 | `apps/feishu` | `dist/`; `pnpm --filter @linonward/feishu start` | PostgreSQL outbox, Redis, and outbound Feishu/GitHub access |
+| `apps/h5` | `dist/`; host as static files or bundle with native | No server state; communicates with its native host through the reader bridge |
 
 Build everything from the repository root with `pnpm build`, or build one deployable with its
 filtered command. The API build automatically builds `@linonward/db` first through both its
 `prebuild` script and the Turborepo dependency graph.
+
+The H5 build uses relative asset paths and a restrictive CSP, so the same `dist/` can live below a
+URL prefix or inside a native bundle. iOS release builds require an explicit HTTPS
+`LINONWARD_ARTICLE_READER_URL`; the development default is `http://localhost:3003/`.
 
 ## Public website and internal console
 
@@ -83,22 +88,31 @@ Hermes as a second Feishu gateway.
 ## CI gate
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push to `main` and every
-pull request, regardless of its base. Its jobs run in parallel.
+pull request, regardless of its base. A change-scope job classifies paths first; selected product
+jobs then run in parallel, while unrelated platform jobs are skipped.
 
-`verify` runs:
+Pull requests run commitlint as its own job:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm exec commitlint --from <base> --to <head>   # pull requests only
+pnpm exec commitlint --from <base> --to <head>
+```
+
+The separate `verify` job runs:
+
+```bash
+pnpm install --frozen-lockfile
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
-`e2e` installs Chromium and runs `pnpm test:e2e` against the production `apps/www` build. The
-browser cache is keyed by the resolved Playwright version; system dependencies are still installed
-on cache hits. The HTML report uploads on every non-cancelled run and is retained for seven days.
+`e2e` installs Chromium and runs `pnpm test:e2e` against the production builds of both Next apps.
+`apps/www` covers public routing, responsive navigation, and contact submission; `apps/web` covers
+the unauthenticated console redirect. The browser cache is keyed by the resolved Playwright
+version; system dependencies are still installed on cache hits. The www HTML report uploads on
+every non-cancelled run and is retained for seven days.
 
 `integration` starts PostgreSQL and Redis service containers, applies the complete migration
 history to an empty database, and runs the production adapter contracts against both services.
