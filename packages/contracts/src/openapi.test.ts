@@ -13,6 +13,7 @@ describe("OpenAPI document", () => {
       "/api/content/articles/{slug}",
       "/api/content/admin/articles",
       "/api/content/admin/articles/{id}",
+      "/api/content/admin/access",
     ]);
   });
 

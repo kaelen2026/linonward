@@ -28,7 +28,13 @@ const request = (path: string, init?: RequestInit) =>
     headers: { "content-type": "application/json", ...init?.headers },
   });
 
-export function EditorWorkbench({ authorName }: { authorName: string }) {
+export function EditorWorkbench({
+  authorName,
+  canPublish,
+}: {
+  authorName: string;
+  canPublish: boolean;
+}) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedId, setSelectedId] = useState<string>();
   const [draft, setDraft] = useState<ArticleInput>({ ...blank, authorName });
@@ -106,13 +112,15 @@ export function EditorWorkbench({ authorName }: { authorName: string }) {
             >
               保存草稿
             </button>
-            <button
-              className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-brand-foreground"
-              onClick={() => save("published")}
-              type="button"
-            >
-              发布
-            </button>
+            {canPublish ? (
+              <button
+                className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-brand-foreground"
+                onClick={() => save("published")}
+                type="button"
+              >
+                发布
+              </button>
+            ) : null}
           </div>
         </header>
         <div className="mx-auto max-w-4xl px-6 py-10">

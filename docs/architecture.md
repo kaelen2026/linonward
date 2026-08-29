@@ -238,6 +238,12 @@ while failure records are inserted after rollback. Audit rows intentionally reta
 target identifiers instead of foreign keys, preserving operational evidence when mutable records
 are later removed.
 
+`content_role_assignments` binds the bounded `administrator` and `editor` content roles to Better
+Auth user IDs. Authorization remains server-side: the API returns capabilities for the current
+session, and `apps/web` uses them to shape the editor while every mutation is independently checked
+again by the API. The configured administrator email list is a bootstrap path rather than the
+long-term role store.
+
 ## `packages/contracts`
 
 `@linonward/contracts` owns data that crosses the HTTP boundary: DTO types, stable field limits,

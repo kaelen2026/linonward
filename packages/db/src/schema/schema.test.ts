@@ -7,6 +7,7 @@ import {
   accountRelations,
   articles,
   contentAuditEvents,
+  contentRoleAssignments,
   inquiries,
   session,
   sessionRelations,
@@ -18,9 +19,16 @@ import {
 describe("database schema", () => {
   it("keeps every deployed table in the central schema", () => {
     expect(
-      [user, session, account, verification, inquiries, articles, contentAuditEvents].map(
-        getTableName,
-      ),
+      [
+        user,
+        session,
+        account,
+        verification,
+        inquiries,
+        articles,
+        contentAuditEvents,
+        contentRoleAssignments,
+      ].map(getTableName),
     ).toEqual([
       "user",
       "session",
@@ -29,7 +37,14 @@ describe("database schema", () => {
       "inquiries",
       "articles",
       "content_audit_events",
+      "content_role_assignments",
     ]);
+  });
+
+  it("ties content roles to authenticated users and indexes role membership", () => {
+    const config = getTableConfig(contentRoleAssignments);
+    expect(config.foreignKeys).toHaveLength(1);
+    expect(config.indexes).toHaveLength(1);
   });
 
   it("indexes content audit investigations without coupling events to mutable records", () => {
