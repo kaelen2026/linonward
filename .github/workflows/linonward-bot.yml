@@ -80,8 +80,23 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
+      # The pull request that introduces this feature has a base revision that
+      # does not contain its trusted routing script or prompt yet. Skip that
+      # bootstrap run instead of executing either file from the untrusted head.
+      - name: Check trusted review support
+        id: support
+        run: |
+          if [ -f .github/scripts/pr-review-routing.mjs ] && \
+             [ -f .github/prompts/pull-request-review.md ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Trusted base does not provide PR review support yet; skipping bootstrap run."
+          fi
+
       - name: Generate least-privilege app token
         id: review-token
+        if: steps.support.outputs.available == 'true'
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ vars.LINONWARD_BOT_CLIENT_ID }}
@@ -92,7 +107,9 @@ jobs:
       # Adding an existing label is an idempotent set operation. Use the App
       # token so this also works for pull requests opened from forks.
       - name: Add automatic review label
-        if: contains(fromJSON('["opened", "reopened"]'), github.event.action)
+        if: >-
+          steps.support.outputs.available == 'true' &&
+          contains(fromJSON('["opened", "reopened"]'), github.event.action)
         env:
           GH_TOKEN: ${{ steps.review-token.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -104,6 +121,7 @@ jobs:
 
       - name: Resolve review request
         id: route
+        if: steps.support.outputs.available == 'true'
         run: node .github/scripts/pr-review-routing.mjs
 
       - name: Build review prompt
