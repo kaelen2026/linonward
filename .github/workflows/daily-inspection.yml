@@ -2,8 +2,8 @@ name: Daily inspection
 
 on:
   schedule:
-    # GitHub Actions uses UTC; this is 09:00 in Asia/Shanghai.
-    - cron: "0 1 * * *"
+    # GitHub Actions uses UTC; this is 01:00 in Asia/Shanghai.
+    - cron: "0 17 * * *"
   workflow_dispatch:
 
 permissions:
@@ -206,3 +206,84 @@ jobs:
           HARMONY_CLI_HOME: ${{ vars.HARMONY_CLI_HOME }}
           DEVECO_SDK_HOME: ${{ vars.DEVECO_SDK_HOME }}
         run: scripts/harmony-ci.sh verify
+
+  notify-feishu:
+    name: Notify Feishu
+    if: ${{ always() }}
+    needs: [workspace, integration, end-to-end, android, ios, harmony]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ANDROID_RESULT: ${{ needs.android.result }}
+      END_TO_END_RESULT: ${{ needs.end-to-end.result }}
+      FEISHU_APP_ID: ${{ secrets.LARKSUITE_CLI_APP_ID }}
+      FEISHU_APP_SECRET: ${{ secrets.LARKSUITE_CLI_APP_SECRET }}
+      FEISHU_CHAT_ID: ${{ vars.FEISHU_DAILY_CHAT_ID }}
+      HARMONY_RESULT: ${{ needs.harmony.result }}
+      INTEGRATION_RESULT: ${{ needs.integration.result }}
+      IOS_RESULT: ${{ needs.ios.result }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      WORKSPACE_RESULT: ${{ needs.workspace.result }}
+    steps:
+      - name: Send inspection result
+        shell: bash
+        run: |
+          node <<'EOF'
+          const checks = [
+            ["工作区", process.env.WORKSPACE_RESULT],
+            ["集成测试", process.env.INTEGRATION_RESULT],
+            ["端到端测试", process.env.END_TO_END_RESULT],
+            ["Android", process.env.ANDROID_RESULT],
+            ["iOS", process.env.IOS_RESULT],
+            ["HarmonyOS", process.env.HARMONY_RESULT],
+          ];
+          const icons = { success: "✅", failure: "❌", cancelled: "⚪", skipped: "⏭️" };
+          const labels = { success: "通过", failure: "失败", cancelled: "取消", skipped: "跳过" };
+          const failed = checks.some(([, result]) => result === "failure" || result === "cancelled");
+          const lines = checks.map(([name, result]) =>
+            `${icons[result] ?? "❔"} ${name}：${labels[result] ?? result}`,
+          );
+          const text = [
+            `${failed ? "❌" : "✅"} LinOnward 每日巡检${failed ? "发现异常" : "通过"}`,
+            "",
+            ...lines,
+            "",
+            `运行详情：${process.env.RUN_URL}`,
+          ].join("\n");
+
+          const tokenResponse = await fetch(
+            "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json; charset=utf-8" },
+              body: JSON.stringify({
+                app_id: process.env.FEISHU_APP_ID,
+                app_secret: process.env.FEISHU_APP_SECRET,
+              }),
+            },
+          );
+          const tokenPayload = await tokenResponse.json();
+          if (!tokenResponse.ok || tokenPayload.code !== 0 || !tokenPayload.tenant_access_token) {
+            throw new Error(`Unable to obtain Feishu token: ${tokenPayload.code ?? tokenResponse.status}`);
+          }
+
+          const messageResponse = await fetch(
+            "https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${tokenPayload.tenant_access_token}`,
+                "Content-Type": "application/json; charset=utf-8",
+              },
+              body: JSON.stringify({
+                receive_id: process.env.FEISHU_CHAT_ID,
+                msg_type: "text",
+                content: JSON.stringify({ text }),
+              }),
+            },
+          );
+          const messagePayload = await messageResponse.json();
+          if (!messageResponse.ok || messagePayload.code !== 0) {
+            throw new Error(`Unable to send Feishu message: ${messagePayload.code ?? messageResponse.status}`);
+          }
+          EOF
