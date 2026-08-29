@@ -88,22 +88,31 @@ Hermes as a second Feishu gateway.
 ## CI gate
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push to `main` and every
-pull request, regardless of its base. Its jobs run in parallel.
+pull request, regardless of its base. A change-scope job classifies paths first; selected product
+jobs then run in parallel, while unrelated platform jobs are skipped.
 
-`verify` runs:
+Pull requests run commitlint as its own job:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm exec commitlint --from <base> --to <head>   # pull requests only
+pnpm exec commitlint --from <base> --to <head>
+```
+
+The separate `verify` job runs:
+
+```bash
+pnpm install --frozen-lockfile
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
-`e2e` installs Chromium and runs `pnpm test:e2e` against the production `apps/www` build. The
-browser cache is keyed by the resolved Playwright version; system dependencies are still installed
-on cache hits. The HTML report uploads on every non-cancelled run and is retained for seven days.
+`e2e` installs Chromium and runs `pnpm test:e2e` against the production builds of both Next apps.
+`apps/www` covers public routing, responsive navigation, and contact submission; `apps/web` covers
+the unauthenticated console redirect. The browser cache is keyed by the resolved Playwright
+version; system dependencies are still installed on cache hits. The www HTML report uploads on
+every non-cancelled run and is retained for seven days.
 
 `integration` starts PostgreSQL and Redis service containers, applies the complete migration
 history to an empty database, and runs the production adapter contracts against both services.

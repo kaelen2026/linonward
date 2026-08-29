@@ -62,7 +62,8 @@ apps/www/
 ├── src/
 │   ├── app/
 │   │   ├── [locale]/   # the root layout and page; every route is locale-prefixed
-│   │   └── globals.css # Tailwind v4 theme and global component utilities
+│   │   ├── design-tokens.generated.css # generated cross-platform tokens
+│   │   └── globals.css # Tailwind mappings and global component utilities
 │   ├── components/
 │   │   ├── site/       # site-specific sections and interactive components
 │   │   └── ui/         # shadcn/ui primitives (owned in-repo, safe to edit)
@@ -75,9 +76,11 @@ apps/www/
 └── tsconfig.json       # extends @linonward/typescript-config/nextjs.json
 ```
 
-Tailwind v4 has no `tailwind.config.js`. `src/app/globals.css` has a static brand ramp in
-`@theme`, semantic tokens in `:root` plus a `prefers-color-scheme: dark` media query, and an
-`@theme inline` bridge that exposes them to Tailwind. There is no `.dark` class or theme toggle.
+Tailwind v4 has no `tailwind.config.js`. `src/app/globals.css` imports the generated token CSS and
+holds the app-specific `@theme inline` bridge that exposes semantic variables to Tailwind.
+`design/tokens.json` is the source for the brand ramp, light/dark semantic values, radius, and
+shared dimensions; `scripts/design-tokens.mjs` generates `design-tokens.generated.css`. There is no
+`.dark` class or theme toggle.
 The locale layout publishes `--font-geist-sans` and `--font-geist-mono`; the theme layer builds
 `--font-sans` and `--font-mono` from those variables and appends the CJK fallback stack.
 
@@ -296,12 +299,15 @@ apps/web/
 │   ├── login/page.tsx       # /login — Better Auth email OTP / Google
 │   ├── articles/             # published article index and detail pages
 │   ├── admin/page.tsx        # capability-shaped article management
+│   ├── components/page.tsx   # design-system component catalogue
 │   ├── observability/page.tsx # Prometheus and Tempo operational view
 │   ├── status/page.tsx      # /status — GET /health, force-dynamic
+│   ├── unauthorized/page.tsx # authenticated user without console access
 │   ├── design-tokens.generated.css # generated cross-platform tokens
 │   └── globals.css          # Tailwind v4 semantic mapping and app styles
 ├── src/components/editor/   # ProseMirror schema, plugins, toolbar, persistence UI
 ├── src/components/site/     # app shell
+├── src/components/ui/       # Base UI-backed shadcn primitives
 └── src/lib/                 # auth, capabilities, article API, health and observability
 ```
 

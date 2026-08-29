@@ -14,7 +14,8 @@ This page is the human reference for how the setup works and why.
 
 If jsdom can answer the question, it is not an E2E test.
 
-`apps/api`, `apps/feishu`, `apps/h5`, `apps/web`, `packages/contracts`, and `packages/db` run
+`apps/api`, `apps/feishu`, `apps/h5`, `apps/web`, `apps/www`, `packages/contracts`, and
+`packages/db` run
 Vitest, with tests beside the source they cover. Server and package workspaces use Vitest's Node
 environment; the two Next apps and the Vite H5 reader use jsdom and Testing Library for UI.
 Both Next apps also run Playwright: `apps/www` owns the broader routing and responsive journeys,

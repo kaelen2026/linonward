@@ -53,13 +53,16 @@ apps/web/
 │   ├── login/page.tsx       # /login — email OTP + optional Google OAuth
 │   ├── admin/page.tsx       # /admin — persistent article workbench
 │   ├── editor/page.tsx      # /editor — redirects to /admin
+│   ├── components/page.tsx  # /components — design-system catalogue
 │   ├── observability/page.tsx # /observability — Prometheus + Tempo
 │   ├── status/page.tsx      # /status — reads GET /health
+│   ├── unauthorized/page.tsx # /unauthorized — signed in without access
 │   ├── design-tokens.generated.css # generated cross-platform tokens
 │   └── globals.css          # Tailwind v4 semantic mapping and app styles
 ├── src/components/articles/ # public article rendering
 ├── src/components/site/     # app shell
 ├── src/components/editor/   # ProseMirror schema, editor boundary and workbench
+├── src/components/ui/       # Base UI-backed shadcn primitives
 └── src/lib/                 # auth, capabilities, articles, health and observability
 ```
 

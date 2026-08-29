@@ -98,7 +98,7 @@ browser and a production build every run.
 
 | Command | Use |
 | --- | --- |
-| `pnpm test` | Vitest across every workspace, through Turborepo. What CI runs. |
+| `pnpm test` | Architecture boundaries, then Vitest across every workspace. What CI runs. |
 | `pnpm test:e2e` | Playwright. Builds first, then serves and drives Chromium. |
 | `pnpm --filter @linonward/www test` | One workspace, once. |
 | `pnpm --filter @linonward/www test:watch` | The TDD loop. |
@@ -121,9 +121,9 @@ matches two elements and fails on strict mode. Reach through the landmark:
 The `pre-commit` hook does **not** run tests — only Biome on staged files, so
 committing stays fast. CI first classifies changed paths, then runs only the
 affected product jobs: `verify` (lint, typecheck, Vitest, build), `integration`
-(Postgres and Redis), `e2e` (Playwright against a production build), and `ios`
-(Xcode build and tests). Commit messages are checked on every PR even when no
-product job applies. Any selected job going red fails the PR.
+(Postgres and Redis), `e2e` (both Next apps against production builds), `ios`, `android`, and the
+conditionally enabled self-hosted `harmony` job. Commit messages are checked on every PR even when
+no product job applies. Any selected job going red fails the PR.
 
 That split means you own the loop locally. Run the suite before you say work is
 done, and report the real output — `pnpm lint`, `pnpm typecheck`, `pnpm test`.
