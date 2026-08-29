@@ -221,13 +221,13 @@ gh pr comment <n> --body '<!-- linonward-agent-rereview:1 -->' # first re-review
 gh pr comment <n> --body '<!-- linonward-agent-rereview:2 -->' # second re-review
 ```
 
-Before another review-driven push, count markers authored by the current GitHub user:
+Before another review-driven push, count unique markers authored by the automation bot:
 
 ```bash
-actor=$(gh api user --jq .login)
-gh pr view <n> --json comments | jq --arg actor "$actor" \
-  '[.comments[] | select(.author.login == $actor and
-    (.body | test("^<!-- linonward-agent-rereview:[12] -->$")))] | length'
+gh api 'repos/{owner}/{repo}/issues/<n>/comments' --paginate | jq \
+  '[.[] | select(.user.login == "linonward-bot[bot]" and
+    (.body | test("^<!-- linonward-agent-rereview:[12] -->$")))] |
+    unique_by(.body) | length'
 ```
 
 Do not reset the count when the branch changes. Once it reaches two, do not push another revision
