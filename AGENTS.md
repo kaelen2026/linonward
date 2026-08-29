@@ -59,14 +59,14 @@ and footer both hold a nav and a language switcher, so a bare `getByRole` matche
 [`.claude/rules/tdd.md`](.claude/rules/tdd.md) before writing a test.
 
 `apps/harmony` is outside all of that. Its tracked project configuration is
-`build-profile.template.json5`; run `scripts/prepare-harmony-profile.sh` to create the ignored
-machine-local `build-profile.json5` before opening DevEco Studio. It has no `package.json`, so
-`pnpm test` and `pnpm build`
-walk straight past it, and **no CI job runs it** — GitHub-hosted runners carry no HarmonyOS SDK.
-A green `pnpm lint && pnpm typecheck && pnpm test && pnpm build` says nothing about a change
-there. Building it needs DevEco Studio and its `hvigorw` wrapper, neither of which exists in this
-environment; if you cannot run them, say the change is unverified instead of implying it passed.
-See [`apps/harmony/README.md`](./apps/harmony/README.md).
+`build-profile.template.json5`; `scripts/harmony-ci.sh` creates the ignored machine-local
+`build-profile.json5` before building. It has no `package.json`, so `pnpm test` and `pnpm build`
+walk straight past it, and **no hosted CI job runs it** — GitHub-hosted runners carry no
+HarmonyOS SDK. A green `pnpm lint && pnpm typecheck && pnpm test && pnpm build` says nothing about
+a change there. Verify it with installed HarmonyOS Command Line Tools by setting
+`HARMONY_CLI_HOME` to the tools directory and `DEVECO_SDK_HOME` to its `sdk` directory, then run
+`scripts/harmony-ci.sh verify`. A DevEco-synced project-level `hvigorw` is an alternative, not a
+prerequisite. See [`apps/harmony/README.md`](./apps/harmony/README.md).
 
 ## UI: Base UI, not Radix
 
