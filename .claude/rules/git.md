@@ -193,17 +193,25 @@ over a failing check. After every check, including the automated pull-request re
    ```bash
    repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
    head=$(gh pr view <n> --json headRefOid --jq .headRefOid)
-   gh api "repos/$repo/pulls/<n>/reviews" \
-     --jq '.[] | {commit_id, state, user: .user.login, body}'
-   gh api "repos/$repo/pulls/<n>/comments" \
-     --paginate --jq '.[] | {commit_id, path, line, body}'
+   marker="<!-- linonward-bot-review:$head -->"
+   gh api --paginate --slurp "repos/$repo/pulls/<n>/reviews" | jq \
+     --arg marker "$marker" \
+     'flatten[] | select(.user.login == "linonward-bot[bot]" and
+       ((.body // "") | contains($marker))) | {id, state, body}'
+   gh api --paginate --slurp "repos/$repo/pulls/<n>/comments" | jq \
+     'flatten[] | {pull_request_review_id, path, line, body}'
    ```
 
-   Only automated-review output whose `commit_id` equals `$head` counts for the current cycle.
+   The summary containing `$marker` is the authoritative evidence that the current head was
+   reviewed. Read every inline comment returned by the paginated query; older unresolved comments
+   remain relevant until they are explicitly addressed.
 2. Resolve every blocking or correctness finding before merging.
 3. Push fixes and wait for the complete CI and automated-review cycle on the new head commit. The
-   rerun depends on the `bot-review` label; if it is absent, restore it with
-   `gh pr edit <n> --add-label bot-review`.
+   rerun depends on a non-bot actor triggering the workflow. If a bot pushed the fix, or the
+   `bot-review` label is missing, confirm `gh api user --jq .login` is not `linonward-bot[bot]`,
+   then force a new labeled event with
+   `gh pr edit <n> --remove-label bot-review && gh pr edit <n> --add-label bot-review`. If only bot
+   credentials are available, stop and ask a human collaborator to retrigger the review.
 4. Re-read the new review output; an earlier review does not approve a later commit.
 
 Only when the final head commit has green CI, a completed automated review, and no unresolved
