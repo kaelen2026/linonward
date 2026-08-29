@@ -84,9 +84,10 @@ The content module is mounted only when PostgreSQL is configured. Public reads e
 rows only. Administrative routes authenticate through Better Auth and authorize against the
 `administrator` and `editor` role assignments; the bootstrap administrator email list remains a
 server-side override that grants the administrator role before database assignments are read.
-Every authenticated mutation that reaches authorization records a success or failure audit event;
-requests rejected before that boundary, such as an unauthenticated request, do not. A successful
-mutation commits its audit row in the same database transaction.
+Every mutation admitted to the audited command wrapper records a success or failure event,
+including validation and authorization failures inside that wrapper. Requests rejected while
+resolving the principal before the wrapper starts, such as an unauthenticated request, do not. A
+successful mutation commits its audit row in the same database transaction.
 
 Every failure — validation, unknown route, unexpected crash — uses one envelope:
 
@@ -189,8 +190,9 @@ Brings up Postgres 18, Redis 8, and the API, with the app waiting on both health
 
 ```bash
 cp apps/api/.env.example apps/api/.env
+docker compose build api
 docker compose --profile migrate run --rm migrate
-docker compose up --build -d
+docker compose up -d
 curl localhost:3001/health/ready
 docker compose down          # add -v to drop the data volume
 ```

@@ -315,10 +315,10 @@ capabilities to shape the management UI, while the API independently authorizes 
 update, publish, unpublish, and delete command. Public article reads are cached for 60 seconds;
 development alone supplies a preview article when the API is unavailable or empty.
 
-It carries no shadcn/ui registry and no Playwright suite — end-to-end coverage stays on
-`www`, the app with routing and crawler-visible output worth a browser. Its CSS tokens are
-generated from the same cross-platform `design/tokens.json` source as www and the native clients.
-Details in
+Its `components.json` configures the Base UI-backed shadcn registry, and its focused Playwright
+suite verifies the unauthenticated `/admin` redirect. Broader browser journeys stay in `www`. Its
+CSS tokens are generated from the same cross-platform `design/tokens.json` source as www and the
+native clients. Details in
 [the app README](../apps/web/README.md).
 
 ## `apps/feishu`

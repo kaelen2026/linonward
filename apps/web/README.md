@@ -71,15 +71,19 @@ apps/web/
 | `pnpm --filter @linonward/web build` | Production build |
 | `pnpm --filter @linonward/web test` | Vitest |
 | `pnpm --filter @linonward/web test:watch` | Vitest in watch mode |
+| `pnpm --filter @linonward/web test:e2e` | Playwright authentication journey |
 | `pnpm --filter @linonward/web typecheck` | `next typegen` then `tsc --noEmit` |
 
-No Playwright here — end-to-end coverage stays on `apps/www`, which is the app with
-routing, redirects and crawler-visible output worth driving a browser for.
+Playwright verifies that an unauthenticated browser is redirected from `/admin` to `/login`.
+Broader routing, internationalization, responsive navigation, and contact-form journeys remain in
+`apps/www`.
 
 ## Notes
 
 - Design tokens are generated from the cross-platform source
   [`design/tokens.json`](../../design/tokens.json). Run `pnpm design-tokens:generate` after changing
   it; do not hand-edit `src/app/design-tokens.generated.css`.
+- `components.json` configures the same Base UI-backed shadcn style as `apps/www`; run the CLI from
+  `apps/web` so generated components use this app's aliases and CSS entry point.
 - `typedRoutes` is on, so `next typegen` has to run before `tsc` — bare `tsc` stops
   validating `href` silently. That is why `typecheck` is two commands.

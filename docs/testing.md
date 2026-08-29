@@ -15,10 +15,10 @@ This page is the human reference for how the setup works and why.
 If jsdom can answer the question, it is not an E2E test.
 
 `apps/api`, `apps/feishu`, `apps/h5`, `apps/web`, `packages/contracts`, and `packages/db` run
-Vitest only, with tests beside the source they cover. Server and package workspaces use Vitest's
-Node environment; the two Next apps and the Vite H5 reader use jsdom and Testing Library for UI.
-Playwright stays on `apps/www` — it is the app with routing, redirects and crawler-visible output
-worth the cost of a browser and a production build on every run.
+Vitest, with tests beside the source they cover. Server and package workspaces use Vitest's Node
+environment; the two Next apps and the Vite H5 reader use jsdom and Testing Library for UI.
+Both Next apps also run Playwright: `apps/www` owns the broader routing and responsive journeys,
+while `apps/web` verifies its authentication redirect in desktop Chromium.
 
 The three native apps run neither. `apps/ios` uses Swift Testing plus XCUITest through `pnpm
 ios:test`, `apps/android` runs JUnit and Android instrumentation tests, and `apps/harmony` uses
@@ -121,6 +121,7 @@ pnpm test:e2e                                     # build, serve, drive Chromium
 pnpm --filter @linonward/www test:e2e:ui          # the Playwright UI, for debugging
 pnpm --filter @linonward/www exec playwright test e2e/i18n.spec.ts
 pnpm --filter @linonward/www exec playwright test --project=mobile
+pnpm --filter @linonward/web test:e2e             # internal-console auth journey
 ```
 
 Two projects run every spec: `desktop` (Desktop Chrome) and `mobile` (Pixel 7).
@@ -154,6 +155,8 @@ page.getByRole("contentinfo").getByRole("navigation", { name: tagline });
 
 ### What the specs cover
 
+In `apps/www`:
+
 - `routing.spec.ts` — `/` redirects to `/zh`, each locale sets `<html lang>` and
   its own title, the hreflang set is complete (including `x-default`), and an
   unknown language 404s instead of guessing.
@@ -165,6 +168,9 @@ page.getByRole("contentinfo").getByRole("navigation", { name: tagline });
   prefilled `mailto:`.
 - `contact-form.spec.ts` — the hydrated form rejects an empty draft without a request, and a
   completed form sends the expected cross-origin payload and renders the returned reference.
+
+In `apps/web`, `auth.spec.ts` verifies that an unauthenticated visit to `/admin` reaches the login
+page. Its Playwright project uses Desktop Chrome only.
 
 ## Where tests run
 
