@@ -1,3 +1,8 @@
+import {
+  HYBRID_MAX_MESSAGE_BYTES,
+  HYBRID_SESSION_ID_MAX_LENGTH,
+  HYBRID_SESSION_ID_MIN_LENGTH,
+} from "@linonward/hybrid-contracts";
 import { isArticlePayload } from "./article";
 import {
   BRIDGE_CAPABILITIES,
@@ -9,7 +14,6 @@ import {
 } from "./types";
 
 const BRIDGE_NAME = "linonward";
-const MAX_MESSAGE_BYTES = 1_000_000;
 const WEB_MESSAGE_SOURCE = "linonward-native";
 const themes = new Set(["light", "dark", "system"]);
 
@@ -39,7 +43,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isSessionId(value: unknown): value is string {
-  return typeof value === "string" && value.length >= 16 && value.length <= 128;
+  return (
+    typeof value === "string" &&
+    value.length >= HYBRID_SESSION_ID_MIN_LENGTH &&
+    value.length <= HYBRID_SESSION_ID_MAX_LENGTH
+  );
 }
 
 function isSettings(value: unknown): value is ReaderSettings {
@@ -83,7 +91,7 @@ function isWelcomePayload(value: unknown): boolean {
 function parseNativeMessage(value: unknown, sessionId?: string): NativeMessage | undefined {
   let candidate = value;
   if (typeof candidate === "string") {
-    if (new TextEncoder().encode(candidate).byteLength > MAX_MESSAGE_BYTES) return undefined;
+    if (new TextEncoder().encode(candidate).byteLength > HYBRID_MAX_MESSAGE_BYTES) return undefined;
     try {
       candidate = JSON.parse(candidate) as unknown;
     } catch {
@@ -92,7 +100,7 @@ function parseNativeMessage(value: unknown, sessionId?: string): NativeMessage |
   } else {
     try {
       const encoded = JSON.stringify(candidate);
-      if (new TextEncoder().encode(encoded).byteLength > MAX_MESSAGE_BYTES) return undefined;
+      if (new TextEncoder().encode(encoded).byteLength > HYBRID_MAX_MESSAGE_BYTES) return undefined;
     } catch {
       return undefined;
     }
