@@ -61,6 +61,26 @@ describe("EditorWorkbench permissions", () => {
     expect(screen.getByRole("link", { name: "LinOnward" })).toHaveAttribute("href", "/");
   });
 
+  it("links to the component preview from the tool navigation", () => {
+    renderWorkbench({ authorName: "Editor Person", canPublish: true });
+
+    expect(screen.getByRole("link", { name: "组件预览" })).toHaveAttribute("href", "/components");
+  });
+
+  it("collapses and expands the left sidebar", () => {
+    renderWorkbench({ authorName: "Editor Person", canPublish: true });
+
+    expect(screen.getByText("内容管理")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "收起左侧边栏" }));
+
+    expect(screen.queryByText("内容管理")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "展开左侧边栏" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "组件预览" })).toHaveAttribute("href", "/components");
+
+    fireEvent.click(screen.getByRole("button", { name: "展开左侧边栏" }));
+    expect(screen.getByText("内容管理")).toBeInTheDocument();
+  });
+
   it("saves a draft before issuing an explicit publication command", async () => {
     const article = {
       id: "art_1",

@@ -28,10 +28,12 @@ export function UserMenu({
   email,
   image,
   name,
+  side = "right",
 }: {
   email: string;
   image?: string | null;
   name: string;
+  side?: "bottom" | "right";
 }) {
   const initials = getUserInitials(name, email);
 
@@ -52,7 +54,7 @@ export function UserMenu({
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
       </PopoverTrigger>
-      <PopoverContent align="end" side="right" sideOffset={8}>
+      <PopoverContent align="end" side={side} sideOffset={8}>
         <PopoverHeader>
           <PopoverTitle>{name === email ? "当前用户" : name}</PopoverTitle>
           <PopoverDescription>{email}</PopoverDescription>

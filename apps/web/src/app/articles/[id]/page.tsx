@@ -6,20 +6,18 @@ import { PublicHeader } from "@/components/articles/public-header";
 import { fetchArticle, readingMinutes } from "@/lib/articles";
 import { getSession } from "@/lib/session";
 
-export async function generateMetadata({
-  params,
-}: PageProps<"/articles/[slug]">): Promise<Metadata> {
-  const { slug } = await params;
-  const article = await fetchArticle(slug);
+export async function generateMetadata({ params }: PageProps<"/articles/[id]">): Promise<Metadata> {
+  const { id } = await params;
+  const article = await fetchArticle(id);
   return article ? { title: article.title, description: article.seoDescription } : {};
 }
-export default async function ArticlePage({ params }: PageProps<"/articles/[slug]">) {
-  const { slug } = await params;
-  const [article, session] = await Promise.all([fetchArticle(slug), getSession()]);
+export default async function ArticlePage({ params }: PageProps<"/articles/[id]">) {
+  const { id } = await params;
+  const [article, session] = await Promise.all([fetchArticle(id), getSession()]);
   if (!article) notFound();
   return (
     <>
-      <PublicHeader userEmail={session?.user.email} />
+      <PublicHeader user={session?.user} />
       <main className="mx-auto max-w-4xl px-6 py-12 sm:py-20">
         <Link className="text-sm underline underline-offset-4" href="/articles">
           ← 返回文章列表

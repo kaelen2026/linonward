@@ -89,19 +89,11 @@ export async function fetchArticles(locale: "zh" | "en" = "zh"): Promise<Article
 }
 
 export async function fetchArticle(
-  slug: string,
+  id: string,
   locale: "zh" | "en" = "zh",
 ): Promise<Article | null> {
-  let payload: unknown;
-  try {
-    payload = await requestJson<unknown>(
-      apiUrl(`/api/content/articles/${encodeURIComponent(slug)}?locale=${locale}`),
-      { next: { revalidate: 60 } },
-    );
-  } catch {
-    return previewArticles(locale).find((article) => article.slug === slug) ?? null;
-  }
-  return parseArticleResponse(payload);
+  const articles = await fetchArticles(locale);
+  return articles.find((article) => article.id === id) ?? null;
 }
 
 export function readingMinutes(document: RichTextDocument): number {
