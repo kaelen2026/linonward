@@ -22,13 +22,22 @@ the artifact hash. There is no build timestamp, so identical inputs produce iden
 
 ## Runtime selection
 
-The bundled artifact is the immutable recovery version. A later remote-update implementation must
-download into a versioned staging directory, verify every file against the manifest, reject an
-incompatible protocol major, and atomically promote the directory. It must retain the last verified
-version and fall back to the application bundle when verification or startup fails.
+The bundled artifact remains the immutable recovery version. At startup, each native host may read
+an HTTPS channel document, apply its minimum-app-version and deterministic rollout percentage, then
+download the referenced immutable release. Every file is size-checked and SHA-256 verified before
+the staging directory is promoted and the active-version pointer is atomically replaced.
 
-Remote code updates are not implemented yet. Native stores must not execute a partially downloaded
-directory or overwrite the bundled recovery version.
+An invalid channel, incompatible bridge major, interrupted download, or corrupt asset leaves the
+previous active version untouched. A corrupt cached release is removed and downloaded again. If a
+cached WebView cannot start, the active pointer is withdrawn and the reader reloads the application
+bundle. Channel and manifest responses are capped at 256 KB; a release is capped at 512 files and
+50 MB.
+
+Configure the same channel URL in the platform release build settings:
+
+- iOS: `LINONWARD_HYBRID_CHANNEL_URL`;
+- Android: `linonward.hybridChannelUrl.release`;
+- HarmonyOS: `HYBRID_CHANNEL_URL` in `entry/build-profile.json5`.
 
 ## Article cache
 
@@ -43,6 +52,7 @@ on iOS, Android, and HarmonyOS and is independent of H5 asset versioning.
 | --- | --- | --- | --- | --- |
 | Bundled immutable H5 recovery artifact | Implemented | Implemented | Implemented | Planned |
 | Deterministic manifest parity check | Implemented | Implemented | Implemented | Planned |
+| Verified remote release activation | Simulator tested | JVM tested | Host tested | Planned |
 | Locale article snapshot | Implemented | Implemented | Implemented | Planned |
 | Stale-if-error article fallback | Unit tested | Unit tested | Host tested | Planned |
 | Bridge handshake and session binding | Simulator tested | JVM tested | Host tested | H5 transport unit tested |
