@@ -67,6 +67,15 @@ describe("EditorWorkbench permissions", () => {
     expect(screen.getByRole("link", { name: "组件预览" })).toHaveAttribute("href", "/components");
   });
 
+  it("links to observability from the tool navigation", () => {
+    renderWorkbench({ authorName: "Editor Person", canPublish: true });
+
+    expect(screen.getByRole("link", { name: "可观测性" })).toHaveAttribute(
+      "href",
+      "/observability",
+    );
+  });
+
   it("collapses and expands the left sidebar", () => {
     renderWorkbench({ authorName: "Editor Person", canPublish: true });
 
@@ -76,6 +85,10 @@ describe("EditorWorkbench permissions", () => {
     expect(screen.queryByText("内容管理")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "展开左侧边栏" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "组件预览" })).toHaveAttribute("href", "/components");
+    expect(screen.getByRole("link", { name: "可观测性" })).toHaveAttribute(
+      "href",
+      "/observability",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "展开左侧边栏" }));
     expect(screen.getByText("内容管理")).toBeInTheDocument();

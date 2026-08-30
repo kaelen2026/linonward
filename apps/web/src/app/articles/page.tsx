@@ -7,7 +7,7 @@ export default async function ArticlesPage() {
   const [articles, session] = await Promise.all([fetchArticles(), getSession()]);
   return (
     <>
-      <PublicHeader user={session?.user} />
+      <PublicHeader pathname="/articles" user={session?.user} />
       <main className="mx-auto max-w-4xl px-6 py-16 sm:py-24">
         <h1 className="text-4xl font-semibold tracking-tight">所有文章</h1>
         <p className="mt-4 text-lg text-muted-foreground">关于技术、产品与组织的长期思考。</p>

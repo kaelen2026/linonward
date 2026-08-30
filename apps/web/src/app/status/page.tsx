@@ -18,7 +18,7 @@ export default async function StatusPage() {
 
   return (
     <>
-      <SiteHeader pathname="/status" userEmail={session.user.email} />
+      <SiteHeader pathname="/status" showOperations user={session.user} />
 
       <main className="mx-auto max-w-5xl px-6 py-16">
         <h1 className="text-3xl font-semibold tracking-tight">后端状态</h1>

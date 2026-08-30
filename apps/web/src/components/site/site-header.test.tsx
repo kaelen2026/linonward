@@ -13,7 +13,7 @@ describe("SiteHeader", () => {
   it("sends the wordmark home", () => {
     render(<SiteHeader pathname="/status" />);
 
-    expect(screen.getByRole("link", { name: "LinOnward Web" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "LinOnward" })).toHaveAttribute("href", "/");
   });
 
   it("names its navigation so it can be jumped to", () => {
@@ -23,10 +23,10 @@ describe("SiteHeader", () => {
   });
 
   it("tells assistive tech which page is showing", () => {
-    render(<SiteHeader pathname="/editor" />);
+    render(<SiteHeader pathname="/observability" showOperations />);
 
     const nav = screen.getByRole("navigation", { name: "主导航" });
-    expect(nav.querySelector('[aria-current="page"]')).toHaveTextContent("编辑器");
+    expect(nav.querySelector('[aria-current="page"]')).toHaveTextContent("可观测性");
   });
 
   it("marks nothing current on a page outside the navigation", () => {
