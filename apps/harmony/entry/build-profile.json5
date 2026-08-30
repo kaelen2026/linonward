@@ -7,7 +7,8 @@
       // NEXT_PUBLIC_API_URL in the web workspaces. Debug points at where
       // `pnpm --filter @linonward/api dev` listens.
       "buildProfileFields": {
-        "API_BASE_URL": "http://localhost:3001"
+        "API_BASE_URL": "http://localhost:3001",
+        "HYBRID_CHANNEL_URL": ""
       }
     }
   },
@@ -18,7 +19,8 @@
         // Empty on purpose. A release that inherited the debug default would
         // quietly try to reach localhost on somebody's phone.
         "buildProfileFields": {
-          "API_BASE_URL": ""
+          "API_BASE_URL": "",
+          "HYBRID_CHANNEL_URL": ""
         },
         "obfuscation": {
           "ruleOptions": {

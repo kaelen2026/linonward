@@ -1,6 +1,8 @@
 import webview from '@ohos.web.webview';
 import { ArticleReaderBridge, BridgeWelcome } from './ArticleReaderBridge';
 import { ReaderArticle } from '../reading/ArticleModels';
+import { common } from '@kit.AbilityKit';
+import { HybridBundleStore } from './HybridBundleUpdater';
 
 interface BridgeProtocolPayload {
   major: number;
@@ -132,9 +134,15 @@ export struct ArticleReaderPage {
   locale: string = 'en';
   private controller: webview.WebviewController = new webview.WebviewController();
   private proxy: ArticleReaderProxy = new ArticleReaderProxy(this.controller, this.article, this.locale);
+  @State private cachedSource: string = '';
+  private cacheDir: string = '';
 
   aboutToAppear(): void {
     this.proxy.setContent(this.article, this.locale);
+    this.cacheDir = (getContext(this) as common.UIAbilityContext).cacheDir;
+    HybridBundleStore.activeIndex(this.cacheDir).then((source: string | undefined) => {
+      this.cachedSource = source ?? '';
+    });
   }
 
   build() {
@@ -148,11 +156,11 @@ export struct ArticleReaderPage {
       .padding(12)
 
       Web({
-        src: $rawfile('hybrid/article-reader/index.html'),
+        src: this.cachedSource === '' ? $rawfile('hybrid/article-reader/index.html') : this.cachedSource,
         controller: this.controller
       })
         .javaScriptAccess(true)
-        .fileAccess(false)
+        .fileAccess(this.cachedSource !== '')
         .domStorageAccess(false)
         .mixedMode(MixedMode.None)
         .javaScriptProxy({
@@ -163,6 +171,13 @@ export struct ArticleReaderPage {
         })
         .onRenderExited(() => {
           this.onClose();
+        })
+        .onErrorReceive((event) => {
+          if (this.cachedSource !== '' && event.request.isMainFrame()) {
+            HybridBundleStore.deactivate(this.cacheDir).then(() => {
+              this.cachedSource = '';
+            });
+          }
         })
         .width('100%')
         .layoutWeight(1)
