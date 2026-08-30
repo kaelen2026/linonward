@@ -12,15 +12,15 @@ release-planning input, not a promise that every client ships every capability s
 
 ## Current matrix
 
-| Capability | API | Public web | Internal web | H5 reader | iOS | Android | HarmonyOS |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Email OTP authentication | Supported | Not planned | Supported | Not planned | Supported | Supported | Planned |
-| Google authentication | Supported | Not planned | Supported | Not planned | Supported | Planned | Planned |
-| Published article reading | Supported | Planned | Supported | Preview | Preview | Planned | Planned |
-| Article authoring and publishing | Supported | Not planned | Preview | Not planned | Not planned | Not planned | Not planned |
-| Native reader bridge | Not applicable | Not applicable | Not applicable | Preview | Preview | Planned | Planned |
-| Contact inquiries | Supported | Supported | Not planned | Not planned | Not planned | Not planned | Not planned |
-| Operational status and telemetry | Supported | Browser tracing | Supported | Not planned | Planned | Planned | Planned |
+| Capability | API | Public web | Internal web | H5 reader | iOS | Android | HarmonyOS | React Native |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Email OTP authentication | Supported | Not planned | Supported | Not planned | Supported | Supported | Planned | Planned |
+| Google authentication | Supported | Not planned | Supported | Not planned | Supported | Planned | Planned | Planned |
+| Published article reading | Supported | Planned | Supported | Preview | Preview | Planned | Planned | Planned |
+| Article authoring and publishing | Supported | Not planned | Preview | Not planned | Not planned | Not planned | Not planned | Not planned |
+| Native reader bridge | Not applicable | Not applicable | Not applicable | Preview | Preview | Planned | Planned | Planned |
+| Contact inquiries | Supported | Supported | Not planned | Not planned | Not planned | Not planned | Not planned | Not planned |
+| Operational status and telemetry | Supported | Browser tracing | Supported | Not planned | Planned | Planned | Planned | Planned |
 
 Update this table in the same change that adds, removes, or promotes a capability. A capability is
 not **Supported** until its owning platform's CI gate covers its important behavior.
