@@ -1,10 +1,12 @@
+import { common } from '@kit.AbilityKit';
 import i18n from '@ohos.i18n';
 import { API_BASE_URL, apiIsConfigured } from '../config/ApiConfiguration';
 import { BrandMark } from '../designsystem/BrandMark';
 import { DesignTokens } from '../designsystem/DesignTokens.generated';
 import { ArticleReaderPage } from '../feature/articlereader/ArticleReaderPage';
+import { FileArticleCache } from '../feature/reading/FileArticleCache';
 import { ReaderArticle } from '../feature/reading/ArticleModels';
-import { loadArticles } from '../feature/reading/ArticleService';
+import { HttpArticleSource, OfflineArticleSource } from '../feature/reading/ArticleService';
 
 /**
  * The launch screen. Deliberately one page and no router: the shell should grow
@@ -25,7 +27,12 @@ struct Index {
     this.loading = true;
     this.loadFailed = false;
     try {
-      this.articles = await loadArticles(i18n.System.getSystemLanguage());
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      const source = new OfflineArticleSource(
+        new HttpArticleSource(),
+        new FileArticleCache(context.cacheDir)
+      );
+      this.articles = await source.load(i18n.System.getSystemLanguage());
       this.hasLoaded = true;
     } catch (_) {
       this.loadFailed = true;

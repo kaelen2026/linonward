@@ -115,7 +115,9 @@ The ArkUI `Web` component loads the artifact with `$rawfile`, exposes only the s
 `LinOnwardBridge.postMessage` proxy, negotiates a page session, and disables file access, DOM
 storage, and mixed content. The app loads published content from the public article API, converts
 supported rich-text nodes into escaped HTML, and injects the selected article after bridge
-negotiation. Authentication remains planned. Device coverage is still required before promoting
+negotiation. Each successful response atomically replaces an app-private locale snapshot, which
+becomes the stale-if-error fallback when the API is unavailable. Authentication remains planned.
+Device coverage is still required before promoting
 the capability from Planned to Preview in `docs/capabilities.md`.
 
 Colors come from the brand ramp in [docs/design-system.md](../../docs/design-system.md), named
