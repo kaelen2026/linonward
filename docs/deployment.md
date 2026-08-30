@@ -2,14 +2,15 @@
 
 ## Runtime inventory
 
-The repository produces four server runtimes plus one static H5 artifact. `packages/db` is built
-code consumed by the API, not a separately deployed service.
+The repository produces five server runtimes plus one static H5 artifact. `packages/db` is built
+code consumed by the API and worker, not a separately deployed service.
 
 | Runtime | Artifact / command | State and external dependencies |
 | --- | --- | --- |
 | `apps/www` | `.next/`; `pnpm --filter @linonward/www start` | Stateless; browser calls `apps/api` directly |
 | `apps/web` | `.next/`; `pnpm --filter @linonward/web start` | Stateless; server and auth proxy call `apps/api` |
 | `apps/api` | `dist/`; `pnpm --filter @linonward/api start` | PostgreSQL and Redis are mandatory in production |
+| `apps/worker` | `dist/`; `pnpm --filter @linonward/worker start` | Stateful job execution; BullMQ requires persistent Redis and the shared PostgreSQL database |
 | `apps/feishu` | `dist/`; `pnpm --filter @linonward/feishu start` | Outbound Feishu/GitHub access; intentionally stateless |
 | `apps/h5` | `dist/`; host as static files or bundle with native | No server state; communicates with its native host through the reader bridge |
 
@@ -75,10 +76,10 @@ standalone server, static assets, and `apps/www/public` where applicable.
 
 ## API
 
-[`apps/api/Dockerfile`](../apps/api/Dockerfile) is the production image definition. The root
-[`compose.yml`](../compose.yml) is the local reference topology: API, PostgreSQL 18, and Redis 8,
-with the API waiting for both health checks. Run migrations as the separate one-shot deployment
-service before starting application replicas:
+[`apps/api/Dockerfile`](../apps/api/Dockerfile) is the API production image definition. The root
+[`compose.yml`](../compose.yml) is the local reference topology: API, worker, PostgreSQL 18, and
+Redis 8, with both application processes waiting for the required health checks. Run migrations
+as the separate one-shot deployment service before starting application replicas:
 
 ```text
 docker compose --profile migrate run --rm migrate
@@ -98,6 +99,19 @@ configuration and `DATABASE_URL` are present. Review
 When the API sits behind a proxy, list only controlled literal socket peers in
 `TRUSTED_PROXY_IPS`, and configure each proxy to overwrite or append `X-Forwarded-For`. Readiness
 is available at `GET /health/ready`; liveness at `GET /health` deliberately touches no dependency.
+
+## Async worker
+
+[`apps/worker/Dockerfile`](../apps/worker/Dockerfile) builds the BullMQ worker image. Run the
+worker against the same PostgreSQL database as the API and the same Redis deployment as every
+queue producer. `REDIS_URL` and `QUEUE_PREFIX` are part of that routing contract: a mismatch
+creates an isolated queue that appears healthy but receives no jobs.
+
+Redis is durable application infrastructure for this runtime, not a disposable cache. The root
+Compose configuration enables append-only persistence and uses `maxmemory-policy noeviction`;
+carry both properties into production. The built-in `system.echo` job is only a deployment smoke
+test. Job retry and retention behavior, configuration, and a local enqueue command are documented
+in [the worker README](../apps/worker/README.md).
 
 ## Feishu relay
 

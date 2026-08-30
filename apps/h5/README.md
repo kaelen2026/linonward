@@ -1,8 +1,8 @@
 # LinOnward H5 article reader
 
-Vite + React article surface intended for an iOS/Android WebView. The production page waits for
-the native client to provide article data. Open `/?demo=1` during local development to render the
-built-in fixture.
+Vite + React article surface embedded by the iOS, Android, and HarmonyOS clients. The production
+page waits for its native host to provide article data. Open `/?demo=1` during local development
+to render the built-in fixture.
 
 The same reader also supports standalone article URLs that match the consumer Web application:
 `/articles/:id`. For example, `http://localhost:3003/articles/art_123` loads the published article
@@ -27,7 +27,7 @@ Every message is an object with `{ type, payload }`. The H5 page sends messages 
 available transport:
 
 1. iOS: `window.webkit.messageHandlers.linonward.postMessage(message)`
-2. Android: `window.LinOnwardBridge.postMessage(JSON.stringify(message))`
+2. Android/HarmonyOS: `window.LinOnwardBridge.postMessage(JSON.stringify(message))`
 3. React Native: `window.ReactNativeWebView.postMessage(JSON.stringify(message))`
 4. Browser fallback: disabled unless `VITE_PARENT_ORIGIN` is an exact HTTP(S) origin
 
