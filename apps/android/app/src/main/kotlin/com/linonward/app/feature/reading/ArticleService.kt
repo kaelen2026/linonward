@@ -5,14 +5,47 @@ import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-interface ArticleService {
+fun interface ArticleService {
   suspend fun articles(locale: String): List<ReaderArticle>
+}
+
+interface ArticleCache {
+  suspend fun load(locale: String): List<ReaderArticle>?
+  suspend fun save(locale: String, articles: List<ReaderArticle>)
+}
+
+class OfflineArticleService(
+  private val remote: ArticleService,
+  private val cache: ArticleCache,
+) : ArticleService {
+  override suspend fun articles(locale: String): List<ReaderArticle> = try {
+    remote.articles(locale).also { articles ->
+      try {
+        cache.save(locale, articles)
+      } catch (cancelled: CancellationException) {
+        throw cancelled
+      } catch (_: Exception) {
+        // A cache write must not hide fresh content that is ready to display.
+      }
+    }
+  } catch (cancelled: CancellationException) {
+    throw cancelled
+  } catch (remoteFailure: Exception) {
+    try {
+      cache.load(locale) ?: throw remoteFailure
+    } catch (cancelled: CancellationException) {
+      throw cancelled
+    } catch (_: Exception) {
+      throw remoteFailure
+    }
+  }
 }
 
 class LiveArticleService(
@@ -42,7 +75,7 @@ internal fun articleEndpoint(baseUrl: String, locale: String): String? {
   return "$root/api/content/articles?locale=$encoded"
 }
 
-private fun localeCode(locale: String) = if (locale.lowercase().startsWith("en")) "en" else "zh"
+internal fun localeCode(locale: String) = if (locale.lowercase().startsWith("en")) "en" else "zh"
 
 private suspend fun fetchJson(endpoint: String): String = withContext(Dispatchers.IO) {
   val connection = URI(endpoint).toURL().openConnection() as HttpURLConnection

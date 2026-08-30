@@ -1,6 +1,7 @@
 package com.linonward.app.feature.reading
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -37,7 +38,17 @@ class ReadingViewModel(private val service: ArticleService) : ViewModel() {
 
   companion object {
     val Factory = viewModelFactory {
-      initializer { ReadingViewModel(LiveArticleService()) }
+      initializer {
+        val application = checkNotNull(
+          this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY],
+        )
+        ReadingViewModel(
+          OfflineArticleService(
+            remote = LiveArticleService(),
+            cache = FileArticleCache(application.cacheDir),
+          ),
+        )
+      }
     }
   }
 }
