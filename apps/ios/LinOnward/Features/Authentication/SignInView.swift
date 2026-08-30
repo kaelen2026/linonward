@@ -3,6 +3,7 @@ import SwiftUI
 /// Email address, then the six-digit code sent to it.
 struct SignInView: View {
   @Bindable var model: AuthenticationModel
+  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.webAuthenticationSession) private var webAuthenticationSession
   @FocusState private var focus: Field?
 
@@ -71,16 +72,15 @@ struct SignInView: View {
         .font(.subheadline.weight(.medium))
 
       TextField("signIn.email.placeholder", text: $model.email)
-        .textFieldStyle(.roundedBorder)
         .textContentType(.emailAddress)
         .keyboardType(.emailAddress)
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
-        .focused($focus, equals: .email)
         .disabled(model.state.step == .code || model.state.isBusy)
         .submitLabel(.next)
         .onSubmit { submit() }
         .accessibilityIdentifier("signIn.email")
+        .modifier(FilledField(focus: $focus, value: .email))
     }
   }
 
@@ -90,14 +90,15 @@ struct SignInView: View {
         .font(.subheadline.weight(.medium))
 
       TextField("signIn.code.placeholder", text: $model.code)
-        .textFieldStyle(.roundedBorder)
         // `.oneTimeCode` is what puts the code from the mail above the keyboard.
         .textContentType(.oneTimeCode)
         .keyboardType(.numberPad)
-        .monospaced()
-        .focused($focus, equals: .code)
+        // Six digits at body size are easy to misread back. Monospaced digits
+        // one step up keep the transcription checkable against the mail.
+        .font(.title3.monospaced())
         .disabled(model.state.isBusy)
         .accessibilityIdentifier("signIn.code")
+        .modifier(FilledField(focus: $focus, value: .code))
     }
   }
 
@@ -108,7 +109,15 @@ struct SignInView: View {
       Image(systemName: "exclamationmark.circle.fill")
     }
     .font(.footnote)
-    .foregroundStyle(.red)
+    .foregroundStyle(destructive)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(DesignTokens.Spacing.md)
+    // A bare red line reads as a hint. The tinted panel is what marks it as the
+    // reason the step did not complete.
+    .background(
+      destructive.opacity(0.1),
+      in: .rect(cornerRadius: DesignTokens.Radius.card, style: .continuous)
+    )
     // Keep the error exposed as text with a stable automation contract. Active
     // VoiceOver announcement is verified separately with assistive technology.
     .accessibilityAddTraits(.isStaticText)
@@ -126,12 +135,15 @@ struct SignInView: View {
             ProgressView()
           } else {
             Text(model.state.step == .code ? "signIn.verify" : "signIn.sendCode")
+              .fontWeight(.semibold)
           }
         }
         .frame(maxWidth: .infinity, minHeight: 24)
       }
       .buttonStyle(.borderedProminent)
       .controlSize(.large)
+      // The default capsule fights the rounded rectangles above it.
+      .buttonBorderShape(.roundedRectangle(radius: DesignTokens.Radius.card))
       .disabled(model.state.step == .code ? !model.state.canVerifyCode : !model.state.canSendCode)
       .accessibilityIdentifier("signIn.submit")
 
@@ -161,12 +173,15 @@ struct SignInView: View {
       // would put "or" between two anonymous images.
       .accessibilityHidden(true)
 
+      // No glyph: Google's brand terms govern the mark that may sit beside this
+      // label, and a stand-in SF Symbol would misattribute the provider.
       Button(action: signInWithGoogle) {
         Text("signIn.google")
           .frame(maxWidth: .infinity, minHeight: 24)
       }
       .buttonStyle(.bordered)
       .controlSize(.large)
+      .buttonBorderShape(.roundedRectangle(radius: DesignTokens.Radius.card))
       .disabled(model.state.isBusy)
       .accessibilityIdentifier("signIn.google")
     }
@@ -176,6 +191,12 @@ struct SignInView: View {
     Rectangle()
       .frame(height: 1)
       .foregroundStyle(.quaternary)
+  }
+
+  /// The ramp ships both steps because `destructiveLight` is too dense to read
+  /// on a dark surface.
+  private var destructive: Color {
+    colorScheme == .dark ? .destructiveDark : .destructiveLight
   }
 
   private func submit() {
@@ -191,6 +212,42 @@ struct SignInView: View {
   private func signInWithGoogle() {
     let browser = SystemWebAuthenticationBrowser(session: webAuthenticationSession)
     Task { await model.signInWithGoogle(presentedBy: browser) }
+  }
+}
+
+/// A filled field rather than `.roundedBorder`. The bordered style draws a
+/// hairline that all but vanishes over this screen's tinted background, and it
+/// has no way to show focus; the fill plus an accent ring is what says which of
+/// the two fields is taking keystrokes.
+private struct FilledField<Value: Hashable>: ViewModifier {
+  @FocusState.Binding var focus: Value?
+
+  let value: Value
+
+  private var isFocused: Bool { focus == value }
+
+  func body(content: Content) -> some View {
+    content
+      .focused($focus, equals: value)
+      .padding(.horizontal, DesignTokens.Spacing.lg)
+      .padding(.vertical, DesignTokens.Spacing.md)
+      .background(
+        Color(.secondarySystemBackground),
+        in: .rect(cornerRadius: DesignTokens.Radius.card, style: .continuous)
+      )
+      .overlay {
+        RoundedRectangle(cornerRadius: DesignTokens.Radius.card, style: .continuous)
+          .strokeBorder(
+            isFocused ? Color.accentColor : Color(.separator),
+            lineWidth: isFocused ? 2 : 0.5
+          )
+      }
+      // The padding and fill sit outside the `TextField`, so without these the
+      // visible chrome swallows the tap instead of focusing the field — a band
+      // of dead pixels all the way round what looks like an input.
+      .contentShape(.rect)
+      .onTapGesture { focus = value }
+      .animation(.easeOut(duration: 0.15), value: isFocused)
   }
 }
 
