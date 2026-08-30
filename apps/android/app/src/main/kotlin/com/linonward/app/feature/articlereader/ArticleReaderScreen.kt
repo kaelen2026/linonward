@@ -8,12 +8,18 @@ import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceError
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.core.net.toUri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
@@ -22,8 +28,10 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-private const val READER_URL =
+private const val BUNDLED_READER_URL =
   "https://appassets.androidplatform.net/assets/hybrid/article-reader/index.html"
+private const val CACHED_READER_URL =
+  "https://appassets.androidplatform.net/cached/index.html"
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -33,11 +41,20 @@ fun ArticleReaderScreen(
   modifier: Modifier = Modifier,
 ) {
   BackHandler(onBack = onClose)
+  val context = androidx.compose.ui.platform.LocalContext.current
+  val bundleRoot = remember { HybridBundleUpdater.root(context) }
+  var cachedRoot by remember { mutableStateOf(HybridBundleUpdater.activeRelease(bundleRoot)) }
+  key(cachedRoot?.absolutePath) {
   AndroidView(
     modifier = modifier,
     factory = { context ->
       val loader = WebViewAssetLoader.Builder()
         .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
+        .apply {
+          cachedRoot?.let {
+            addPathHandler("/cached/", WebViewAssetLoader.InternalStoragePathHandler(context, it))
+          }
+        }
         .build()
       WebView(context).apply {
         settings.javaScriptEnabled = true
@@ -47,8 +64,17 @@ fun ArticleReaderScreen(
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
         settings.setSupportMultipleWindows(false)
         addJavascriptInterface(BridgeHost(this, article), "LinOnwardBridge")
-        webViewClient = ReaderWebViewClient(context, loader, onClose)
-        loadUrl(READER_URL)
+        webViewClient = ReaderWebViewClient(
+          context = context,
+          assetLoader = loader,
+          readerUrl = if (cachedRoot == null) BUNDLED_READER_URL else CACHED_READER_URL,
+          onCachedLoadFailure = {
+            HybridBundleUpdater.deactivate(bundleRoot)
+            cachedRoot = null
+          },
+          onRendererGone = onClose,
+        )
+        loadUrl(if (cachedRoot == null) BUNDLED_READER_URL else CACHED_READER_URL)
       }
     },
     onRelease = { webView ->
@@ -57,6 +83,7 @@ fun ArticleReaderScreen(
       webView.destroy()
     },
   )
+  }
 }
 
 private class BridgeHost(private val webView: WebView, private val article: ReaderArticle) {
@@ -94,6 +121,8 @@ private class BridgeHost(private val webView: WebView, private val article: Read
 private class ReaderWebViewClient(
   private val context: Context,
   private val assetLoader: WebViewAssetLoader,
+  private val readerUrl: String,
+  private val onCachedLoadFailure: () -> Unit,
   private val onRendererGone: () -> Unit,
 ) : WebViewClient() {
   override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest) =
@@ -101,13 +130,21 @@ private class ReaderWebViewClient(
 
   override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
     val url = request.url
-    if (request.isForMainFrame && url.toString().startsWith(READER_URL.substringBefore("?"))) {
+    if (request.isForMainFrame && url.toString().startsWith(readerUrl.substringBefore("?"))) {
       return false
     }
     if (request.isForMainFrame && (url.scheme == "https" || url.scheme == "mailto")) {
       context.startActivity(Intent(Intent.ACTION_VIEW, url.toString().toUri()))
     }
     return true
+  }
+
+  override fun onReceivedError(
+    view: WebView,
+    request: WebResourceRequest,
+    error: WebResourceError,
+  ) {
+    if (request.isForMainFrame && readerUrl == CACHED_READER_URL) onCachedLoadFailure()
   }
 
   override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
