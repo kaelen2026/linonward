@@ -130,8 +130,8 @@ red and call it done.
 
 ## Branches
 
-`main` is the default and the PR base. For anything more than a trivial fix,
-branch first:
+`main` is the default and the PR base. Never develop directly on `main`; create a
+new branch for every change, including trivial fixes:
 
 ```
 <type>/<short-kebab-summary>      # feat/pricing-page, fix/dark-mode-border
@@ -141,9 +141,15 @@ Use the same type vocabulary as commits. Never force-push a shared branch.
 
 ## Worktrees
 
-Do the work in a worktree, not by switching branches in the main checkout. The
-main checkout at `linonward/` stays on `main` and stays clean, so a dev server,
-a build, or a second task never has the rug pulled out from under it.
+Use a worktree by default. The main checkout at `linonward/` stays on `main` and
+stays clean, so a dev server, a build, or a second task never has the rug pulled
+out from under it.
+
+If the user explicitly asks not to use a worktree, develop on a newly created
+branch instead. Never interpret "no worktree" as permission to develop directly
+on `main`, and never reuse an unrelated existing branch. This is the only
+exception to the default worktree workflow; without an explicit request, create
+and use a worktree as described below.
 
 Worktrees live **beside** the repository, never inside it — a worktree nested in
 the working tree would be swept into `pnpm-workspace.yaml` globs and Biome's file
