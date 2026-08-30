@@ -76,4 +76,18 @@ describe("module boundaries", () => {
     expect(contentRoutes).not.toContain('from "drizzle-orm"');
     expect(contentRoutes).not.toContain("../../shared/database.js");
   });
+
+  it("keeps content application services behind their repository port", () => {
+    const contentService = readFileSync(path.join(modulesDir, "content", "service.ts"), "utf8");
+    const contentRepository = readFileSync(
+      path.join(modulesDir, "content", "repository.ts"),
+      "utf8",
+    );
+
+    expect(contentService).not.toContain('from "drizzle-orm"');
+    expect(contentService).not.toContain("../../shared/database.js");
+    expect(contentService).not.toContain("./postgres-repository.js");
+    expect(contentRepository).not.toContain('from "drizzle-orm"');
+    expect(contentRepository).not.toContain("../../shared/database.js");
+  });
 });

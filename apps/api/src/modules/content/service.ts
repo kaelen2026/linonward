@@ -1,22 +1,6 @@
-import {
-  type ArticleInput,
-  articleDraftInputSchema,
-  type ContentRole,
-  contentRoles,
-} from "@linonward/contracts/content";
-import { and, desc, eq } from "drizzle-orm";
+import { type ArticleInput, articleDraftInputSchema } from "@linonward/contracts/content";
 import { ApiError } from "../../shared/api-error.js";
-import {
-  articles,
-  contentAuditEvents,
-  contentRoleAssignments,
-  type Database,
-} from "../../shared/database.js";
-import {
-  type ContentAuditAction,
-  type ContentAuditEvent,
-  executeAuditedContentMutation,
-} from "./audit.js";
+import { type ContentAuditAction, executeAuditedContentMutation } from "./audit.js";
 import {
   authorizeContent,
   type ContentPrincipal,
@@ -24,24 +8,16 @@ import {
   capabilitiesFor,
   contentPrincipal,
 } from "./authorization.js";
-
-type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
-export type ContentDatabase = Database | Transaction;
+import type { ContentMutationRepository, ContentRepository } from "./repository.js";
 
 export type ContentServiceDependencies = {
-  database: Database;
+  repository: ContentRepository;
   authenticate: ((headers: Headers) => Promise<ContentSession>) | undefined;
   administratorEmails: readonly string[];
   clock: () => Date;
   nextId: () => string;
   nextAuditId: () => string;
 };
-
-async function appendAudit(database: ContentDatabase, event: ContentAuditEvent): Promise<void> {
-  await database
-    .insert(contentAuditEvents)
-    .values({ ...event, errorCode: event.errorCode ?? null });
-}
 
 function parseInput(input: unknown): ArticleInput {
   const parsed = articleDraftInputSchema.safeParse(input);
@@ -64,13 +40,7 @@ export function createContentService(options: ContentServiceDependencies) {
     if (options.administratorEmails.includes(email)) {
       return contentPrincipal(session, [], options.administratorEmails);
     }
-    const assignments = await options.database
-      .select({ role: contentRoleAssignments.role })
-      .from(contentRoleAssignments)
-      .where(eq(contentRoleAssignments.userId, session.user.id));
-    const roles = assignments
-      .map(({ role }) => role)
-      .filter((role): role is ContentRole => contentRoles.includes(role as ContentRole));
+    const roles = await options.repository.assignedRoles(session.user.id);
     return contentPrincipal(session, roles, options.administratorEmails);
   };
   const auditedMutation = async <T>(
@@ -78,7 +48,7 @@ export function createContentService(options: ContentServiceDependencies) {
     requestId: string,
     action: ContentAuditAction,
     targetId: string,
-    operation: (database: ContentDatabase) => Promise<T>,
+    operation: (repository: ContentMutationRepository) => Promise<T>,
   ) =>
     executeAuditedContentMutation({
       action,
@@ -88,40 +58,26 @@ export function createContentService(options: ContentServiceDependencies) {
       occurredAt: options.clock(),
       nextId: options.nextAuditId,
       commit: (event) =>
-        options.database.transaction(async (transaction) => {
-          const result = await operation(transaction);
-          await appendAudit(transaction, event);
+        options.repository.transaction(async (repository) => {
+          const result = await operation(repository);
+          await repository.appendAudit(event);
           return result;
         }),
-      recordFailure: (event) => appendAudit(options.database, event),
+      recordFailure: (event) => options.repository.appendAudit(event),
     });
 
   return {
     async listPublished(locale: "zh" | "en") {
-      return options.database
-        .select()
-        .from(articles)
-        .where(and(eq(articles.locale, locale), eq(articles.status, "published")))
-        .orderBy(desc(articles.publishedAt));
+      return options.repository.listPublished(locale);
     },
     async getPublished(locale: "zh" | "en", slug: string) {
-      const [article] = await options.database
-        .select()
-        .from(articles)
-        .where(
-          and(
-            eq(articles.locale, locale),
-            eq(articles.slug, slug),
-            eq(articles.status, "published"),
-          ),
-        )
-        .limit(1);
+      const article = await options.repository.findPublished(locale, slug);
       if (!article) throw new ApiError(404, "article_not_found", "Article not found");
       return article;
     },
     async listAdmin(headers: Headers) {
       authorizeContent(await principal(headers), "article.view");
-      return options.database.select().from(articles).orderBy(desc(articles.updatedAt));
+      return options.repository.listAll();
     },
     async access(headers: Headers) {
       const actor = authorizeContent(await principal(headers), "article.view");
@@ -130,23 +86,24 @@ export function createContentService(options: ContentServiceDependencies) {
     async create(headers: Headers, requestId: string, input: unknown) {
       const actor = await principal(headers);
       const id = options.nextId();
-      return auditedMutation(actor, requestId, "article.create", id, async (database) => {
+      return auditedMutation(actor, requestId, "article.create", id, async (repository) => {
         const articleInput = parseInput(input);
         authorizeContent(actor, "article.createDraft");
-        return createDraft(database, articleInput, id, options.clock());
+        return repository.createDraft(articleInput, id, options.clock());
       });
     },
     async update(headers: Headers, requestId: string, candidateId: string, input: unknown) {
       const actor = await principal(headers);
       const id = requireId(candidateId);
-      return auditedMutation(actor, requestId, "article.update", id, async (database) => {
+      return auditedMutation(actor, requestId, "article.update", id, async (repository) => {
         const articleInput = parseInput(input);
-        return updateArticle(database, articleInput, id, options.clock(), (status) =>
-          authorizeContent(
-            actor,
-            status === "published" ? "article.publish" : "article.updateDraft",
-          ),
-        );
+        const status = await repository.lockArticleStatus(id);
+        if (!status) throw new ApiError(404, "article_not_found", "Article not found");
+        if (status !== "draft" && status !== "published") {
+          throw new ApiError(500, "invalid_article_status", "Article status is invalid");
+        }
+        authorizeContent(actor, status === "published" ? "article.publish" : "article.updateDraft");
+        return repository.updateArticle(articleInput, id, options.clock());
       });
     },
     async setPublication(
@@ -158,78 +115,24 @@ export function createContentService(options: ContentServiceDependencies) {
       const actor = await principal(headers);
       const id = requireId(candidateId);
       const action = status === "published" ? "article.publish" : "article.unpublish";
-      return auditedMutation(actor, requestId, action, id, async (database) => {
+      return auditedMutation(actor, requestId, action, id, async (repository) => {
         authorizeContent(actor, "article.publish");
-        return setPublicationStatus(database, id, status, options.clock());
+        const article = await repository.setPublicationStatus(id, status, options.clock());
+        if (!article) throw new ApiError(404, "article_not_found", "Article not found");
+        return article;
       });
     },
     async delete(headers: Headers, requestId: string, candidateId: string) {
       const actor = await principal(headers);
       const id = requireId(candidateId);
-      await auditedMutation(actor, requestId, "article.delete", id, async (database) => {
+      await auditedMutation(actor, requestId, "article.delete", id, async (repository) => {
         authorizeContent(actor, "article.delete");
-        const deleted = await database
-          .delete(articles)
-          .where(eq(articles.id, id))
-          .returning({ id: articles.id });
-        if (deleted.length === 0) throw new ApiError(404, "article_not_found", "Article not found");
+        if (!(await repository.deleteArticle(id))) {
+          throw new ApiError(404, "article_not_found", "Article not found");
+        }
       });
     },
   };
 }
 
 export type ContentService = ReturnType<typeof createContentService>;
-
-export async function createDraft(
-  database: ContentDatabase,
-  input: ArticleInput,
-  id: string,
-  now: Date,
-) {
-  const [created] = await database
-    .insert(articles)
-    .values({ ...input, id, status: "draft", publishedAt: null, createdAt: now, updatedAt: now })
-    .returning();
-  return created;
-}
-
-export async function updateArticle(
-  database: ContentDatabase,
-  input: ArticleInput,
-  id: string,
-  now: Date,
-  authorizeStatus: (status: "draft" | "published") => void,
-) {
-  const [existing] = await database
-    .select({ status: articles.status })
-    .from(articles)
-    .where(eq(articles.id, id))
-    .limit(1)
-    .for("update");
-  if (!existing) throw new ApiError(404, "article_not_found", "Article not found");
-  if (existing.status !== "draft" && existing.status !== "published") {
-    throw new ApiError(500, "invalid_article_status", "Article status is invalid");
-  }
-  authorizeStatus(existing.status);
-  const [updated] = await database
-    .update(articles)
-    .set({ ...input, updatedAt: now })
-    .where(eq(articles.id, id))
-    .returning();
-  return updated;
-}
-
-export async function setPublicationStatus(
-  database: ContentDatabase,
-  id: string,
-  status: "draft" | "published",
-  now: Date,
-) {
-  const [updated] = await database
-    .update(articles)
-    .set({ status, publishedAt: status === "published" ? now : null, updatedAt: now })
-    .where(eq(articles.id, id))
-    .returning();
-  if (!updated) throw new ApiError(404, "article_not_found", "Article not found");
-  return updated;
-}
