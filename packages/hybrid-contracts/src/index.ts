@@ -6,6 +6,7 @@ export const HYBRID_CAPABILITIES = [
   "reader.height",
   "article.link",
   "article.image",
+  "article.selection",
 ] as const;
 
 export const HYBRID_MAX_MESSAGE_BYTES = 1_000_000;
@@ -148,7 +149,9 @@ export type HybridWebMessage =
   | WebEnvelope<"reader:height", { height: number }>
   | WebEnvelope<"reader:error", { code: string; message: string }>
   | WebEnvelope<"article:link", { href: string }>
-  | WebEnvelope<"article:image", { alt: string; src: string }>;
+  | WebEnvelope<"article:image", { alt: string; src: string }>
+  | WebEnvelope<"article:copy", { text: string }>
+  | WebEnvelope<"article:share", { text: string }>;
 
 export function negotiateHybridProtocol(
   offered: HybridProtocolVersion,

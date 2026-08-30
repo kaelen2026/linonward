@@ -9,6 +9,8 @@ struct ArticleReaderWebView: UIViewRepresentable {
   let onExternalURL: (URL) -> Void
   let onHeightChange: (Double) -> Void
   let onImage: (ArticlePreview) -> Void
+  let onCopy: (String) -> Void
+  let onShare: (String) -> Void
 
   func makeCoordinator() -> Coordinator {
     Coordinator(parent: self)
@@ -77,6 +79,8 @@ struct ArticleReaderWebView: UIViewRepresentable {
     private var onExternalURL: (URL) -> Void
     private var onHeightChange: (Double) -> Void
     private var onImage: (ArticlePreview) -> Void
+    private var onCopy: (String) -> Void
+    private var onShare: (String) -> Void
     private var settings: ReaderSettings
 
     init(parent: ArticleReaderWebView) {
@@ -86,6 +90,8 @@ struct ArticleReaderWebView: UIViewRepresentable {
       onExternalURL = parent.onExternalURL
       onHeightChange = parent.onHeightChange
       onImage = parent.onImage
+      onCopy = parent.onCopy
+      onShare = parent.onShare
       settings = parent.settings
     }
 
@@ -96,6 +102,8 @@ struct ArticleReaderWebView: UIViewRepresentable {
       onExternalURL = parent.onExternalURL
       onHeightChange = parent.onHeightChange
       onImage = parent.onImage
+      onCopy = parent.onCopy
+      onShare = parent.onShare
       settings = parent.settings
     }
 
@@ -199,6 +207,12 @@ struct ArticleReaderWebView: UIViewRepresentable {
       case .image(let image):
         guard negotiatedCapabilities.contains(.articleImage) else { return }
         onImage(image)
+      case .copy(let text):
+        guard negotiatedCapabilities.contains(.articleSelection) else { return }
+        onCopy(text)
+      case .share(let text):
+        guard negotiatedCapabilities.contains(.articleSelection) else { return }
+        onShare(text)
       }
     }
 

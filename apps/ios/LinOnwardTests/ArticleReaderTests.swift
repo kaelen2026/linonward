@@ -164,4 +164,27 @@ struct ArticleBridgeDecoderTests {
       )
     }
   }
+
+  @Test("accepts bounded text selection actions")
+  func decodesSelectionActions() throws {
+    let copy = try decoder.decode(
+      body: [
+        "type": "article:copy",
+        "sessionId": session,
+        "payload": ["text": "A selected passage"],
+      ],
+      expectedSession: session
+    )
+    let share = try decoder.decode(
+      body: [
+        "type": "article:share",
+        "sessionId": session,
+        "payload": ["text": "A selected passage"],
+      ],
+      expectedSession: session
+    )
+
+    #expect(copy == .copy("A selected passage"))
+    #expect(share == .share("A selected passage"))
+  }
 }

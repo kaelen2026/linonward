@@ -15,6 +15,12 @@ interface AppProps {
   initialArticle?: ArticlePayload;
 }
 
+interface SelectionMenuState {
+  left: number;
+  text: string;
+  top: number;
+}
+
 function getInitialArticle(initialArticle?: ArticlePayload) {
   if (initialArticle) return initialArticle;
   return new URLSearchParams(window.location.search).get("demo") === "1" ? demoArticle : undefined;
@@ -25,8 +31,11 @@ export function App({ bridge, initialArticle }: AppProps) {
     getInitialArticle(initialArticle),
   );
   const [settingsOverride, setSettingsOverride] = useState<ReaderSettings>();
+  const [selectionActionsEnabled, setSelectionActionsEnabled] = useState(false);
   const handshakeStarted = useRef(false);
   const rootRef = useRef<HTMLElement>(null);
+  const selectedRange = useRef<Range | undefined>(undefined);
+  const [selectionMenu, setSelectionMenu] = useState<SelectionMenuState>();
   const settings = normalizeSettings({ ...payload?.settings, ...settingsOverride });
   const sanitizedHtml = useMemo(
     () => (payload ? sanitizeArticleHtml(payload.article.contentHtml) : ""),
@@ -59,6 +68,7 @@ export function App({ bridge, initialArticle }: AppProps) {
   useEffect(() => {
     const unsubscribe = bridge.onMessage((message) => {
       if (message.type === "bridge:welcome") {
+        setSelectionActionsEnabled(message.payload.capabilities.includes("article.selection"));
         bridge.post({
           type: "reader:ready",
           payload: { protocol: BRIDGE_PROTOCOL },
@@ -111,6 +121,68 @@ export function App({ bridge, initialArticle }: AppProps) {
       image.setAttribute("tabindex", "0");
     }
   }, [payload]);
+
+  useEffect(() => {
+    const updateSelection = () => {
+      if (!selectionActionsEnabled) return;
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+        return;
+      }
+      const range = selection.getRangeAt(0);
+      const body = rootRef.current?.querySelector(".article-body");
+      if (!body?.contains(range.commonAncestorContainer)) return;
+      const text = selection.toString().trim();
+      if (!text) return;
+
+      const rect = range.getBoundingClientRect();
+      selectedRange.current = range.cloneRange();
+      setSelectionMenu({
+        left: Math.min(window.innerWidth - 16, Math.max(16, rect.left + rect.width / 2)),
+        text,
+        top: Math.max(12, rect.top - 12),
+      });
+    };
+    const dismiss = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".selection-menu")) return;
+      if (window.getSelection()?.isCollapsed) setSelectionMenu(undefined);
+    };
+    document.addEventListener("selectionchange", updateSelection);
+    document.addEventListener("pointerdown", dismiss);
+    return () => {
+      document.removeEventListener("selectionchange", updateSelection);
+      document.removeEventListener("pointerdown", dismiss);
+    };
+  }, [selectionActionsEnabled]);
+
+  const finishSelectionAction = () => {
+    window.getSelection()?.removeAllRanges();
+    selectedRange.current = undefined;
+    setSelectionMenu(undefined);
+  };
+
+  const copySelection = () => {
+    if (!selectionMenu) return;
+    bridge.post({ type: "article:copy", payload: { text: selectionMenu.text } });
+    finishSelectionAction();
+  };
+
+  const shareSelection = () => {
+    if (!selectionMenu) return;
+    bridge.post({ type: "article:share", payload: { text: selectionMenu.text } });
+    finishSelectionAction();
+  };
+
+  const highlightSelection = () => {
+    const range = selectedRange.current;
+    if (!range || range.collapsed) return;
+    const mark = document.createElement("mark");
+    mark.className = "article-highlight";
+    mark.append(range.extractContents());
+    range.insertNode(mark);
+    finishSelectionAction();
+  };
 
   if (!payload) {
     return (
@@ -169,12 +241,34 @@ export function App({ bridge, initialArticle }: AppProps) {
         <section
           className="article-body"
           onClick={dispatchInteraction}
+          onContextMenu={(event) => event.preventDefault()}
           onKeyDown={dispatchInteraction}
           // The HTML is sanitized immediately before rendering.
           // biome-ignore lint/security/noDangerouslySetInnerHtml: DOMPurify sanitizes the allowlisted article HTML.
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
       </article>
+      {selectionMenu && (
+        <div
+          aria-label={settings.locale.startsWith("en") ? "Selection actions" : "选中文字操作"}
+          className="selection-menu"
+          role="toolbar"
+          style={{ left: selectionMenu.left, top: selectionMenu.top }}
+        >
+          <button onClick={copySelection} type="button">
+            <span aria-hidden="true">▣</span>
+            {settings.locale.startsWith("en") ? "Copy" : "复制"}
+          </button>
+          <button onClick={shareSelection} type="button">
+            <span aria-hidden="true">↗</span>
+            {settings.locale.startsWith("en") ? "Share" : "分享"}
+          </button>
+          <button onClick={highlightSelection} type="button">
+            <span aria-hidden="true">╱</span>
+            {settings.locale.startsWith("en") ? "Highlight" : "划线"}
+          </button>
+        </div>
+      )}
     </main>
   );
 }
