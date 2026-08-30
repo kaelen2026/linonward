@@ -18,6 +18,10 @@ struct ArticleReaderConfigurationTests {
       )
     )
     #expect(
+      configuration.articleURL(id: "art_1").absoluteString
+        == "https://reader.example.com/h5/articles/art_1"
+    )
+    #expect(
       !configuration.allowsMainFrameNavigation(
         to: try #require(URL(string: "https://reader.example.com/account"))
       )

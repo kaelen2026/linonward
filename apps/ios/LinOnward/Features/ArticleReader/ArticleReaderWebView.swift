@@ -33,7 +33,12 @@ struct ArticleReaderWebView: UIViewRepresentable {
       webView.isInspectable = true
     #endif
     context.coordinator.webView = webView
-    webView.load(URLRequest(url: configuration.url, cachePolicy: .reloadIgnoringLocalCacheData))
+    webView.load(
+      URLRequest(
+        url: configuration.articleURL(id: article.id),
+        cachePolicy: .reloadIgnoringLocalCacheData
+      )
+    )
     return webView
   }
 

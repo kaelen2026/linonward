@@ -2,11 +2,50 @@ import SwiftUI
 
 struct ReadingView: View {
   @Environment(\.locale) private var locale
+  @State private var model: ReadingModel
+
+  init(model: ReadingModel = ReadingModel()) {
+    _model = State(initialValue: model)
+  }
 
   var body: some View {
+    Group {
+      switch model.state {
+      case .idle, .loading:
+        ProgressView("reading.loading")
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+      case .loaded(let articles) where articles.isEmpty:
+        ContentUnavailableView(
+          "reading.empty.title",
+          systemImage: "text.book.closed",
+          description: Text("reading.empty.body")
+        )
+      case .loaded(let articles):
+        articleList(articles)
+      case .failed:
+        ContentUnavailableView {
+          Label("reading.error.title", systemImage: "wifi.exclamationmark")
+        } description: {
+          Text("reading.error.body")
+        } actions: {
+          Button("reading.retry") {
+            Task { await model.load(locale: locale) }
+          }
+          .buttonStyle(.borderedProminent)
+        }
+      }
+    }
+    .background(Color(.systemGroupedBackground))
+    .navigationTitle("reading.title")
+    .task(id: locale.identifier) {
+      await model.load(locale: locale)
+    }
+  }
+
+  private func articleList(_ articles: [ReaderArticle]) -> some View {
     ScrollView {
       LazyVStack(spacing: DesignTokens.Spacing.lg) {
-        ForEach(ArticleCatalog.articles(locale: locale), id: \.id) { article in
+        ForEach(articles, id: \.id) { article in
           NavigationLink {
             ArticleReaderView(article: article)
           } label: {
@@ -20,8 +59,6 @@ struct ReadingView: View {
       .padding(.horizontal, DesignTokens.Spacing.xl)
       .padding(.vertical, DesignTokens.Spacing.lg)
     }
-    .background(Color(.systemGroupedBackground))
-    .navigationTitle("reading.title")
   }
 }
 
@@ -75,6 +112,12 @@ private struct ArticleRow: View {
 
 #Preview("Reading") {
   NavigationStack {
-    ReadingView()
+    ReadingView(model: ReadingModel(service: PreviewArticleService()))
+  }
+}
+
+private struct PreviewArticleService: ArticleService {
+  func articles(locale: Locale) async throws -> [ReaderArticle] {
+    [.sample]
   }
 }

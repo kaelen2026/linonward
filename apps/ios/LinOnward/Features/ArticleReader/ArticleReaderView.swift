@@ -1,6 +1,11 @@
+import OSLog
 import SwiftUI
 
 struct ArticleReaderView: View {
+  private static let logger = Logger(
+    subsystem: Bundle.main.bundleIdentifier ?? "com.linonward.app",
+    category: "article-reader"
+  )
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dismiss) private var dismiss
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -29,7 +34,10 @@ struct ArticleReaderView: View {
           article: article,
           configuration: configuration,
           settings: settings,
-          onError: { errorCode = $0 },
+          onError: { code in
+            Self.logger.error("Article reader bridge error: \(code, privacy: .public)")
+            errorCode = code
+          },
           onExternalURL: { openURL($0) },
           onHeightChange: { contentHeight = $0 },
           onImage: { preview = $0 }

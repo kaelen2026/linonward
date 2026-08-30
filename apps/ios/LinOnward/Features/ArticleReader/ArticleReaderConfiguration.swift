@@ -36,6 +36,10 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
     )
   }
 
+  func articleURL(id: String) -> URL {
+    url.appending(path: "articles").appending(path: id)
+  }
+
   func allowsMainFrameNavigation(to candidate: URL) -> Bool {
     guard let expected = URLComponents(url: url, resolvingAgainstBaseURL: false),
       let actual = URLComponents(url: candidate, resolvingAgainstBaseURL: false)
