@@ -156,6 +156,7 @@ private struct PublishedArticle: Decodable {
   let coverImageUrl: String?
   let id: String
   let publishedAt: String?
+  let slug: String
   let title: String
   let updatedAt: String
 
@@ -169,6 +170,7 @@ private struct PublishedArticle: Decodable {
       id: id,
       publishedAt: publishedAt ?? updatedAt,
       readingMinutes: max(1, Int(ceil(Double(content.characterCount) / 400))),
+      slug: slug,
       title: title
     )
   }

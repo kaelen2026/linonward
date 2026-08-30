@@ -57,10 +57,6 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
     return HybridBundleStore.activeConfiguration() ?? configured
   }
 
-  func articleURL(id: String) -> URL {
-    url.appending(path: "articles").appending(path: id)
-  }
-
   static func cached(resourceRoot: URL) -> ArticleReaderConfiguration? {
     guard FileManager.default.fileExists(
       atPath: resourceRoot.appending(path: "index.html").path

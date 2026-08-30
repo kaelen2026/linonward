@@ -41,7 +41,7 @@ struct ArticleReaderWebView: UIViewRepresentable {
     context.coordinator.webView = webView
     webView.load(
       URLRequest(
-        url: configuration.articleURL(id: article.id),
+        url: configuration.url,
         cachePolicy: .reloadIgnoringLocalCacheData
       )
     )

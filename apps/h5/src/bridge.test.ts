@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createBridge, helloMessage } from "./bridge";
+import { createBridge, hasNativeHost, helloMessage } from "./bridge";
 import { BRIDGE_PROTOCOL } from "./types";
 
 const sessionId = "12345678-1234-1234-1234-123456789abc";
@@ -17,6 +17,14 @@ afterEach(() => {
 });
 
 describe("createBridge", () => {
+  it("distinguishes a native host from a regular browser", () => {
+    expect(hasNativeHost(window)).toBe(false);
+    Object.assign(window, {
+      webkit: { messageHandlers: { linonward: { postMessage: vi.fn() } } },
+    });
+    expect(hasNativeHost(window)).toBe(true);
+  });
+
   it("negotiates a session before authenticating iOS messages", () => {
     const postMessage = vi.fn();
     Object.assign(window, { webkit: { messageHandlers: { linonward: { postMessage } } } });

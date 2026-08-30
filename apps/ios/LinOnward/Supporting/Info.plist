@@ -18,6 +18,19 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>com.linonward.app.article</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>linonward</string>
+			</array>
+		</dict>
+	</array>
 	<key>LinOnwardAPIBaseURL</key>
 	<string>$(LINONWARD_API_BASE_URL)</string>
 	<!-- A WKWebView carrying the native bridge may load only this exact origin.

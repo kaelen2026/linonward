@@ -1,18 +1,19 @@
 import Foundation
 
-struct ReaderArticleImage: Codable, Equatable, Sendable {
+struct ReaderArticleImage: Codable, Equatable, Hashable, Sendable {
   let alt: String
   let caption: String?
   let url: String
 }
 
-struct ReaderArticle: Codable, Equatable, Sendable {
+struct ReaderArticle: Codable, Equatable, Hashable, Sendable {
   let author: String?
   let contentHtml: String
   let cover: ReaderArticleImage?
   let id: String
   let publishedAt: String?
   let readingMinutes: Int?
+  let slug: String
   let title: String
 }
 
@@ -46,6 +47,7 @@ extension ReaderArticle {
     id: "long-term-thinking",
     publishedAt: "2026-08-29",
     readingMinutes: 8,
+    slug: "long-term-thinking",
     title: "长期主义，不只是坚持得更久"
   )
 }

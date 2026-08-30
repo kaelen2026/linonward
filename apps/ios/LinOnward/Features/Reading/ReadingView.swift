@@ -3,9 +3,15 @@ import SwiftUI
 struct ReadingView: View {
   @Environment(\.locale) private var locale
   @State private var model: ReadingModel
+  @State private var selectedArticle: ReaderArticle?
+  @Binding private var deepLink: ArticleDeepLink?
 
-  init(model: ReadingModel = ReadingModel()) {
+  init(
+    model: ReadingModel = ReadingModel(),
+    deepLink: Binding<ArticleDeepLink?> = .constant(nil)
+  ) {
     _model = State(initialValue: model)
+    _deepLink = deepLink
   }
 
   var body: some View {
@@ -37,9 +43,28 @@ struct ReadingView: View {
     }
     .background(Color(.systemGroupedBackground))
     .navigationTitle("reading.title")
-    .task(id: locale.identifier) {
-      await model.load(locale: locale)
+    .navigationDestination(item: $selectedArticle) { article in
+      ArticleReaderView(article: article)
     }
+    .task(id: loadIdentifier) {
+      let targetLocale = deepLink.map { Locale(identifier: $0.locale) } ?? locale
+      await model.load(locale: targetLocale)
+      openPendingArticle()
+    }
+  }
+
+  private var loadIdentifier: String {
+    "\(locale.identifier)|\(deepLink?.locale ?? "")|\(deepLink?.slug ?? "")"
+  }
+
+  private func openPendingArticle() {
+    guard
+      let deepLink,
+      case .loaded(let articles) = model.state,
+      let article = articles.first(where: { $0.slug == deepLink.slug })
+    else { return }
+    selectedArticle = article
+    self.deepLink = nil
   }
 
   private func articleList(_ articles: [ReaderArticle]) -> some View {

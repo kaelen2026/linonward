@@ -6,6 +6,7 @@ import SwiftUI
 @MainActor
 struct AppView: View {
   @State private var auth = AuthenticationModel()
+  @State private var articleDeepLink: ArticleDeepLink?
 
   var body: some View {
     Group {
@@ -19,13 +20,16 @@ struct AppView: View {
           SignInView(model: auth)
         }
       case .signedIn(let user):
-        HomeView(user: user) { await auth.signOut() }
+        HomeView(user: user, articleDeepLink: $articleDeepLink) { await auth.signOut() }
       }
     }
     // Once per launch: turns a stored token back into a session before the
     // sign-in form would otherwise appear.
     .task {
       await auth.restore()
+    }
+    .onOpenURL { url in
+      articleDeepLink = ArticleDeepLink(url: url)
     }
   }
 }
