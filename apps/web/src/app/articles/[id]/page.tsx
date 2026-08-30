@@ -17,7 +17,7 @@ export default async function ArticlePage({ params }: PageProps<"/articles/[id]"
   if (!article) notFound();
   return (
     <>
-      <PublicHeader user={session?.user} />
+      <PublicHeader pathname={`/articles/${article.id}`} user={session?.user} />
       <main className="mx-auto max-w-4xl px-6 py-12 sm:py-20">
         <Link className="text-sm underline underline-offset-4" href="/articles">
           ← 返回文章列表

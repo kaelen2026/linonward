@@ -1,5 +1,5 @@
 import type { ArticleInput } from "@linonward/contracts/content";
-import { Blocks, PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
+import { Activity, Blocks, PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
@@ -95,7 +95,15 @@ export function EditorWorkbenchView({
             ))}
           </nav>
         )}
-        <nav aria-label="工具导航" className="border-t border-border pt-4">
+        <nav aria-label="工具导航" className="grid gap-1 border-t border-border pt-4">
+          <Link
+            aria-label="可观测性"
+            className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            href="/observability"
+          >
+            <Activity aria-hidden="true" size={18} />
+            {sidebarCollapsed ? null : "可观测性"}
+          </Link>
           <Link
             aria-label="组件预览"
             className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

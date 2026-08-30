@@ -18,7 +18,7 @@ export default async function ObservabilityPage() {
   return (
     <>
       <AutoRefresh />
-      <SiteHeader pathname="/observability" userEmail={session.user.email} />
+      <SiteHeader pathname="/observability" showOperations user={session.user} />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="mb-8 flex flex-col gap-4 border-b border-border pb-7 sm:flex-row sm:items-end sm:justify-between">
           <div>
