@@ -55,7 +55,8 @@ describe("database schema", () => {
 
   it("indexes every foreign key used to join auth records", () => {
     expect(getTableConfig(session).indexes).toHaveLength(1);
-    expect(getTableConfig(account).indexes).toHaveLength(1);
+    expect(getTableConfig(account).indexes).toHaveLength(2);
+    expect(getTableConfig(account).indexes.some((index) => index.config.unique)).toBe(true);
   });
 
   it("exports relations with the schema rather than rebuilding them in consumers", () => {
