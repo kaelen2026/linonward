@@ -12,6 +12,9 @@ dist/
 # turbo
 .turbo/
 
+# development-server caches
+.vite/
+
 # testing / coverage
 coverage/
 playwright-report/
