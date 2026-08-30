@@ -45,7 +45,8 @@ describe("native article flow", () => {
         article: {
           id: "native-article",
           title: "Native article",
-          contentHtml: '<p>Safe body</p><a href="https://linonward.com">Open source</a>',
+          contentHtml:
+            '<p>Safe body</p><a href="https://linonward.com">Open source</a><img src="https://linonward.com/cover.jpg" alt="Article cover">',
         },
         settings: { locale: "en", theme: "dark", fontScale: 1.2 },
       },
@@ -59,6 +60,15 @@ describe("native article flow", () => {
         type: "article:link",
         sessionId,
         payload: { href: "https://linonward.com/" },
+      }),
+    );
+
+    fireEvent.keyDown(screen.getByRole("button", { name: "Article cover" }), { key: "Enter" });
+    await waitFor(() =>
+      expect(postMessage).toHaveBeenLastCalledWith({
+        type: "article:image",
+        sessionId,
+        payload: { alt: "Article cover", src: "https://linonward.com/cover.jpg" },
       }),
     );
     bridge.destroy();

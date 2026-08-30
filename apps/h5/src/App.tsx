@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   formatPublishedAt,
   isArticlePayload,
@@ -33,7 +33,30 @@ export function App({ bridge, initialArticle }: AppProps) {
     [payload],
   );
 
-  useLayoutEffect(() => {
+  const dispatchInteraction = (
+    event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+  ) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const anchor = target.closest(".article-body a");
+    if (anchor instanceof HTMLAnchorElement) {
+      event.preventDefault();
+      bridge.post({ type: "article:link", payload: { href: anchor.href } });
+      return;
+    }
+
+    const image = target.closest(".article-body img");
+    if (!(image instanceof HTMLImageElement)) return;
+    if ("key" in event && event.key !== "Enter" && event.key !== " ") return;
+    if ("key" in event) event.preventDefault();
+    bridge.post({
+      type: "article:image",
+      payload: { alt: image.alt, src: image.currentSrc || image.src },
+    });
+  };
+
+  useEffect(() => {
     const unsubscribe = bridge.onMessage((message) => {
       if (message.type === "bridge:welcome") {
         bridge.post({
@@ -87,36 +110,7 @@ export function App({ bridge, initialArticle }: AppProps) {
       image.setAttribute("role", "button");
       image.setAttribute("tabindex", "0");
     }
-
-    const dispatchInteraction = (event: MouseEvent | KeyboardEvent) => {
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-
-      const anchor = target.closest(".article-body a");
-      if (anchor instanceof HTMLAnchorElement) {
-        event.preventDefault();
-        bridge.post({ type: "article:link", payload: { href: anchor.href } });
-        return;
-      }
-
-      const image = target.closest(".article-body img");
-      if (image instanceof HTMLImageElement) {
-        if (event instanceof KeyboardEvent && event.key !== "Enter" && event.key !== " ") return;
-        if (event instanceof KeyboardEvent) event.preventDefault();
-        bridge.post({
-          type: "article:image",
-          payload: { alt: image.alt, src: image.currentSrc || image.src },
-        });
-      }
-    };
-
-    root.addEventListener("click", dispatchInteraction);
-    root.addEventListener("keydown", dispatchInteraction);
-    return () => {
-      root.removeEventListener("click", dispatchInteraction);
-      root.removeEventListener("keydown", dispatchInteraction);
-    };
-  }, [bridge, payload]);
+  }, [payload]);
 
   if (!payload) {
     return (
@@ -170,8 +164,12 @@ export function App({ bridge, initialArticle }: AppProps) {
           </button>
         )}
 
+        {/* Delegation preserves the native semantics of the sanitized links and focusable images. */}
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: child links and images own the interaction semantics. */}
         <section
           className="article-body"
+          onClick={dispatchInteraction}
+          onKeyDown={dispatchInteraction}
           // The HTML is sanitized immediately before rendering.
           // biome-ignore lint/security/noDangerouslySetInnerHtml: DOMPurify sanitizes the allowlisted article HTML.
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}

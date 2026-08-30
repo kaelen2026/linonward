@@ -1,20 +1,20 @@
 {
-  "artifactVersion": "7b29cfcc07125547d0d28460d5985829d2b3e4fdb8fee170a5b2082fafda4141",
+  "artifactVersion": "581cd483dfc2d429080cb46983b312f664436cf115f8788a8bf7a94fdce50b79",
   "entrypoint": "index.html",
   "files": [
+    {
+      "path": "assets/index-Cn7Tqa31.js",
+      "sha256": "18f7ea066b8a5983eb76c65212afb48b130f5e81ccab3a178df608bb41e25e67",
+      "size": 223969
+    },
     {
       "path": "assets/index-Dame9a8E.css",
       "sha256": "2b4cc74eb77c2b66c75add453684dd2b75fef745556a08e6028b96116525a86e",
       "size": 6834
     },
     {
-      "path": "assets/index-Z9Ow3xOF.js",
-      "sha256": "c4de8746e18c3362657eeb7dce96c842e4a22cb0492fce78170648d815e50bc8",
-      "size": 224153
-    },
-    {
       "path": "index.html",
-      "sha256": "43eee44415566e6d796af1e8b3d61235506d11725200f1c9e4027d7662afcab2",
+      "sha256": "c7111ab0d47f4576d02e6c77f5563ae151560bdcff71295d250d92e7fb018d6c",
       "size": 830
     }
   ],
