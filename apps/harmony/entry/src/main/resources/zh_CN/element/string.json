@@ -31,6 +31,14 @@
     {
       "name": "home_api_missing",
       "value": "此版本未配置服务器地址"
+    },
+    {
+      "name": "home_open_reader",
+      "value": "打开 Hybrid 阅读器"
+    },
+    {
+      "name": "reader_close",
+      "value": "关闭"
     }
   ]
 }

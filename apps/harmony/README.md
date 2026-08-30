@@ -98,6 +98,21 @@ entry/src/test/                  Host unit tests — hypium, no device
 entry/src/ohosTest/              Instrumented UI tests — hypium + UiTest, needs a device
 ```
 
+## Hybrid article reader
+
+The home page can open the same production H5 artifact bundled by iOS and Android. Refresh the
+checked-in rawfile after changing `apps/h5`:
+
+```bash
+pnpm harmony:sync-hybrid
+```
+
+The ArkUI `Web` component loads the artifact with `$rawfile`, exposes only the shared
+`LinOnwardBridge.postMessage` proxy, negotiates a page session, and disables file access, DOM
+storage, and mixed content. The current screen injects a preview article while the HarmonyOS
+authentication and article API layers remain planned. Device coverage is still required before
+promoting the capability from Planned to Preview in `docs/capabilities.md`.
+
 Colors come from the brand ramp in [docs/design-system.md](../../docs/design-system.md), named
 semantically in `resources/base/element/color.json` and flipped by
 `resources/dark/element/color.json`, which the system applies on the dark color mode — the same

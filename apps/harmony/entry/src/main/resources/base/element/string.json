@@ -31,6 +31,14 @@
     {
       "name": "home_api_missing",
       "value": "No server configured in this build"
+    },
+    {
+      "name": "home_open_reader",
+      "value": "Open hybrid reader"
+    },
+    {
+      "name": "reader_close",
+      "value": "Close"
     }
   ]
 }

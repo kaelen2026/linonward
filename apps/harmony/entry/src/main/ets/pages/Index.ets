@@ -1,6 +1,7 @@
 import { API_BASE_URL, apiIsConfigured } from '../config/ApiConfiguration';
 import { BrandMark } from '../designsystem/BrandMark';
 import { DesignTokens } from '../designsystem/DesignTokens.generated';
+import { ArticleReaderPage } from '../feature/articlereader/ArticleReaderPage';
 
 /**
  * The launch screen. Deliberately one page and no router: the shell should grow
@@ -10,9 +11,13 @@ import { DesignTokens } from '../designsystem/DesignTokens.generated';
 @Component
 struct Index {
   private isConfigured: boolean = apiIsConfigured();
+  @State private readerOpen: boolean = false;
 
   build() {
-    Scroll() {
+    if (this.readerOpen) {
+      ArticleReaderPage({ onClose: () => { this.readerOpen = false; } })
+    } else {
+      Scroll() {
       Column({ space: DesignTokens.spacingXxxl }) {
         BrandMark()
 
@@ -57,6 +62,10 @@ struct Index {
         .borderRadius(DesignTokens.radiusBrandMark)
         .borderWidth(1)
         .borderColor($r('app.color.border'))
+
+        Button($r('app.string.home_open_reader'))
+          .onClick(() => { this.readerOpen = true; })
+          .id('home.openReader')
       }
       .alignItems(HorizontalAlign.Start)
       .constraintSize({ maxWidth: DesignTokens.sizeContentMaximumWidth })
@@ -69,6 +78,7 @@ struct Index {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor($r('app.color.page_background'))
+      .backgroundColor($r('app.color.page_background'))
+    }
   }
 }

@@ -26,6 +26,7 @@
     "ios:test": "apps/ios/scripts/test.sh",
     "android:build": "apps/android/gradlew -p apps/android :app:assembleDebug",
     "android:sync-hybrid": "scripts/sync-android-hybrid-assets.sh",
+    "harmony:sync-hybrid": "scripts/sync-harmony-hybrid-assets.sh",
     "android:test": "apps/android/gradlew -p apps/android :app:testDebugUnitTest",
     "android:lint": "apps/android/gradlew -p apps/android :app:lintDebug",
     "ci:android": "scripts/android-ci.sh",
