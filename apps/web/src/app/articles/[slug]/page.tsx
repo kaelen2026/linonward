@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArticleContent } from "@/components/articles/article-content";
 import { PublicHeader } from "@/components/articles/public-header";
 import { fetchArticle, readingMinutes } from "@/lib/articles";
+import { getSession } from "@/lib/session";
 
 export async function generateMetadata({
   params,
@@ -14,11 +15,11 @@ export async function generateMetadata({
 }
 export default async function ArticlePage({ params }: PageProps<"/articles/[slug]">) {
   const { slug } = await params;
-  const article = await fetchArticle(slug);
+  const [article, session] = await Promise.all([fetchArticle(slug), getSession()]);
   if (!article) notFound();
   return (
     <>
-      <PublicHeader />
+      <PublicHeader userEmail={session?.user.email} />
       <main className="mx-auto max-w-4xl px-6 py-12 sm:py-20">
         <Link className="text-sm underline underline-offset-4" href="/articles">
           ← 返回文章列表
