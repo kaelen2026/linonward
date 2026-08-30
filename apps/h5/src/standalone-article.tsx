@@ -1,7 +1,4 @@
-import {
-  articlesResponseSchema,
-  type Article as PublishedArticle,
-} from "@linonward/contracts/content";
+import type { Article as PublishedArticle } from "@linonward/contracts/content";
 import { useEffect, useState } from "react";
 import { App } from "./App";
 import type { Bridge } from "./bridge";
@@ -82,22 +79,54 @@ export function toArticlePayload(article: PublishedArticle): ArticlePayload {
   };
 }
 
-async function fetchArticle(id: string) {
-  const baseUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "";
-  const response = await fetch(`${baseUrl}/api/content/articles?locale=zh`);
-  if (!response.ok) throw new Error(`Article request failed with ${response.status}`);
-  const articles = articlesResponseSchema.parse(await response.json()).articles;
-  return articles.find((article) => article.id === id);
+export function articleApiUrl(slug: string, locale: string, rawBaseUrl = "") {
+  const baseUrl = rawBaseUrl.replace(/\/$/, "");
+  return `${baseUrl}/api/content/articles/${encodeURIComponent(slug)}?locale=${locale === "en" ? "en" : "zh"}`;
 }
 
-export function StandaloneArticle({ bridge, id }: { bridge: Bridge; id: string }) {
+export function articleDeepLinkUrl(slug: string, locale: string) {
+  return `linonward://article/${encodeURIComponent(slug)}?locale=${locale === "en" ? "en" : "zh"}`;
+}
+
+async function fetchArticle(slug: string, locale: string) {
+  const response = await fetch(articleApiUrl(slug, locale, import.meta.env.VITE_API_URL));
+  if (!response.ok) throw new Error(`Article request failed with ${response.status}`);
+  const body = (await response.json()) as { article?: unknown };
+  if (!isPublishedArticle(body.article)) throw new Error("Article response is invalid");
+  return body.article;
+}
+
+function isPublishedArticle(value: unknown): value is PublishedArticle {
+  if (!value || typeof value !== "object") return false;
+  const article = value as Record<string, unknown>;
+  return (
+    typeof article.id === "string" &&
+    typeof article.slug === "string" &&
+    typeof article.title === "string" &&
+    typeof article.authorName === "string" &&
+    typeof article.locale === "string" &&
+    typeof article.updatedAt === "string" &&
+    Boolean(article.content) &&
+    typeof article.content === "object"
+  );
+}
+
+export function StandaloneArticle({
+  bridge,
+  locale,
+  slug,
+}: {
+  bridge: Bridge;
+  locale: string;
+  slug: string;
+}) {
   const [state, setState] = useState<
     { status: "loading" } | { status: "ready"; payload: ArticlePayload } | { status: "error" }
   >({ status: "loading" });
 
   useEffect(() => {
     let active = true;
-    void fetchArticle(id)
+    void fetchArticle(slug, locale)
       .then((article) => {
         if (!active) return;
         if (!article) {
@@ -113,9 +142,33 @@ export function StandaloneArticle({ bridge, id }: { bridge: Bridge; id: string }
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [locale, slug]);
 
-  if (state.status === "ready") return <App bridge={bridge} initialArticle={state.payload} />;
+  if (state.status === "ready") {
+    return (
+      <>
+        <nav
+          aria-label={locale === "en" ? "Article actions" : "文章操作"}
+          className="standalone-actions"
+        >
+          <a href={articleDeepLinkUrl(slug, locale)}>
+            {locale === "en" ? "Open in LinOnward" : "在 LinOnward 中打开"}
+          </a>
+          <button
+            onClick={() => {
+              const share = { title: state.payload.article.title, url: window.location.href };
+              if (navigator.share) void navigator.share(share);
+              else void navigator.clipboard.writeText(share.url);
+            }}
+            type="button"
+          >
+            {locale === "en" ? "Share" : "分享"}
+          </button>
+        </nav>
+        <App bridge={bridge} initialArticle={state.payload} />
+      </>
+    );
+  }
   return (
     <main className="reader-state" aria-live="polite">
       {state.status === "loading" ? (

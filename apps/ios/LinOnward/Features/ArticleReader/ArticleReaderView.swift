@@ -13,6 +13,7 @@ struct ArticleReaderView: View {
   @Environment(\.openURL) private var openURL
 
   let article: ReaderArticle
+  private let links: ArticleLinkConfiguration?
 
   @State private var configuration: ArticleReaderConfiguration?
   @State private var contentHeight = 0.0
@@ -21,9 +22,11 @@ struct ArticleReaderView: View {
 
   init(
     article: ReaderArticle = .sample,
-    configuration: ArticleReaderConfiguration? = .preferred()
+    configuration: ArticleReaderConfiguration? = .preferred(),
+    links: ArticleLinkConfiguration? = .fromBundle()
   ) {
     self.article = article
+    self.links = links
     _configuration = State(initialValue: configuration)
   }
 
@@ -59,6 +62,16 @@ struct ArticleReaderView: View {
     }
     .navigationTitle("article.reader.navigationTitle")
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      if let url = links?.webURL(slug: article.slug, locale: localeCode) {
+        ToolbarItem(placement: .primaryAction) {
+          ShareLink(item: url, subject: Text(article.title)) {
+            Label("article.reader.share", systemImage: "square.and.arrow.up")
+          }
+          .accessibilityIdentifier("article.reader.share")
+        }
+      }
+    }
     .alert(
       "article.reader.error.title",
       isPresented: Binding(
@@ -97,6 +110,10 @@ struct ArticleReaderView: View {
       locale: locale.identifier,
       theme: colorScheme == .dark ? "dark" : "light"
     )
+  }
+
+  private var localeCode: String {
+    locale.identifier.lowercased().hasPrefix("en") ? "en" : "zh"
   }
 
   private var fontScale: Double {

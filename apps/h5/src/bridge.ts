@@ -38,6 +38,15 @@ interface NativeWindow extends Window {
   };
 }
 
+export function hasNativeHost(target: Window = window) {
+  const nativeTarget = target as NativeWindow;
+  return Boolean(
+    nativeTarget.webkit?.messageHandlers?.[BRIDGE_NAME] ||
+      nativeTarget.LinOnwardBridge ||
+      nativeTarget.ReactNativeWebView,
+  );
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }

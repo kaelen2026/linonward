@@ -1,20 +1,20 @@
 {
-  "artifactVersion": "06340babecebdf265d12c8a42b4e17814aea729d85d22fd2940ebb9fa7d01a11",
+  "artifactVersion": "581cd483dfc2d429080cb46983b312f664436cf115f8788a8bf7a94fdce50b79",
   "entrypoint": "index.html",
   "files": [
     {
-      "path": "assets/index-BntufDIY.js",
-      "sha256": "0b2e426f98d515087d96cf5536a27beffd82a027b78d72879d8f0729723871f1",
-      "size": 285673
+      "path": "assets/index-Cn7Tqa31.js",
+      "sha256": "18f7ea066b8a5983eb76c65212afb48b130f5e81ccab3a178df608bb41e25e67",
+      "size": 223969
     },
     {
-      "path": "assets/index-Cw_VIBG8.css",
-      "sha256": "9d7aab8f617c01cf2f87ae0035ccc64696b8953a0c429f3ac0eb73a6ce3b1b69",
-      "size": 6277
+      "path": "assets/index-Dame9a8E.css",
+      "sha256": "2b4cc74eb77c2b66c75add453684dd2b75fef745556a08e6028b96116525a86e",
+      "size": 6834
     },
     {
       "path": "index.html",
-      "sha256": "71f283493a22e9f0872f38003e51c38f968f98f12b346f331c0db8f90b4ca1ff",
+      "sha256": "c7111ab0d47f4576d02e6c77f5563ae151560bdcff71295d250d92e7fb018d6c",
       "size": 830
     }
   ],

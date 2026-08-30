@@ -12,4 +12,5 @@
 | [testing.md](./testing.md) | Vitest and Playwright, what is worth testing, the RSC limitation |
 | [hybrid-offline.md](./hybrid-offline.md) | Offline H5 bundle integrity, fallback, and article caching |
 | [deployment.md](./deployment.md) | Build artifacts and deployment boundaries for every runtime |
+| [free-tier-deployment.md](./free-tier-deployment.md) | Zero-monthly-cost pilot topology, quotas, rollout, and upgrade triggers |
 | [operations.md](./operations.md) | Migrations, access, data lifecycle, task recovery |

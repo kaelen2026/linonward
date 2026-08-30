@@ -1,5 +1,8 @@
 # Deployment
 
+For the recommended zero-monthly-cost pilot topology and its eligibility constraints, see
+[Free-tier deployment plan](./free-tier-deployment.md).
+
 ## Runtime inventory
 
 The repository produces five server runtimes plus one static H5 artifact. `packages/db` is built

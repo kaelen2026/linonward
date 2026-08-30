@@ -72,6 +72,7 @@ struct ArticleServiceTests {
       id: "cached",
       publishedAt: nil,
       readingMinutes: 1,
+      slug: "cached",
       title: "Offline article"
     )
     let cache = MemoryArticleCache(snapshot: [cached])
@@ -89,6 +90,7 @@ struct ArticleServiceTests {
       id: "fresh",
       publishedAt: nil,
       readingMinutes: 1,
+      slug: "fresh",
       title: "Fresh article"
     )
     let cache = MemoryArticleCache(snapshot: nil)
