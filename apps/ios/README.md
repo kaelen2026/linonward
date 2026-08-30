@@ -114,6 +114,10 @@ accepts localhost HTTP; other configured builds accept only HTTPS. The WebView p
 navigation only within the selected origin, and article links are validated and handed to the
 system.
 
+After a published article response decodes successfully, the app atomically replaces the active
+locale's snapshot in its cache directory. If the API is unavailable, the list uses the last valid
+snapshot; an invalid response never replaces cached content.
+
 ## Structure
 
 ```text

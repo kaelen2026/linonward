@@ -21,7 +21,9 @@ final class ReadingModel {
   convenience init(bundle: Bundle = .main) {
     let origin = bundle.object(forInfoDictionaryKey: APIConfiguration.originKey) as? String
     let service = ArticleRequestFactory(baseURL: origin).map { requests in
-      LiveArticleService(requests: requests)
+      let remote = LiveArticleService(requests: requests)
+      guard let cache = FileArticleCache() else { return remote as any ArticleService }
+      return OfflineArticleService(remote: remote, cache: cache) as any ArticleService
     }
     self.init(service: service)
   }
