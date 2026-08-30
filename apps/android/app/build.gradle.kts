@@ -114,6 +114,7 @@ dependencies {
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
+  implementation(libs.androidx.webkit)
   implementation(libs.kotlinx.serialization.json)
 
   val composeBom = platform(libs.androidx.compose.bom)

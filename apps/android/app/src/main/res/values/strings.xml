@@ -36,6 +36,7 @@
     <string name="home_account">Account</string>
     <string name="home_sign_out">Sign out</string>
     <string name="home_sign_out_confirm">Sign out of LinOnward?</string>
+    <string name="home_open_reader">Open hybrid reader</string>
 
     <string name="common_cancel">Cancel</string>
 </resources>

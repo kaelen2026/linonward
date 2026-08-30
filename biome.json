@@ -14,6 +14,7 @@
       "!**/node_modules",
       "!**/dist",
       "!apps/ios/LinOnward/Resources/Hybrid/ArticleReader",
+      "!apps/android/app/src/main/assets/hybrid/article-reader",
       "!**/playwright-report",
       "!**/test-results",
       "!**/next-env.d.ts",

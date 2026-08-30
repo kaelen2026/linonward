@@ -108,6 +108,21 @@ app/src/test/     JVM tests of the flow, the request shapes, and the decoder
 Keep the app on the HTTP side of the backend boundary. It must not import `packages/db` or backend
 implementation files.
 
+## Hybrid article reader
+
+The signed-in home screen can open the same production H5 artifact bundled by iOS. Refresh the
+checked-in Android asset after changing `apps/h5`:
+
+```bash
+pnpm android:sync-hybrid
+```
+
+Android serves it from `https://appassets.androidplatform.net/assets/` through
+`WebViewAssetLoader`, never through `file://`. The host negotiates the shared bridge protocol,
+binds messages to a page session, blocks mixed content and file access, and hands external HTTPS
+or mail links back to Android. The current screen uses the H5 demo article while the Android
+article API layer is implemented as the next vertical slice.
+
 Shared colors and dimensions are generated from `design/tokens.json`. Change that source and run
 `pnpm design-tokens:generate`; do not edit `BrandColors.kt` directly.
 
