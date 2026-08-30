@@ -6,11 +6,14 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
   static let bundledHost = "app"
 
   let url: URL
+  let resourceRoot: URL?
   let usesBundledResources: Bool
 
   static var bundled: ArticleReaderConfiguration {
     ArticleReaderConfiguration(
       url: URL(string: "\(bundledScheme)://\(bundledHost)/index.html")!,
+      resourceRoot: Bundle.main.resourceURL?
+        .appending(path: "ArticleReader", directoryHint: .isDirectory),
       usesBundledResources: true
     )
   }
@@ -32,6 +35,7 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
       allowsLocalhostHTTP && scheme == "http" && Self.localHosts.contains(host)
     guard isSecure || isLocalDevelopment, let url = components.url else { return nil }
     self.url = url
+    resourceRoot = nil
     usesBundledResources = false
   }
 
@@ -47,8 +51,25 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
     ) ?? .bundled
   }
 
+  static func preferred(bundle: Bundle = .main) -> ArticleReaderConfiguration? {
+    let configured = fromBundle(bundle)
+    if configured?.usesBundledResources == false { return configured }
+    return HybridBundleStore.activeConfiguration() ?? configured
+  }
+
   func articleURL(id: String) -> URL {
     url.appending(path: "articles").appending(path: id)
+  }
+
+  static func cached(resourceRoot: URL) -> ArticleReaderConfiguration? {
+    guard FileManager.default.fileExists(
+      atPath: resourceRoot.appending(path: "index.html").path
+    ) else { return nil }
+    return ArticleReaderConfiguration(
+      url: URL(string: "\(bundledScheme)://\(bundledHost)/index.html")!,
+      resourceRoot: resourceRoot,
+      usesBundledResources: true
+    )
   }
 
   func allowsMainFrameNavigation(to candidate: URL) -> Bool {
@@ -69,8 +90,9 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
 
   private static let localHosts = ["localhost", "127.0.0.1", "::1"]
 
-  private init(url: URL, usesBundledResources: Bool) {
+  private init(url: URL, resourceRoot: URL?, usesBundledResources: Bool) {
     self.url = url
+    self.resourceRoot = resourceRoot
     self.usesBundledResources = usesBundledResources
   }
 

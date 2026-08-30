@@ -25,6 +25,10 @@
 	     URL; Debug uses localhost for the Vite development server. -->
 	<key>LinOnwardArticleReaderURL</key>
 	<string>$(LINONWARD_ARTICLE_READER_URL)</string>
+	<!-- Optional immutable Hybrid release channel. Empty disables remote code
+	     updates while preserving the bundled reader. -->
+	<key>LinOnwardHybridChannelURL</key>
+	<string>$(LINONWARD_HYBRID_CHANNEL_URL)</string>
 	<!-- The app's own Google OAuth client; empty hides the Google button. Not a
 	     secret: a native OAuth client is a public client, which is exactly why
 	     the flow proves itself with PKCE and holds no client secret. No

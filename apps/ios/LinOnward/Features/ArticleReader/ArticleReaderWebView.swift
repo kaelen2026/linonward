@@ -23,9 +23,9 @@ struct ArticleReaderWebView: UIViewRepresentable {
     webConfiguration.preferences.javaScriptCanOpenWindowsAutomatically = false
     webConfiguration.userContentController = contentController
     webConfiguration.websiteDataStore = .nonPersistent()
-    if configuration.usesBundledResources {
+    if configuration.usesBundledResources, let resourceRoot = configuration.resourceRoot {
       webConfiguration.setURLSchemeHandler(
-        ArticleReaderSchemeHandler(),
+        ArticleReaderSchemeHandler(resourceRoot: resourceRoot),
         forURLScheme: ArticleReaderConfiguration.bundledScheme
       )
     }

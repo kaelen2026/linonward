@@ -3,11 +3,10 @@ import UniformTypeIdentifiers
 import WebKit
 
 final class ArticleReaderSchemeHandler: NSObject, WKURLSchemeHandler {
-  private let resourceRoot: URL?
+  private let resourceRoot: URL
 
-  override init() {
-    resourceRoot = Bundle.main.resourceURL?
-      .appending(path: "ArticleReader", directoryHint: .isDirectory)
+  init(resourceRoot: URL) {
+    self.resourceRoot = resourceRoot
     super.init()
   }
 
@@ -38,12 +37,11 @@ final class ArticleReaderSchemeHandler: NSObject, WKURLSchemeHandler {
   func webView(_ webView: WKWebView, stop urlSchemeTask: any WKURLSchemeTask) {}
 
   private func resolvedFileURL(for requestURL: URL) -> URL? {
-    guard let resourceRoot else { return nil }
     let relativePath = requestURL.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     let requested = relativePath.isEmpty ? "index.html" : relativePath
     let candidate = resourceRoot.appending(path: requested).standardizedFileURL
     guard candidate.path.hasPrefix(resourceRoot.standardizedFileURL.path + "/") else { return nil }
     if FileManager.default.fileExists(atPath: candidate.path) { return candidate }
-    return resourceRoot.appending(path: "index.html")
+    return requested.contains(".") ? nil : resourceRoot.appending(path: "index.html")
   }
 }

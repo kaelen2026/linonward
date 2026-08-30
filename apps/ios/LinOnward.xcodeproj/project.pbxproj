@@ -12,6 +12,7 @@
 		1304D6B95460D3DAF7B42A6D /* DesignTokens.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95417825C76318B05AACABB /* DesignTokens.generated.swift */; };
 		18100FC83D41252F81747FF2 /* AuthenticationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB4CD022FFF05E8731675FC /* AuthenticationModels.swift */; };
 		1A110709F214A317F97EF169 /* LinOnwardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEDBBF5DAD88C9604E87232B /* LinOnwardApp.swift */; };
+		1B5266E251BD845FB351C3A2 /* HybridBundleUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61010BEB14E2AE74C1B7660A /* HybridBundleUpdaterTests.swift */; };
 		1EC686820AD47A7601E2D5A9 /* AuthenticationPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F94B8FC14FD269F55036BE /* AuthenticationPreviews.swift */; };
 		214CADF45553530EF4109053 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0559573061E32A3863F69F48 /* AuthenticationService.swift */; };
 		2211BDD517B1A4B58D039713 /* ReadingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF4F66F08934299043C7ED9 /* ReadingModel.swift */; };
@@ -29,6 +30,7 @@
 		8C28890C2E89F34D2887F738 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72B10E0734BB5426D6AF0760 /* ProfileView.swift */; };
 		917F5E3502DF57628DF75163 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 099E10639306D3230D7FE0E6 /* Localizable.xcstrings */; };
 		92C070675FD374EC0CF1A4F2 /* ArticleReader in Resources */ = {isa = PBXBuildFile; fileRef = D5B5DFB5DCE8C524E7DB580A /* ArticleReader */; };
+		99AE7591523B53D50A79EEA6 /* HybridBundleUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99E389A85E33ABFF65D97D3A /* HybridBundleUpdater.swift */; };
 		9D3C942B3F9766FD980DB326 /* GoogleSignInTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 543BE6E91383901E61E38513 /* GoogleSignInTests.swift */; };
 		A081A0D378CE9DF738FC6B9F /* ArticleBridgeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CFF205A1B490CFA176D4D0 /* ArticleBridgeProtocol.swift */; };
 		A518A2A395B10B5956AE4C74 /* ArticleReaderModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9AC01F2941C5104CEA3E4E /* ArticleReaderModels.swift */; };
@@ -87,6 +89,7 @@
 		533E0F68C206549019E9C2AC /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		543BE6E91383901E61E38513 /* GoogleSignInTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInTests.swift; sourceTree = "<group>"; };
 		5FC88F6E8C8168F445B90BC7 /* AuthenticationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationState.swift; sourceTree = "<group>"; };
+		61010BEB14E2AE74C1B7660A /* HybridBundleUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HybridBundleUpdaterTests.swift; sourceTree = "<group>"; };
 		660CF515F8283FDCBAE17CC7 /* SessionTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTokenStore.swift; sourceTree = "<group>"; };
 		72B10E0734BB5426D6AF0760 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		7720303E14E567312A96EDDD /* ArticleReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleReaderView.swift; sourceTree = "<group>"; };
@@ -94,6 +97,7 @@
 		89DA051A009A29FA33301267 /* AuthenticationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationTests.swift; sourceTree = "<group>"; };
 		95746541013FB13AD7B85EFF /* ArticleReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleReaderTests.swift; sourceTree = "<group>"; };
 		95ABD0995CCC34E526E09B95 /* APIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfiguration.swift; sourceTree = "<group>"; };
+		99E389A85E33ABFF65D97D3A /* HybridBundleUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HybridBundleUpdater.swift; sourceTree = "<group>"; };
 		A823299181EEDD1981821382 /* WebAuthenticationBrowser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticationBrowser.swift; sourceTree = "<group>"; };
 		AAB4CD022FFF05E8731675FC /* AuthenticationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModels.swift; sourceTree = "<group>"; };
 		AF73B1DBDA177253CF117A10 /* ReadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingView.swift; sourceTree = "<group>"; };
@@ -196,6 +200,7 @@
 				F1B3AF6D159ABCA116A18D9C /* AuthenticationStateTests.swift */,
 				89DA051A009A29FA33301267 /* AuthenticationTests.swift */,
 				543BE6E91383901E61E38513 /* GoogleSignInTests.swift */,
+				61010BEB14E2AE74C1B7660A /* HybridBundleUpdaterTests.swift */,
 			);
 			path = LinOnwardTests;
 			sourceTree = "<group>";
@@ -246,6 +251,7 @@
 				2762ACC8FEDB4B57CA04DDAA /* ArticleReaderSchemeHandler.swift */,
 				7720303E14E567312A96EDDD /* ArticleReaderView.swift */,
 				3B07DCCAF9FF87695C3EB38C /* ArticleReaderWebView.swift */,
+				99E389A85E33ABFF65D97D3A /* HybridBundleUpdater.swift */,
 			);
 			path = ArticleReader;
 			sourceTree = "<group>";
@@ -411,6 +417,7 @@
 				66E3DB77D5D3D82BD8F497F9 /* GoogleIdentityProvider.swift in Sources */,
 				35E0F314BDCD50FA380B5AC6 /* GoogleSignIn.swift in Sources */,
 				C69965A582C8F9485B6E146B /* HomeView.swift in Sources */,
+				99AE7591523B53D50A79EEA6 /* HybridBundleUpdater.swift in Sources */,
 				1A110709F214A317F97EF169 /* LinOnwardApp.swift in Sources */,
 				8C28890C2E89F34D2887F738 /* ProfileView.swift in Sources */,
 				2211BDD517B1A4B58D039713 /* ReadingModel.swift in Sources */,
@@ -431,6 +438,7 @@
 				CDC49AD57458E181364D0056 /* AuthenticationStateTests.swift in Sources */,
 				D191893291B13F6B26E4BBB5 /* AuthenticationTests.swift in Sources */,
 				9D3C942B3F9766FD980DB326 /* GoogleSignInTests.swift in Sources */,
+				1B5266E251BD845FB351C3A2 /* HybridBundleUpdaterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

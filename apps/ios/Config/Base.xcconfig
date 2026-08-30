@@ -31,3 +31,7 @@ LINONWARD_GOOGLE_CLIENT_ID =
 // local H5 development server; Release overrides this to empty so an official
 // HTTPS origin must be supplied by the release pipeline.
 LINONWARD_ARTICLE_READER_URL = http:/$()/localhost:3003/
+
+// HTTPS channel JSON for verified H5 package updates. Empty by default: the
+// bundled artifact remains the immutable recovery version.
+LINONWARD_HYBRID_CHANNEL_URL =
