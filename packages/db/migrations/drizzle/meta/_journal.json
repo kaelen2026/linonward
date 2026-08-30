@@ -29,6 +29,13 @@
       "when": 1788008035999,
       "tag": "0003_low_maximus",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788069514088,
+      "tag": "0004_late_master_chief",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -34,6 +34,7 @@ export const account = pgTable(
   "account",
   {
     id: text("id").primaryKey(),
+    issuer: text("issuer").notNull(),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
     userId: text("user_id")
@@ -48,7 +49,10 @@ export const account = pgTable(
     password: text("password"),
     ...timestamps,
   },
-  (table) => [index("account_user_id_idx").on(table.userId)],
+  (table) => [
+    index("account_user_id_idx").on(table.userId),
+    uniqueIndex("account_issuer_account_id_idx").on(table.issuer, table.accountId),
+  ],
 );
 
 export const verification = pgTable(
