@@ -55,11 +55,24 @@ describe("createApp", () => {
   });
 
   it("logs the unexpected failure so a 500 is still diagnosable", async () => {
-    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const error = vi.fn();
 
-    await createApp({ modules: [failing], allowedOrigins: [] }).request("/failing/unknown");
+    await createApp({
+      modules: [failing],
+      allowedOrigins: [],
+      logger: { error, info: vi.fn() },
+    }).request("/failing/unknown");
 
-    expect(logged).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledWith(
+      "http_request_failed",
+      expect.objectContaining({
+        error: expect.objectContaining({
+          name: "Error",
+          message: "connection to postgres://user:hunter2@db refused",
+          stack: expect.stringContaining("Error: connection to postgres://user:hunter2@db refused"),
+        }),
+      }),
+    );
   });
 
   it("stamps every response with the request id quoted in the error envelope", async () => {

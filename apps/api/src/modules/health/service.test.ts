@@ -1,8 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createHealthService } from "./service.js";
 
 const startedAt = new Date("2026-08-26T07:00:00.000Z");
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("createHealthService", () => {
   it("reports the running version so a deploy can be identified", () => {
@@ -49,6 +53,23 @@ describe("readiness", () => {
     await expect(service.readiness()).resolves.toEqual({
       status: "degraded",
       checks: { postgres: "ok", redis: "failed" },
+    });
+  });
+
+  it("fails a dependency that does not answer before the readiness deadline", async () => {
+    vi.useFakeTimers();
+    const service = createHealthService({
+      ...base,
+      probeTimeoutMs: 2_000,
+      probes: { postgres: () => new Promise(() => {}) },
+    });
+
+    const readiness = service.readiness();
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    await expect(readiness).resolves.toEqual({
+      status: "degraded",
+      checks: { postgres: "failed" },
     });
   });
 
