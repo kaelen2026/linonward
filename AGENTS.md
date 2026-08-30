@@ -5,7 +5,7 @@
 
 Guidance for coding agents, including Codex, in this repository.
 
-## Mandatory worktree gate
+## Worktree gate
 
 The primary checkout on `main` is read-only for agents. Before the first mutating action in any
 change, build, or implementation task, run:
@@ -28,6 +28,17 @@ their checks manually.
 
 Do not begin in the primary checkout and migrate changes later. If a worktree cannot be created
 safely, stop and ask the user instead of modifying `main`.
+
+### Explicit `main` exception
+
+When the user explicitly asks to work in the primary `main` checkout, agents may run development
+servers, install dependencies, build, format, generate files, and modify source files there. In
+that case, record the current branch and tracked changes with `git branch --show-current` and
+`git status --short`, but do not run `scripts/assert-agent-worktree.sh` because it intentionally
+rejects `main`.
+
+Never commit or amend changes made under this exception. Keep generated and runtime output covered
+by `.gitignore`, preserve unrelated user changes, and report the resulting working-tree changes.
 
 Setup, scripts, and workspace layout are in [README.md](./README.md). Long-form detail is in
 [`docs/`](./docs). Git rules — commit format, hooks, staging, branches — are in the linked rule

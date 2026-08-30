@@ -8,6 +8,10 @@ Operating rules for git in this repository. Style reference for humans lives in
 Never commit, amend, push, tag, or create a PR unless the user asks for it.
 Finishing an edit is not a request to commit.
 
+Work performed under the explicit `main` exception must never be committed or amended, even when
+the task itself authorizes edits, dependency installation, formatting, generation, or builds in
+the primary checkout. Move any later commit-worthy work to a task branch or worktree first.
+
 Never run destructive history or worktree commands on your own: no `push --force`,
 `reset --hard`, `rebase`, `checkout -- .`, `clean -fd`, `stash drop`,
 `worktree remove --force`, or branch deletion. If one of those is the right fix,
@@ -142,8 +146,16 @@ Use the same type vocabulary as commits. Never force-push a shared branch.
 ## Worktrees
 
 Use a worktree by default. The main checkout at `linonward/` stays on `main` and
-stays clean, so a dev server, a build, or a second task never has the rug pulled
-out from under it.
+normally stays clean, so a second task never has the rug pulled out from under
+it.
+
+When the user explicitly asks to work on `main`, agents may use the primary
+checkout for development servers, dependency installation, builds, formatting,
+code generation, and source edits. Check `git branch --show-current` and
+`git status --short` first, preserve unrelated changes, and do not run
+`scripts/assert-agent-worktree.sh`, which intentionally rejects the primary
+checkout. Never commit or amend work performed under this exception. Generated
+and runtime output must remain covered by the root `.gitignore`.
 
 If the user explicitly asks not to use a worktree, develop on a newly created
 branch instead. Never interpret "no worktree" as permission to develop directly
