@@ -30,6 +30,7 @@ case "$target" in
 esac
 
 pnpm --dir "$repo_root" --filter @linonward/h5 build
+node "$repo_root/scripts/hybrid-manifest.mjs" "$source_dir"
 
 if [[ ! -f "$source_dir/index.html" ]]; then
   echo "H5 build did not produce index.html" >&2

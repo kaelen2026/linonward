@@ -47,6 +47,46 @@ export interface HybridProtocolVersion {
   minor: number;
 }
 
+export interface HybridOfflineAsset {
+  path: string;
+  sha256: string;
+  size: number;
+}
+
+export interface HybridOfflineManifest {
+  artifactVersion: string;
+  entrypoint: "index.html";
+  files: HybridOfflineAsset[];
+  protocol: HybridProtocolVersion;
+  schemaVersion: 1;
+}
+
+export function isHybridOfflineManifest(value: unknown): value is HybridOfflineManifest {
+  if (!value || typeof value !== "object") return false;
+  const manifest = value as Partial<HybridOfflineManifest>;
+  return (
+    manifest.schemaVersion === 1 &&
+    manifest.entrypoint === "index.html" &&
+    typeof manifest.artifactVersion === "string" &&
+    /^[a-f0-9]{64}$/.test(manifest.artifactVersion) &&
+    manifest.protocol?.major === HYBRID_PROTOCOL.major &&
+    typeof manifest.protocol.minor === "number" &&
+    manifest.protocol.minor >= 0 &&
+    Array.isArray(manifest.files) &&
+    manifest.files.length > 0 &&
+    manifest.files.every(
+      (file) =>
+        typeof file.path === "string" &&
+        file.path.length > 0 &&
+        !file.path.startsWith("/") &&
+        !file.path.includes("..") &&
+        /^[a-f0-9]{64}$/.test(file.sha256) &&
+        Number.isSafeInteger(file.size) &&
+        file.size >= 0,
+    )
+  );
+}
+
 interface NativeEnvelope<TType extends string, TPayload> {
   payload: TPayload;
   sessionId: string;

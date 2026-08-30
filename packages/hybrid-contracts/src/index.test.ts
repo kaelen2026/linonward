@@ -3,6 +3,7 @@ import {
   HYBRID_CAPABILITIES,
   HYBRID_MAX_MESSAGE_BYTES,
   HYBRID_PROTOCOL,
+  isHybridOfflineManifest,
   negotiateHybridProtocol,
 } from "./index";
 
@@ -32,5 +33,30 @@ describe("hybrid protocol", () => {
     expect(negotiateHybridProtocol({ major: 2, minor: 0 }, [])).toBeUndefined();
     expect(negotiateHybridProtocol({ major: 1, minor: -1 }, [])).toBeUndefined();
     expect(negotiateHybridProtocol({ major: 1, minor: 0.5 }, [])).toBeUndefined();
+  });
+});
+
+describe("offline manifest", () => {
+  it("accepts the versioned asset integrity contract", () => {
+    expect(
+      isHybridOfflineManifest({
+        artifactVersion: "a".repeat(64),
+        entrypoint: "index.html",
+        files: [{ path: "index.html", sha256: "b".repeat(64), size: 42 }],
+        protocol: HYBRID_PROTOCOL,
+        schemaVersion: 1,
+      }),
+    ).toBe(true);
+  });
+
+  it("rejects traversal paths and incompatible protocol majors", () => {
+    const manifest = {
+      artifactVersion: "a".repeat(64),
+      entrypoint: "index.html",
+      files: [{ path: "../index.html", sha256: "b".repeat(64), size: 42 }],
+      protocol: { major: 2, minor: 0 },
+      schemaVersion: 1,
+    };
+    expect(isHybridOfflineManifest(manifest)).toBe(false);
   });
 });
