@@ -4,6 +4,57 @@ protocol ArticleService: Sendable {
   func articles(locale: Locale) async throws -> [ReaderArticle]
 }
 
+protocol ArticleCache: Sendable {
+  func load(locale: Locale) async throws -> [ReaderArticle]?
+  func save(_ articles: [ReaderArticle], locale: Locale) async throws
+}
+
+struct OfflineArticleService: ArticleService {
+  let remote: any ArticleService
+  let cache: any ArticleCache
+
+  func articles(locale: Locale) async throws -> [ReaderArticle] {
+    do {
+      let articles = try await remote.articles(locale: locale)
+      try? await cache.save(articles, locale: locale)
+      return articles
+    } catch is CancellationError {
+      throw CancellationError()
+    } catch {
+      guard let cached = try? await cache.load(locale: locale) else { throw error }
+      return cached
+    }
+  }
+}
+
+actor FileArticleCache: ArticleCache {
+  private let directory: URL
+  private let decoder = JSONDecoder()
+  private let encoder = JSONEncoder()
+
+  init?(fileManager: FileManager = .default) {
+    guard let caches = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+      return nil
+    }
+    directory = caches.appending(path: "LinOnward/Articles", directoryHint: .isDirectory)
+  }
+
+  func load(locale: Locale) throws -> [ReaderArticle]? {
+    let url = snapshotURL(locale: locale)
+    guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+    return try decoder.decode([ReaderArticle].self, from: Data(contentsOf: url))
+  }
+
+  func save(_ articles: [ReaderArticle], locale: Locale) throws {
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    try encoder.encode(articles).write(to: snapshotURL(locale: locale), options: .atomic)
+  }
+
+  private func snapshotURL(locale: Locale) -> URL {
+    directory.appending(path: "\(ArticleRequestFactory.localeCode(for: locale)).json")
+  }
+}
+
 struct ArticleRequestFactory: Sendable {
   private let baseURL: URL
 
@@ -49,7 +100,7 @@ struct ArticleRequestFactory: Sendable {
     return URLRequest(url: url)
   }
 
-  private static func localeCode(for locale: Locale) -> String {
+  static func localeCode(for locale: Locale) -> String {
     locale.identifier.lowercased().hasPrefix("en") ? "en" : "zh"
   }
 }

@@ -118,6 +118,9 @@ importers:
       '@linonward/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@linonward/hybrid-contracts':
+        specifier: workspace:*
+        version: link:../../packages/hybrid-contracts
       dompurify:
         specifier: 3.3.3
         version: 3.3.3
@@ -415,6 +418,18 @@ importers:
       drizzle-kit:
         specifier: 0.31.10
         version: 0.31.10
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(jsdom@30.0.1(@noble/hashes@2.3.0))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
+
+  packages/hybrid-contracts:
+    devDependencies:
+      '@linonward/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       typescript:
         specifier: 5.9.3
         version: 5.9.3

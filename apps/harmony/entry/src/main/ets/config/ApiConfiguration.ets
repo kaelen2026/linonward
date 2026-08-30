@@ -7,6 +7,7 @@ import { isApiConfigured, resolveApiEndpoint } from './ApiEndpoint';
  * empty on purpose.
  */
 export const API_BASE_URL: string = BuildProfile.API_BASE_URL;
+export const HYBRID_CHANNEL_URL: string = BuildProfile.HYBRID_CHANNEL_URL;
 
 export function apiIsConfigured(): boolean {
   return isApiConfigured(API_BASE_URL);

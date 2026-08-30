@@ -31,6 +31,30 @@
     {
       "name": "home_api_missing",
       "value": "No server configured in this build"
+    },
+    {
+      "name": "home_open_reader",
+      "value": "Read articles"
+    },
+    {
+      "name": "reading_loading",
+      "value": "Loading articles"
+    },
+    {
+      "name": "reading_empty",
+      "value": "No published articles yet."
+    },
+    {
+      "name": "reading_error",
+      "value": "Could not load articles."
+    },
+    {
+      "name": "reading_retry",
+      "value": "Try again"
+    },
+    {
+      "name": "reader_close",
+      "value": "Close"
     }
   ]
 }

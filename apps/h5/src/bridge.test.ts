@@ -13,6 +13,7 @@ function nativeWindow() {
 afterEach(() => {
   Reflect.deleteProperty(window, "webkit");
   Reflect.deleteProperty(window, "LinOnwardBridge");
+  Reflect.deleteProperty(window, "ReactNativeWebView");
 });
 
 describe("createBridge", () => {
@@ -102,6 +103,29 @@ describe("createBridge", () => {
     });
 
     expect(listener).not.toHaveBeenCalled();
+    bridge.destroy();
+  });
+
+  it("uses the React Native transport with the negotiated page session", () => {
+    const postMessage = vi.fn();
+    Object.assign(window, { ReactNativeWebView: { postMessage } });
+    const bridge = createBridge();
+
+    expect(bridge.post(helloMessage)).toBe("react-native");
+    expect(JSON.parse(postMessage.mock.calls[0]?.[0])).toEqual(helloMessage);
+
+    nativeWindow().LinOnward?.receive({
+      type: "bridge:welcome",
+      sessionId,
+      payload: { protocol: BRIDGE_PROTOCOL, capabilities: ["article.set"] },
+    });
+    bridge.post({ type: "reader:ready", payload: { protocol: BRIDGE_PROTOCOL } });
+
+    expect(JSON.parse(postMessage.mock.calls[1]?.[0])).toEqual({
+      type: "reader:ready",
+      sessionId,
+      payload: { protocol: BRIDGE_PROTOCOL },
+    });
     bridge.destroy();
   });
 

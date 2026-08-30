@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@linonward/contracts": "workspace:*",
+    "@linonward/hybrid-contracts": "workspace:*",
     "dompurify": "3.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8"

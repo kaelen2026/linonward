@@ -21,6 +21,31 @@ The H5 build uses relative asset paths and a restrictive CSP, so the same `dist/
 URL prefix or inside a native bundle. iOS release builds require an explicit HTTPS
 `LINONWARD_ARTICLE_READER_URL`; the development default is `http://localhost:3003/`.
 
+## Publish an H5 release
+
+Build the reader and prepare an immutable CDN tree plus an atomic channel document:
+
+```bash
+pnpm hybrid:release -- \
+  --output dist/hybrid-cdn \
+  --public-base-url https://cdn.example.com/hybrid \
+  --channel production \
+  --release-name 2026.08.30.1 \
+  --minimum-app-version 1.0.0 \
+  --rollout-percentage 10
+```
+
+Upload `releases/<artifactVersion>/` with immutable, long-lived caching. Publish
+`channels/production.json` last with short caching or revalidation. Re-running the same content is
+idempotent; attempting to replace an existing artifact version with different bytes is rejected.
+Increase `rollout-percentage` by republishing only the channel document, then move it to 100 after
+monitoring. Roll back by republishing the channel for a previously retained artifact; never mutate
+an existing release directory.
+
+The channel URL is compiled into each native release as documented in
+[Hybrid offline delivery](./hybrid-offline.md). An empty channel URL disables remote updates and
+keeps the bundled reader, which is also the final recovery path for every update failure.
+
 ## Public website and To C Web app
 
 Both frontend apps are standard Next.js server builds and require Node.js 24. They are separate

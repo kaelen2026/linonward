@@ -13,18 +13,18 @@ struct ArticleReaderView: View {
   @Environment(\.openURL) private var openURL
 
   let article: ReaderArticle
-  let configuration: ArticleReaderConfiguration?
 
+  @State private var configuration: ArticleReaderConfiguration?
   @State private var contentHeight = 0.0
   @State private var errorCode: String?
   @State private var preview: ArticlePreview?
 
   init(
     article: ReaderArticle = .sample,
-    configuration: ArticleReaderConfiguration? = .fromBundle()
+    configuration: ArticleReaderConfiguration? = .preferred()
   ) {
     self.article = article
-    self.configuration = configuration
+    _configuration = State(initialValue: configuration)
   }
 
   var body: some View {
@@ -36,12 +36,17 @@ struct ArticleReaderView: View {
           settings: settings,
           onError: { code in
             Self.logger.error("Article reader bridge error: \(code, privacy: .public)")
+            if code == "LOAD_FAILED", configuration.resourceRoot != ArticleReaderConfiguration.bundled.resourceRoot {
+              HybridBundleStore.deactivate(configuration: configuration)
+              self.configuration = .bundled
+            }
             errorCode = code
           },
           onExternalURL: { openURL($0) },
           onHeightChange: { contentHeight = $0 },
           onImage: { preview = $0 }
         )
+        .id(configuration.resourceRoot?.path ?? configuration.url.absoluteString)
         .accessibilityIdentifier("article.reader.webView")
       } else {
         ContentUnavailableView(

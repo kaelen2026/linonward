@@ -108,6 +108,26 @@ app/src/test/     JVM tests of the flow, the request shapes, and the decoder
 Keep the app on the HTTP side of the backend boundary. It must not import `packages/db` or backend
 implementation files.
 
+## Hybrid article reader
+
+The signed-in home screen can open the same production H5 artifact bundled by iOS and HarmonyOS.
+Refresh and verify all three checked-in native artifacts after changing `apps/h5`:
+
+```bash
+pnpm hybrid:sync
+pnpm hybrid:check
+```
+
+`pnpm android:sync-hybrid` remains available when intentionally updating only the Android bundle.
+
+Android serves it from `https://appassets.androidplatform.net/assets/` through
+`WebViewAssetLoader`, never through `file://`. The app loads published articles from the public
+content API, converts the supported rich-text nodes into escaped HTML, and sends the selected
+article only after the page session is negotiated. The host blocks mixed content and file access
+and hands external HTTPS or mail links back to Android. Each successful article response atomically
+replaces an app-private locale snapshot; when the API is unavailable, the reader uses that last
+valid snapshot without turning coroutine cancellation into an offline result.
+
 Shared colors and dimensions are generated from `design/tokens.json`. Change that source and run
 `pnpm design-tokens:generate`; do not edit `BrandColors.kt` directly.
 

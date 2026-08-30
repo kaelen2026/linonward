@@ -21,6 +21,9 @@ plugins {
 fun apiBaseUrl(buildType: String): String =
   providers.gradleProperty("linonward.apiBaseUrl.$buildType").orNull.orEmpty()
 
+fun hybridChannelUrl(buildType: String): String =
+  providers.gradleProperty("linonward.hybridChannelUrl.$buildType").orNull.orEmpty()
+
 android {
   namespace = "com.linonward.app"
   compileSdk = 37
@@ -56,12 +59,14 @@ android {
     debug {
       applicationIdSuffix = ".debug"
       buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl("debug")}\"")
+      buildConfigField("String", "HYBRID_CHANNEL_URL", "\"${hybridChannelUrl("debug")}\"")
     }
     release {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl("release")}\"")
+      buildConfigField("String", "HYBRID_CHANNEL_URL", "\"${hybridChannelUrl("release")}\"")
     }
   }
 
@@ -114,6 +119,7 @@ dependencies {
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
+  implementation(libs.androidx.webkit)
   implementation(libs.kotlinx.serialization.json)
 
   val composeBom = platform(libs.androidx.compose.bom)

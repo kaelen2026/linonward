@@ -5,6 +5,13 @@ import Testing
 
 @Suite("Article reader configuration")
 struct ArticleReaderConfigurationTests {
+  @Test("falls back to the bundled reader when no remote origin is configured")
+  func usesBundledReader() {
+    let configuration = ArticleReaderConfiguration.fromBundle(Bundle())
+    #expect(configuration?.usesBundledResources == true)
+    #expect(configuration?.url.absoluteString == "linonward-reader://app/index.html")
+  }
+
   @Test("accepts HTTPS and preserves its path")
   func acceptsSecureOrigin() throws {
     let configuration = try #require(

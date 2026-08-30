@@ -31,6 +31,30 @@
     {
       "name": "home_api_missing",
       "value": "此版本未配置服务器地址"
+    },
+    {
+      "name": "home_open_reader",
+      "value": "阅读文章"
+    },
+    {
+      "name": "reading_loading",
+      "value": "正在加载文章"
+    },
+    {
+      "name": "reading_empty",
+      "value": "暂无已发布文章。"
+    },
+    {
+      "name": "reading_error",
+      "value": "无法加载文章。"
+    },
+    {
+      "name": "reading_retry",
+      "value": "重试"
+    },
+    {
+      "name": "reader_close",
+      "value": "关闭"
     }
   ]
 }

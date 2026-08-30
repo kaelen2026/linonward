@@ -32,7 +32,12 @@ import com.linonward.app.designsystem.ScreenScaffold
 import com.linonward.app.feature.authentication.AuthenticatedUser
 
 @Composable
-fun HomeScreen(user: AuthenticatedUser, onSignOut: () -> Unit, modifier: Modifier = Modifier) {
+fun HomeScreen(
+  user: AuthenticatedUser,
+  onOpenReader: () -> Unit,
+  onSignOut: () -> Unit,
+  modifier: Modifier = Modifier,
+) {
   var menuOpen by remember { mutableStateOf(false) }
   // Survives a rotation: a confirmation that vanished when the device turned
   // would look like the sign-out had happened.
@@ -109,6 +114,9 @@ fun HomeScreen(user: AuthenticatedUser, onSignOut: () -> Unit, modifier: Modifie
           style = MaterialTheme.typography.bodyMedium,
         )
       }
+      TextButton(onClick = onOpenReader) {
+        Text(stringResource(R.string.home_open_reader))
+      }
     }
   }
 
@@ -145,6 +153,7 @@ private fun HomePreview() {
   LinOnwardTheme {
     HomeScreen(
       user = AuthenticatedUser(id = "user_1", email = "ada@example.com", name = "Ada"),
+      onOpenReader = {},
       onSignOut = {},
     )
   }

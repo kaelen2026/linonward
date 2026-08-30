@@ -23,6 +23,11 @@ targets:
       - path: LinOnward/DesignSystem
       - path: LinOnward/Features
       - path: LinOnward/Resources
+        excludes:
+          - Hybrid
+      - path: LinOnward/Resources/Hybrid/ArticleReader
+        type: folder
+        buildPhase: resources
     settings:
       base:
         ASSETCATALOG_COMPILER_APPICON_NAME: ""

@@ -90,16 +90,33 @@ Open `apps/ios/LinOnward.xcodeproj` in Xcode for previews and interactive Simula
 
 ## Run the H5 article reader
 
-The signed-in home screen opens the Vite article reader inside a locked-down `WKWebView`. Start
-the H5 development server before opening it in a Debug Simulator build:
+The signed-in home screen opens the Vite article reader inside a locked-down `WKWebView`. The app
+ships a generated copy of the production H5 artifact and serves it through the private
+`linonward-reader://app` origin. Refresh all three checked-in native artifacts after changing
+`apps/h5`:
+
+```bash
+pnpm hybrid:sync
+pnpm hybrid:check
+pnpm ios:generate
+```
+
+`pnpm ios:sync-hybrid` remains available when intentionally updating only the iOS bundle.
+
+Debug may still use the Vite development server when `LINONWARD_ARTICLE_READER_URL` is configured:
 
 ```bash
 pnpm --filter @linonward/h5 dev
 ```
 
-Debug reads `http://localhost:3003/` from `LINONWARD_ARTICLE_READER_URL`. Release deliberately
-leaves this empty and accepts only an explicitly supplied HTTPS URL. The WebView permits main-frame
-navigation only within that exact origin; article links are validated and handed to the system.
+An empty reader URL selects the bundled artifact in every configuration. A configured Debug build
+accepts localhost HTTP; other configured builds accept only HTTPS. The WebView permits main-frame
+navigation only within the selected origin, and article links are validated and handed to the
+system.
+
+After a published article response decodes successfully, the app atomically replaces the active
+locale's snapshot in its cache directory. If the API is unavailable, the list uses the last valid
+snapshot; an invalid response never replaces cached content.
 
 ## Structure
 

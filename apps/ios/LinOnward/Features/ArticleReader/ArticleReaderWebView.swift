@@ -23,6 +23,12 @@ struct ArticleReaderWebView: UIViewRepresentable {
     webConfiguration.preferences.javaScriptCanOpenWindowsAutomatically = false
     webConfiguration.userContentController = contentController
     webConfiguration.websiteDataStore = .nonPersistent()
+    if configuration.usesBundledResources, let resourceRoot = configuration.resourceRoot {
+      webConfiguration.setURLSchemeHandler(
+        ArticleReaderSchemeHandler(resourceRoot: resourceRoot),
+        forURLScheme: ArticleReaderConfiguration.bundledScheme
+      )
+    }
 
     let webView = WKWebView(frame: .zero, configuration: webConfiguration)
     webView.allowsBackForwardNavigationGestures = false

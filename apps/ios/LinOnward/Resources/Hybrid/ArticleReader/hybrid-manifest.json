@@ -1,0 +1,26 @@
+{
+  "artifactVersion": "06340babecebdf265d12c8a42b4e17814aea729d85d22fd2940ebb9fa7d01a11",
+  "entrypoint": "index.html",
+  "files": [
+    {
+      "path": "assets/index-BntufDIY.js",
+      "sha256": "0b2e426f98d515087d96cf5536a27beffd82a027b78d72879d8f0729723871f1",
+      "size": 285673
+    },
+    {
+      "path": "assets/index-Cw_VIBG8.css",
+      "sha256": "9d7aab8f617c01cf2f87ae0035ccc64696b8953a0c429f3ac0eb73a6ce3b1b69",
+      "size": 6277
+    },
+    {
+      "path": "index.html",
+      "sha256": "71f283493a22e9f0872f38003e51c38f968f98f12b346f331c0db8f90b4ca1ff",
+      "size": 830
+    }
+  ],
+  "protocol": {
+    "major": 1,
+    "minor": 0
+  },
+  "schemaVersion": 1
+}
