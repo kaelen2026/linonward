@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { PublicHeader } from "@/components/articles/public-header";
 import { fetchArticles, readingMinutes } from "@/lib/articles";
+import { getSession } from "@/lib/session";
 
 export default async function HomePage() {
-  const articles = await fetchArticles();
+  const [articles, session] = await Promise.all([fetchArticles(), getSession()]);
   const [featured, ...latest] = articles;
   return (
     <>
-      <PublicHeader />
+      <PublicHeader userEmail={session?.user.email} />
       <main className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
         <section className="grid gap-12 border-b border-border pb-16 lg:grid-cols-[0.95fr_1.2fr] lg:items-center">
           <div>
