@@ -69,4 +69,11 @@ describe("module boundaries", () => {
     expect(contentEntry).not.toMatch(/from "(?:hono|drizzle-orm)"/);
     expect(contentEntry).not.toContain("../../shared/database.js");
   });
+
+  it("keeps content HTTP routes free of persistence implementation details", () => {
+    const contentRoutes = readFileSync(path.join(modulesDir, "content", "routes.ts"), "utf8");
+
+    expect(contentRoutes).not.toContain('from "drizzle-orm"');
+    expect(contentRoutes).not.toContain("../../shared/database.js");
+  });
 });

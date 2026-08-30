@@ -1,11 +1,12 @@
 import type { ApiModule } from "../../shared/module.js";
-import { type ContentRouteDependencies, createContentRoutes } from "./routes.js";
+import { createContentRoutes } from "./routes.js";
+import { type ContentServiceDependencies, createContentService } from "./service.js";
 
 /** Content publishing and its protected editorial lifecycle. */
-export function createContentModule(dependencies: ContentRouteDependencies): ApiModule {
+export function createContentModule(dependencies: ContentServiceDependencies): ApiModule {
   return {
     name: "content",
     basePath: "/api/content",
-    routes: createContentRoutes(dependencies),
+    routes: createContentRoutes(createContentService(dependencies)),
   };
 }
