@@ -61,6 +61,15 @@ export interface HybridOfflineManifest {
   schemaVersion: 1;
 }
 
+export interface HybridReleaseChannel {
+  artifactVersion: string;
+  manifestUrl: string;
+  minimumAppVersion?: string;
+  releaseName: string;
+  rolloutPercentage: number;
+  schemaVersion: 1;
+}
+
 export function isHybridOfflineManifest(value: unknown): value is HybridOfflineManifest {
   if (!value || typeof value !== "object") return false;
   const manifest = value as Partial<HybridOfflineManifest>;
@@ -85,6 +94,29 @@ export function isHybridOfflineManifest(value: unknown): value is HybridOfflineM
         file.size >= 0,
     )
   );
+}
+
+export function isHybridReleaseChannel(value: unknown): value is HybridReleaseChannel {
+  if (!value || typeof value !== "object") return false;
+  const channel = value as Partial<HybridReleaseChannel>;
+  if (
+    channel.schemaVersion !== 1 ||
+    typeof channel.artifactVersion !== "string" ||
+    !/^[a-f0-9]{64}$/.test(channel.artifactVersion) ||
+    typeof channel.releaseName !== "string" ||
+    !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(channel.releaseName) ||
+    typeof channel.rolloutPercentage !== "number" ||
+    !Number.isInteger(channel.rolloutPercentage) ||
+    channel.rolloutPercentage < 0 ||
+    channel.rolloutPercentage > 100 ||
+    (channel.minimumAppVersion !== undefined && !/^\d+\.\d+\.\d+$/.test(channel.minimumAppVersion))
+  ) {
+    return false;
+  }
+  if (typeof channel.manifestUrl !== "string") return false;
+  const match = /^https:\/\/([^/?#]+)(\/[^?#]*)$/.exec(channel.manifestUrl);
+  if (!match || match[1]?.includes("@")) return false;
+  return match[2]?.endsWith(`/releases/${channel.artifactVersion}/hybrid-manifest.json`) === true;
 }
 
 interface NativeEnvelope<TType extends string, TPayload> {

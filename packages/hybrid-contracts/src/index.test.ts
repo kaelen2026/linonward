@@ -4,6 +4,7 @@ import {
   HYBRID_MAX_MESSAGE_BYTES,
   HYBRID_PROTOCOL,
   isHybridOfflineManifest,
+  isHybridReleaseChannel,
   negotiateHybridProtocol,
 } from "./index";
 
@@ -58,5 +59,41 @@ describe("offline manifest", () => {
       schemaVersion: 1,
     };
     expect(isHybridOfflineManifest(manifest)).toBe(false);
+  });
+});
+
+describe("release channel", () => {
+  it("accepts an HTTPS pointer to an immutable artifact", () => {
+    const artifactVersion = "a".repeat(64);
+    expect(
+      isHybridReleaseChannel({
+        artifactVersion,
+        manifestUrl: `https://cdn.example.com/hybrid/releases/${artifactVersion}/hybrid-manifest.json`,
+        minimumAppVersion: "1.2.0",
+        releaseName: "2026.08.30.1",
+        rolloutPercentage: 10,
+        schemaVersion: 1,
+      }),
+    ).toBe(true);
+  });
+
+  it("rejects insecure, mismatched, or invalid rollout pointers", () => {
+    const artifactVersion = "a".repeat(64);
+    const channel = {
+      artifactVersion,
+      manifestUrl: `http://cdn.example.com/releases/${artifactVersion}/hybrid-manifest.json`,
+      releaseName: "release 1",
+      rolloutPercentage: 101,
+      schemaVersion: 1,
+    };
+    expect(isHybridReleaseChannel(channel)).toBe(false);
+    expect(
+      isHybridReleaseChannel({
+        ...channel,
+        manifestUrl: `https://cdn.example.com/releases/${"b".repeat(64)}/hybrid-manifest.json`,
+        releaseName: "release-1",
+        rolloutPercentage: 100,
+      }),
+    ).toBe(false);
   });
 });
