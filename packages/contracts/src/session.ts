@@ -5,6 +5,7 @@ export const webSessionSchema = z.object({
     .object({
       email: z.email(),
       id: z.string().min(1),
+      image: z.string().trim().nullable().optional(),
       name: z.string(),
     })
     .transform((user) => ({

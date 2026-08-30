@@ -4,13 +4,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { EditorWorkbench } from "./editor-workbench";
 
-function renderWorkbench(props: { authorName: string; canPublish: boolean }) {
+function renderWorkbench(props: {
+  authorName: string;
+  canPublish: boolean;
+  userImage?: string | null;
+}) {
   const queryClient = new QueryClient({
     defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <EditorWorkbench {...props} />
+      <EditorWorkbench {...props} userEmail="editor@example.com" userName="Editor Person" />
     </QueryClientProvider>,
   );
 }
@@ -36,6 +40,25 @@ describe("EditorWorkbench permissions", () => {
   it("offers publication to an administrator", () => {
     renderWorkbench({ authorName: "Administrator", canPublish: true });
     expect(screen.getByRole("button", { name: "发布" })).toBeInTheDocument();
+  });
+
+  it("identifies the signed-in user and offers sign out", () => {
+    renderWorkbench({ authorName: "Editor Person", canPublish: true });
+
+    expect(screen.getByText("EP")).toBeInTheDocument();
+    expect(screen.queryByText("editor@example.com")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "打开用户菜单" }));
+
+    expect(screen.getByText("Editor Person")).toBeInTheDocument();
+    expect(screen.getByText("editor@example.com")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "退出" })).toBeInTheDocument();
+  });
+
+  it("links the brand back to the main site", () => {
+    renderWorkbench({ authorName: "Editor Person", canPublish: true });
+
+    expect(screen.getByRole("link", { name: "LinOnward" })).toHaveAttribute("href", "/");
   });
 
   it("saves a draft before issuing an explicit publication command", async () => {

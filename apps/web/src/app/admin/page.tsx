@@ -9,6 +9,9 @@ export default async function AdminPage() {
     <EditorWorkbench
       authorName={session.user.name}
       canPublish={hasContentCapability(access, "article.publish")}
+      userEmail={session.user.email}
+      userImage={session.user.image}
+      userName={session.user.name}
     />
   );
 }

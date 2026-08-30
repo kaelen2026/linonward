@@ -1,5 +1,7 @@
 import type { ArticleInput } from "@linonward/contracts/content";
+import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
+import { UserMenu } from "@/components/auth/user-menu";
 import type { Article } from "@/lib/articles";
 import { highlightPlugin } from "./highlight-plugin";
 import { RichTextEditor } from "./rich-text-editor";
@@ -17,6 +19,9 @@ type EditorWorkbenchViewProps = {
   selectArticle: (article: Article) => void;
   selectedArticle?: Article;
   setDraft: Dispatch<SetStateAction<ArticleInput>>;
+  userEmail: string;
+  userImage?: string | null;
+  userName: string;
 };
 
 export function EditorWorkbenchView({
@@ -32,11 +37,16 @@ export function EditorWorkbenchView({
   selectArticle,
   selectedArticle,
   setDraft,
+  userEmail,
+  userImage,
+  userName,
 }: EditorWorkbenchViewProps) {
   return (
     <div className="admin-workbench">
-      <aside className="admin-nav">
-        <p className="text-xl font-semibold">LinOnward</p>
+      <aside className="admin-nav flex flex-col">
+        <Link className="text-xl font-semibold hover:text-brand" href="/">
+          LinOnward
+        </Link>
         <p className="mt-1 text-xs text-muted-foreground">内容管理</p>
         <button
           className="mt-8 w-full rounded-md bg-brand px-3 py-2.5 font-medium text-brand-foreground"
@@ -45,7 +55,7 @@ export function EditorWorkbenchView({
         >
           ＋ 新建文章
         </button>
-        <nav aria-label="文章列表" className="mt-6 space-y-1">
+        <nav aria-label="文章列表" className="mt-6 flex-1 space-y-1">
           {articles.map((article) => (
             <button
               className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
@@ -60,6 +70,12 @@ export function EditorWorkbenchView({
             </button>
           ))}
         </nav>
+        <section
+          aria-label="当前用户"
+          className="mt-6 flex justify-end border-t border-border pt-4"
+        >
+          <UserMenu email={userEmail} image={userImage} name={userName} />
+        </section>
       </aside>
       <section className="min-w-0">
         <header className="flex h-16 items-center justify-between border-b border-border px-6">
