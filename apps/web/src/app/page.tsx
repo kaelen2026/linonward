@@ -8,7 +8,7 @@ export default async function HomePage() {
   const [featured, ...latest] = articles;
   return (
     <>
-      <PublicHeader userEmail={session?.user.email} />
+      <PublicHeader user={session?.user} />
       <main className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
         <section className="grid gap-12 border-b border-border pb-16 lg:grid-cols-[0.95fr_1.2fr] lg:items-center">
           <div>
@@ -21,12 +21,12 @@ export default async function HomePage() {
             {featured ? (
               <article className="mt-10 border-l-2 border-brand pl-5">
                 <h2 className="text-2xl font-semibold">
-                  <Link href={`/articles/${featured.slug}`}>{featured.title}</Link>
+                  <Link href={`/articles/${featured.id}`}>{featured.title}</Link>
                 </h2>
                 <p className="mt-3 leading-7 text-muted-foreground">{featured.excerpt}</p>
                 <Link
                   className="mt-5 inline-block font-medium underline decoration-brand decoration-2 underline-offset-4"
-                  href={`/articles/${featured.slug}`}
+                  href={`/articles/${featured.id}`}
                 >
                   阅读全文 →
                 </Link>
@@ -51,7 +51,7 @@ export default async function HomePage() {
                 key={article.id}
               >
                 <div>
-                  <Link className="text-lg font-semibold" href={`/articles/${article.slug}`}>
+                  <Link className="text-lg font-semibold" href={`/articles/${article.id}`}>
                     {article.title}
                   </Link>
                   <p className="mt-1 text-sm text-muted-foreground">{article.excerpt}</p>

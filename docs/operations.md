@@ -19,7 +19,7 @@ waits rather than applying the same migration concurrently.
 
 ## Access and audit boundary
 
-`apps/web` is the consumer Web application. Its protected content-management and operational
+`apps/web` is the To C Web application. Its protected content-management and operational
 surfaces have two bounded roles:
 
 - `administrator` can view, create, update, publish, unpublish, and delete articles;

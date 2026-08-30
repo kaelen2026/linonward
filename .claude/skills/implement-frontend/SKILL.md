@@ -7,7 +7,7 @@ description: Implement and verify frontend changes in LinOnward's apps/www or ap
 
 ## Establish scope
 
-1. Identify whether the task targets the bilingual official site (`apps/www`), the consumer Web application (`apps/web`), or both.
+1. Identify whether the task targets the bilingual official site (`apps/www`), the To C Web application (`apps/web`), or both.
 2. Read the target app's instructions, package scripts, nearby implementation, and nearby tests.
 3. Read the relevant installed Next.js guide before relying on a framework API or convention.
 4. Inspect `git status` and preserve unrelated work.

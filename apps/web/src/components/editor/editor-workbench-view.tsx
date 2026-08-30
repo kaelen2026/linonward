@@ -1,4 +1,5 @@
 import type { ArticleInput } from "@linonward/contracts/content";
+import { Blocks, PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
@@ -15,10 +16,12 @@ type EditorWorkbenchViewProps = {
   editorKey: number;
   isPending: boolean;
   message: string;
+  onToggleSidebar: () => void;
   saveDraft: () => Promise<Article | null>;
   selectArticle: (article: Article) => void;
   selectedArticle?: Article;
   setDraft: Dispatch<SetStateAction<ArticleInput>>;
+  sidebarCollapsed: boolean;
   userEmail: string;
   userImage?: string | null;
   userName: string;
@@ -33,46 +36,78 @@ export function EditorWorkbenchView({
   editorKey,
   isPending,
   message,
+  onToggleSidebar,
   saveDraft,
   selectArticle,
   selectedArticle,
   setDraft,
+  sidebarCollapsed,
   userEmail,
   userImage,
   userName,
 }: EditorWorkbenchViewProps) {
   return (
-    <div className="admin-workbench">
+    <div className="admin-workbench" data-sidebar-collapsed={sidebarCollapsed}>
       <aside className="admin-nav flex flex-col">
-        <Link className="text-xl font-semibold hover:text-brand" href="/">
-          LinOnward
-        </Link>
-        <p className="mt-1 text-xs text-muted-foreground">内容管理</p>
+        <div className="flex items-center justify-between gap-2">
+          <Link
+            aria-label="LinOnward"
+            className="truncate text-xl font-semibold hover:text-brand"
+            href="/"
+          >
+            {sidebarCollapsed ? "L" : "LinOnward"}
+          </Link>
+          <button
+            aria-label={sidebarCollapsed ? "展开左侧边栏" : "收起左侧边栏"}
+            className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={onToggleSidebar}
+            type="button"
+          >
+            {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
+        </div>
+        {sidebarCollapsed ? null : <p className="mt-1 text-xs text-muted-foreground">内容管理</p>}
         <button
-          className="mt-8 w-full rounded-md bg-brand px-3 py-2.5 font-medium text-brand-foreground"
+          aria-label="新建文章"
+          className="mt-8 flex w-full items-center justify-center gap-2 rounded-md bg-brand px-3 py-2.5 font-medium text-brand-foreground"
           onClick={createArticle}
           type="button"
         >
-          ＋ 新建文章
+          <Plus aria-hidden="true" size={18} />
+          {sidebarCollapsed ? null : "新建文章"}
         </button>
-        <nav aria-label="文章列表" className="mt-6 flex-1 space-y-1">
-          {articles.map((article) => (
-            <button
-              className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
-              key={article.id}
-              onClick={() => selectArticle(article)}
-              type="button"
-            >
-              <span className="line-clamp-1 font-medium">{article.title}</span>
-              <span className="mt-1 block text-xs text-muted-foreground">
-                {article.status === "published" ? "已发布" : "草稿"}
-              </span>
-            </button>
-          ))}
+        {sidebarCollapsed ? (
+          <div className="flex-1" />
+        ) : (
+          <nav aria-label="文章列表" className="mt-6 flex-1 space-y-1">
+            {articles.map((article) => (
+              <button
+                className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
+                key={article.id}
+                onClick={() => selectArticle(article)}
+                type="button"
+              >
+                <span className="line-clamp-1 font-medium">{article.title}</span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  {article.status === "published" ? "已发布" : "草稿"}
+                </span>
+              </button>
+            ))}
+          </nav>
+        )}
+        <nav aria-label="工具导航" className="border-t border-border pt-4">
+          <Link
+            aria-label="组件预览"
+            className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            href="/components"
+          >
+            <Blocks aria-hidden="true" size={18} />
+            {sidebarCollapsed ? null : "组件预览"}
+          </Link>
         </nav>
         <section
           aria-label="当前用户"
-          className="mt-6 flex justify-end border-t border-border pt-4"
+          className={`mt-4 flex border-t border-border pt-4 ${sidebarCollapsed ? "justify-center" : "justify-end"}`}
         >
           <UserMenu email={userEmail} image={userImage} name={userName} />
         </section>

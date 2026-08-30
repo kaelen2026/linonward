@@ -1,6 +1,6 @@
 # Local Web application authentication
 
-The consumer Web application at `http://localhost:3002` uses the API's Better Auth routes and
+The To C Web application at `http://localhost:3002` uses the API's Better Auth routes and
 Resend to deliver email one-time passwords. Authentication is deliberately disabled in
 zero-configuration development, even though `GET /health` still succeeds. Its content-management
 and operational routes require the appropriate protected access.

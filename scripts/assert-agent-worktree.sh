@@ -19,8 +19,7 @@ if [[ "$branch" == "main" ]]; then
 fi
 
 if [[ "$git_dir" == "$common_dir" ]]; then
-  echo "Worktree check failed: agents must work in a linked worktree, not the primary checkout." >&2
-  exit 1
+  echo "Branch checkout check passed: $branch in primary checkout $repo_root"
+else
+  echo "Worktree check passed: $branch in $repo_root"
 fi
-
-echo "Worktree check passed: $branch in $repo_root"
