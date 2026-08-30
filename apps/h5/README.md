@@ -4,6 +4,12 @@ Vite + React article surface intended for an iOS/Android WebView. The production
 the native client to provide article data. Open `/?demo=1` during local development to render the
 built-in fixture.
 
+The same reader also supports standalone article URLs that match the consumer Web application:
+`/articles/:id`. For example, `http://localhost:3003/articles/art_123` loads the published article
+with that ID from `/api/content/articles`. The development server proxies `/api` to port 3001.
+Production hosting must provide an SPA fallback to `index.html`; when the API is not same-origin,
+set `VITE_API_URL` at build time so both requests and the generated CSP use its origin.
+
 ## Commands
 
 ```bash

@@ -1,7 +1,8 @@
 # @linonward/web
 
-Consumer-facing Web application and article experience. Next.js 16 App Router, Tailwind CSS v4,
-TypeScript. Protected routes also provide content management and operational tooling.
+To C Web application and article experience. Next.js 16 App Router, Tailwind CSS v4, TypeScript.
+It is not a standalone administration app; protected routes within it also provide content
+management and operational tooling.
 
 Distinct from [`apps/www`](../www), which is the public bilingual website. This app is
 single-language (`zh-CN`) and not indexed. Public routes render published articles from
@@ -22,7 +23,7 @@ pnpm --filter @linonward/web dev     # http://localhost:3002
 
 Port `3002` keeps it clear of `www` (3000) and `api` (3001), so all three run at once.
 
-The public home, `/articles`, and `/articles/[slug]` routes read published Chinese articles. In
+The public home, `/articles`, and `/articles/[id]` routes read published Chinese articles. In
 development they show a local preview article if the API is unavailable or empty; production does
 not. Successful API reads are revalidated every 60 seconds.
 
@@ -50,7 +51,7 @@ apps/web/
 ├── src/app/
 │   ├── layout.tsx           # root layout — metadata, fonts, globals.css
 │   ├── page.tsx             # / — published article landing page
-│   ├── articles/            # public article index and detail
+│   ├── articles/            # public article index and ID-addressed detail
 │   ├── login/page.tsx       # /login — email OTP + optional Google OAuth
 │   ├── admin/page.tsx       # /admin — persistent article workbench
 │   ├── editor/page.tsx      # /editor — redirects to /admin

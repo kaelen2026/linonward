@@ -21,11 +21,12 @@ The H5 build uses relative asset paths and a restrictive CSP, so the same `dist/
 URL prefix or inside a native bundle. iOS release builds require an explicit HTTPS
 `LINONWARD_ARTICLE_READER_URL`; the development default is `http://localhost:3003/`.
 
-## Public website and consumer Web app
+## Public website and To C Web app
 
 Both frontend apps are standard Next.js server builds and require Node.js 24. They are separate
 deployments: `www` serves the bilingual public site on port 3000 by default, while `web` serves
-the consumer-facing application, including its protected administration routes, on port 3002.
+the To C application, including its protected administration routes, on port 3002. The presence
+of those routes does not make `apps/web` a standalone administration app.
 
 `NEXT_PUBLIC_API_URL` is inlined by `next build` in both apps. Set it for the target environment
 at build time; changing it after the build does not retarget an existing artifact. For `www`, add
