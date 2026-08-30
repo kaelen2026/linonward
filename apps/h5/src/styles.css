@@ -150,6 +150,58 @@ img {
   font-family: Georgia, "Songti SC", "STSong", "Noto Serif CJK SC", serif;
   font-size: calc(1.0625rem * var(--reader-font-scale));
   line-height: 1.9;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.article-highlight {
+  margin: 0 -0.05em;
+  padding: 0 0.05em;
+  border-radius: 0.16em;
+  background: color-mix(in oklab, #ffd84d 72%, transparent);
+  color: inherit;
+}
+
+.selection-menu {
+  position: fixed;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(4.5rem, 1fr));
+  overflow: hidden;
+  width: min(19rem, calc(100vw - 2rem));
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 0.75rem;
+  background: rgb(55 55 57 / 96%);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 28%);
+  transform: translate(-50%, -100%);
+  backdrop-filter: blur(18px);
+}
+
+.selection-menu button {
+  display: grid;
+  min-height: 4.5rem;
+  place-content: center;
+  gap: 0.3rem;
+  padding: 0.6rem 0.45rem;
+  border: 0;
+  border-right: 1px solid rgb(255 255 255 / 10%);
+  background: transparent;
+  color: white;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.selection-menu button:last-child {
+  border-right: 0;
+}
+
+.selection-menu button:active {
+  background: rgb(255 255 255 / 14%);
+}
+
+.selection-menu button span {
+  font-size: 1.45rem;
+  line-height: 1;
 }
 
 .article-body p,

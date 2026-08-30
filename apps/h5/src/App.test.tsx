@@ -29,7 +29,13 @@ describe("native article flow", () => {
       sessionId,
       payload: {
         protocol: BRIDGE_PROTOCOL,
-        capabilities: ["article.set", "reader.settings", "article.link"],
+        capabilities: [
+          "article.set",
+          "reader.settings",
+          "article.link",
+          "article.image",
+          "article.selection",
+        ],
       },
     });
     await waitFor(() =>
@@ -69,6 +75,34 @@ describe("native article flow", () => {
         type: "article:image",
         sessionId,
         payload: { alt: "Article cover", src: "https://linonward.com/cover.jpg" },
+      }),
+    );
+
+    const textNode = screen.getByText("Safe body").firstChild;
+    if (!textNode) throw new Error("Article text is missing");
+    const range = document.createRange();
+    range.selectNodeContents(textNode);
+    Object.assign(range, {
+      getBoundingClientRect: () => ({
+        bottom: 140,
+        height: 20,
+        left: 40,
+        right: 120,
+        top: 120,
+        width: 80,
+      }),
+    });
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    fireEvent(document, new Event("selectionchange"));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Copy" }));
+    await waitFor(() =>
+      expect(postMessage).toHaveBeenLastCalledWith({
+        type: "article:copy",
+        sessionId,
+        payload: { text: "Safe body" },
       }),
     );
     bridge.destroy();

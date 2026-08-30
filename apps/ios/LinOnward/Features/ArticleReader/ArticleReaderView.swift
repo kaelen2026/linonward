@@ -1,5 +1,6 @@
 import OSLog
 import SwiftUI
+import UIKit
 
 struct ArticleReaderView: View {
   private static let logger = Logger(
@@ -19,6 +20,7 @@ struct ArticleReaderView: View {
   @State private var contentHeight = 0.0
   @State private var errorCode: String?
   @State private var preview: ArticlePreview?
+  @State private var sharedSelection: SharedSelection?
 
   init(
     article: ReaderArticle = .sample,
@@ -47,7 +49,9 @@ struct ArticleReaderView: View {
           },
           onExternalURL: { openURL($0) },
           onHeightChange: { contentHeight = $0 },
-          onImage: { preview = $0 }
+          onImage: { preview = $0 },
+          onCopy: { UIPasteboard.general.string = $0 },
+          onShare: { sharedSelection = SharedSelection(text: $0) }
         )
         .id(configuration.resourceRoot?.path ?? configuration.url.absoluteString)
         .accessibilityIdentifier("article.reader.webView")
@@ -102,6 +106,9 @@ struct ArticleReaderView: View {
         }
       }
     }
+    .sheet(item: $sharedSelection) { selection in
+      ActivityView(items: [selection.text])
+    }
   }
 
   private var settings: ReaderSettings {
@@ -127,4 +134,19 @@ struct ArticleReaderView: View {
     default: 1.3
     }
   }
+}
+
+private struct SharedSelection: Identifiable {
+  let id = UUID()
+  let text: String
+}
+
+private struct ActivityView: UIViewControllerRepresentable {
+  let items: [Any]
+
+  func makeUIViewController(context: Context) -> UIActivityViewController {
+    UIActivityViewController(activityItems: items, applicationActivities: nil)
+  }
+
+  func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }

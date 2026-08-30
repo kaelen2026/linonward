@@ -1,20 +1,20 @@
 {
-  "artifactVersion": "581cd483dfc2d429080cb46983b312f664436cf115f8788a8bf7a94fdce50b79",
+  "artifactVersion": "fbd52edfb8fd3bc5c27b94e78292106f0d3ef762ea0df90131f1387201f345e7",
   "entrypoint": "index.html",
   "files": [
     {
-      "path": "assets/index-Cn7Tqa31.js",
-      "sha256": "18f7ea066b8a5983eb76c65212afb48b130f5e81ccab3a178df608bb41e25e67",
-      "size": 223969
+      "path": "assets/index-C-EeWxW3.css",
+      "sha256": "20ec2ecf2569231b5c0f3203ab215a9055f15a936c67f39b184b2f497730ee2d",
+      "size": 7739
     },
     {
-      "path": "assets/index-Dame9a8E.css",
-      "sha256": "2b4cc74eb77c2b66c75add453684dd2b75fef745556a08e6028b96116525a86e",
-      "size": 6834
+      "path": "assets/index-CE4tvXdg.js",
+      "sha256": "5c6755b6cd77cada82c4a1fe1dd220542d06d1dbb2c44aa705967c2d98d203bc",
+      "size": 225968
     },
     {
       "path": "index.html",
-      "sha256": "c7111ab0d47f4576d02e6c77f5563ae151560bdcff71295d250d92e7fb018d6c",
+      "sha256": "f56ecfe599caf3f8d740e8ed97deed1b50e1b60e8c4cdfaf17ad150ac8dab7b7",
       "size": 830
     }
   ],

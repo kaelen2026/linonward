@@ -18,6 +18,7 @@ describe("hybrid protocol", () => {
       "reader.height",
       "article.link",
       "article.image",
+      "article.selection",
     ]);
   });
 

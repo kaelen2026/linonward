@@ -14,6 +14,7 @@ enum ArticleBridgeCapability: String, CaseIterable, Codable, Sendable {
   case readerHeight = "reader.height"
   case articleLink = "article.link"
   case articleImage = "article.image"
+  case articleSelection = "article.selection"
 }
 
 enum ArticleBridgeEvent: Equatable, Sendable {
@@ -23,6 +24,8 @@ enum ArticleBridgeEvent: Equatable, Sendable {
   case error(code: String)
   case link(URL)
   case image(ArticlePreview)
+  case copy(String)
+  case share(String)
 }
 
 enum ArticleBridgeDecodingError: Error, Equatable {
@@ -83,9 +86,20 @@ struct ArticleBridgeDecoder: Sendable {
         let alt = payload["alt"] as? String, alt.count <= 500
       else { throw ArticleBridgeDecodingError.unsafeURL }
       return .image(ArticlePreview(alt: alt, url: url))
+    case "article:copy":
+      return .copy(try selectionText(payload))
+    case "article:share":
+      return .share(try selectionText(payload))
     default:
       throw ArticleBridgeDecodingError.invalidMessage
     }
+  }
+
+  private func selectionText(_ payload: [String: Any]) throws -> String {
+    guard let text = payload["text"] as? String, !text.isEmpty, text.count <= 10_000 else {
+      throw ArticleBridgeDecodingError.invalidMessage
+    }
+    return text
   }
 
   private func decodeHello(_ payload: [String: Any]) throws -> ArticleBridgeEvent {
