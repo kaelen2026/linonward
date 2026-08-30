@@ -110,12 +110,15 @@ implementation files.
 
 ## Hybrid article reader
 
-The signed-in home screen can open the same production H5 artifact bundled by iOS. Refresh the
-checked-in Android asset after changing `apps/h5`:
+The signed-in home screen can open the same production H5 artifact bundled by iOS and HarmonyOS.
+Refresh and verify all three checked-in native artifacts after changing `apps/h5`:
 
 ```bash
-pnpm android:sync-hybrid
+pnpm hybrid:sync
+pnpm hybrid:check
 ```
+
+`pnpm android:sync-hybrid` remains available when intentionally updating only the Android bundle.
 
 Android serves it from `https://appassets.androidplatform.net/assets/` through
 `WebViewAssetLoader`, never through `file://`. The host negotiates the shared bridge protocol,

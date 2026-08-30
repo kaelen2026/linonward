@@ -100,12 +100,16 @@ entry/src/ohosTest/              Instrumented UI tests — hypium + UiTest, need
 
 ## Hybrid article reader
 
-The home page can open the same production H5 artifact bundled by iOS and Android. Refresh the
-checked-in rawfile after changing `apps/h5`:
+The home page can open the same production H5 artifact bundled by iOS and Android. Refresh and
+verify all three checked-in native artifacts after changing `apps/h5`:
 
 ```bash
-pnpm harmony:sync-hybrid
+pnpm hybrid:sync
+pnpm hybrid:check
 ```
+
+`pnpm harmony:sync-hybrid` remains available when intentionally updating only the HarmonyOS
+rawfile.
 
 The ArkUI `Web` component loads the artifact with `$rawfile`, exposes only the shared
 `LinOnwardBridge.postMessage` proxy, negotiates a page session, and disables file access, DOM

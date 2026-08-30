@@ -92,12 +92,16 @@ Open `apps/ios/LinOnward.xcodeproj` in Xcode for previews and interactive Simula
 
 The signed-in home screen opens the Vite article reader inside a locked-down `WKWebView`. The app
 ships a generated copy of the production H5 artifact and serves it through the private
-`linonward-reader://app` origin. Refresh the checked-in artifact after changing `apps/h5`:
+`linonward-reader://app` origin. Refresh all three checked-in native artifacts after changing
+`apps/h5`:
 
 ```bash
-pnpm ios:sync-hybrid
+pnpm hybrid:sync
+pnpm hybrid:check
 pnpm ios:generate
 ```
+
+`pnpm ios:sync-hybrid` remains available when intentionally updating only the iOS bundle.
 
 Debug may still use the Vite development server when `LINONWARD_ARTICLE_READER_URL` is configured:
 
