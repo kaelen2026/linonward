@@ -13,9 +13,11 @@
 | `apps/harmony` | — | Native ArkTS application for HarmonyOS. DevEco Studio project, outside the pnpm task graph. |
 | `apps/ios` | — | Native SwiftUI application. XcodeGen project, outside the pnpm task graph. |
 | `apps/web` | `@linonward/web` | To C Web application. Next.js 16 App Router, Tailwind CSS v4. Reads `apps/api`. |
+| `apps/worker` | `@linonward/worker` | BullMQ asynchronous job worker backed by Redis and PostgreSQL. |
 | `apps/www` | `@linonward/www` | Official website. Next.js 16 App Router, Tailwind CSS v4, shadcn/ui. |
 | `packages/contracts` | `@linonward/contracts` | Shared HTTP DTOs, field limits, and runtime response schemas. |
 | `packages/db` | `@linonward/db` | Backend database boundary: Drizzle schema, relations, client, and migrations. |
+| `packages/hybrid-contracts` | `@linonward/hybrid-contracts` | Shared H5/native bridge protocol and offline-release contracts. |
 | `packages/typescript-config` | `@linonward/typescript-config` | Shared `tsconfig` presets consumed via `extends`. |
 
 Internal packages are referenced with the `workspace:*` protocol, so pnpm links
@@ -47,9 +49,9 @@ not — Biome formats those like any other file in the repo.
 | `clean` | — | no | |
 
 `^build` means "build every dependency of this workspace first". The API builds
-`@linonward/db` and `@linonward/contracts` first; both Next apps build the contracts package
-before their own tasks. Configuration-only packages without a `build` script do not add a task
-to that chain.
+`@linonward/db` and `@linonward/contracts` first; the worker builds `@linonward/db`; both Next apps
+build the contracts package; and H5 builds both contracts packages before its own task.
+Configuration-only packages without a `build` script do not add a task to that chain.
 
 Lint and format are *not* Turborepo tasks. Biome is a single fast binary that
 walks the whole repo in one pass, so running it from the root is cheaper than
@@ -222,16 +224,17 @@ limit, but `composition.ts` is the only file that knows either exists: modules s
 optional locally — absent, the in-memory adapters take over — and both are refused under
 `NODE_ENV=production`, so no deploy can quietly lose its data to a restart.
 
-The root `compose.yml` runs the three containers together; migrations owned by `packages/db` are
-applied by `dist/migrate.js` before the server starts. Endpoints, the error body, and configuration live in
+The root `compose.yml` runs the API and worker with PostgreSQL and Redis; migrations owned by
+`packages/db` are applied by the separate `dist/migrate.js` process before application replicas
+start. Endpoints, the error body, and configuration live in
 [the app README](../apps/api/README.md).
 
 ## `packages/db`
 
 `@linonward/db` is backend infrastructure, not a frontend data-access layer. It owns the single
 `postgres.js` pool factory, the typed Drizzle client, every Postgres table and relation, and the
-migration history. `apps/api` consumes it through `workspace:*`; `apps/web` and `apps/www` still
-cross the HTTP boundary and never import it.
+migration history. `apps/api` and `apps/worker` consume it through `workspace:*`; `apps/web` and
+`apps/www` still cross the HTTP boundary and never import it.
 
 Current tables are split by domain under `src/schema/`, then composed once in `schema/index.ts`.
 Drizzle Kit reads that same object, preventing runtime queries and migration generation from
@@ -272,6 +275,20 @@ code. API module isolation remains independently enforced by `apps/api/src/modul
 The cross-platform capability and compatibility lifecycle is recorded in
 [`capabilities.md`](./capabilities.md).
 
+## `packages/hybrid-contracts`
+
+`@linonward/hybrid-contracts` is the TypeScript source of truth for the H5/native boundary. It
+defines the protocol version, negotiated capabilities, message envelopes, payload types, size
+limits, offline asset manifest, release-channel document, and runtime validators. `apps/h5`
+imports it directly; iOS, Android, and HarmonyOS mirror the same wire contract in their native
+languages and verify it with platform-specific tests.
+
+The package owns compatibility rules rather than a transport. Hosts still provide WKWebView,
+Android WebView, ArkWeb, or a future React Native message channel. A matching major version is
+required, while minor versions and optional capabilities are intersected during the handshake.
+Offline releases use the same protocol version and deterministic SHA-256 manifest contract, so
+an incompatible or corrupt remote reader cannot replace the bundled recovery artifact.
+
 ## `apps/h5`
 
 `apps/h5` is a Vite + React article surface, not a standalone content backend. Native sends
@@ -281,9 +298,10 @@ negotiates a protocol minor version and capability intersection, then binds ever
 a random page `sessionId` so stale or cross-page messages are rejected.
 
 The production build uses relative asset paths and a restrictive Content Security Policy, so it
-can be hosted below a URL prefix or bundled into a native client. iOS currently embeds it in a
-locked-down `WKWebView`; Android and HarmonyOS support are planned. The full message contract and
-transport order live in [the app README](../apps/h5/README.md).
+can be hosted below a URL prefix or bundled into a native client. iOS embeds it in a locked-down
+`WKWebView`; Android and HarmonyOS provide equivalent WebView hosts. The same generated artifact
+is copied into all three native applications and remains their immutable recovery version. The
+full message contract and transport order live in [the app README](../apps/h5/README.md).
 
 ## `apps/web`
 
@@ -333,6 +351,19 @@ suite verifies the unauthenticated `/admin` redirect. Broader browser journeys s
 CSS tokens are generated from the same cross-platform `design/tokens.json` source as www and the
 native clients. Details in
 [the app README](../apps/web/README.md).
+
+## `apps/worker`
+
+`apps/worker` is a separate Node.js process for durable asynchronous work. BullMQ stores job state
+in Redis, while every processor receives the same `@linonward/db` database handle used by the API.
+The queue name, prefix, and Redis connection must match on producers and workers; the root Compose
+stack configures Redis with append-only persistence and `maxmemory-policy noeviction` so queued
+jobs are not silently evicted.
+
+The current `system.echo` processor and `enqueue:example` command are an operational smoke test,
+not a product workflow. Future producers should use `createAsyncQueue` from `src/queue.ts`, define
+their typed payload and result in `src/jobs.ts`, and keep HTTP request handling in `apps/api`.
+Deployment and local verification live in [the worker README](../apps/worker/README.md).
 
 ## `apps/feishu`
 

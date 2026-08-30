@@ -51,9 +51,10 @@ Tools. HarmonyOS verification runs only when the repository's self-hosted runner
 ├── packages/
 │   ├── contracts/              # Shared HTTP DTOs, limits, and runtime response schemas
 │   ├── db/                     # Drizzle schema, relations, client, migrations
+│   ├── hybrid-contracts/        # Shared H5/native bridge and offline-release contracts
 │   └── typescript-config/      # Shared tsconfig presets
 ├── docs/                       # Project documentation
-├── compose.yml                # Local Postgres, Redis, and API orchestration
+├── compose.yml                # Local API, worker, PostgreSQL, and Redis orchestration
 ├── biome.json                  # Lint + format
 ├── turbo.json                  # Task graph
 └── pnpm-workspace.yaml
