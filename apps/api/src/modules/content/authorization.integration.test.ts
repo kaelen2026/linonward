@@ -12,6 +12,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createApp } from "../../app.js";
 import { createContentModule } from "./index.js";
+import { createPostgresContentRepository } from "./postgres-repository.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -58,7 +59,7 @@ describe.skipIf(!databaseUrl)("content role integration", () => {
       allowedOrigins: [],
       modules: [
         createContentModule({
-          database: postgres.db,
+          repository: createPostgresContentRepository(postgres.db),
           authenticate: async () => ({ user: { id: userId, email: actorEmail, name: "Editor" } }),
           administratorEmails: [],
           clock: () => new Date("2026-08-29T12:00:00.000Z"),

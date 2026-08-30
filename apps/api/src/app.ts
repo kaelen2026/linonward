@@ -5,7 +5,7 @@ import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 
 import { ApiError, toErrorBody } from "./shared/api-error.js";
-import { createConsoleLogger, type Logger } from "./shared/logger.js";
+import { createConsoleLogger, type Logger, serializeError } from "./shared/logger.js";
 import { createInMemoryMetrics, type Metrics } from "./shared/metrics.js";
 import { type ApiModule, type AppEnv, mountModules } from "./shared/module.js";
 import { startServerTrace } from "./shared/telemetry.js";
@@ -110,7 +110,7 @@ export function createApp({
       spanId: c.var.trace.spanId,
       method: c.req.method,
       path: c.req.path,
-      error: cause instanceof Error ? cause.name : "unknown",
+      error: serializeError(cause),
     });
     return c.json(
       toErrorBody(

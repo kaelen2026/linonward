@@ -15,6 +15,7 @@ import {
   type InquiryRepository,
 } from "./modules/contact/repository.js";
 import { createContentModule } from "./modules/content/index.js";
+import { createPostgresContentRepository } from "./modules/content/postgres-repository.js";
 import { createHealthModule } from "./modules/health/index.js";
 import type { DependencyProbes } from "./modules/health/service.js";
 import { clientIp } from "./shared/client-ip.js";
@@ -156,7 +157,7 @@ export function createApiModules(dependencies: ApiDependencies): ApiModule[] {
   if (dependencies.contentDatabase)
     modules.push(
       createContentModule({
-        database: dependencies.contentDatabase,
+        repository: createPostgresContentRepository(dependencies.contentDatabase),
         authenticate: dependencies.auth?.getSession,
         administratorEmails: dependencies.administratorEmails ?? [],
         clock: dependencies.clock,

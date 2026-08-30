@@ -16,6 +16,8 @@ export type HealthServiceDependencies = {
   startedAt: Date;
   clock: () => Date;
   probes?: DependencyProbes;
+  /** Maximum time one dependency may hold the readiness response open. */
+  probeTimeoutMs?: number;
 };
 
 export type HealthService = {
@@ -28,6 +30,7 @@ export function createHealthService({
   startedAt,
   clock,
   probes = {},
+  probeTimeoutMs = 2_000,
 }: HealthServiceDependencies): HealthService {
   return {
     check() {
@@ -46,7 +49,7 @@ export function createHealthService({
       const results = await Promise.all(
         names.map(async (name) => {
           try {
-            await probes[name]?.();
+            await withinDeadline(probes[name]?.() ?? Promise.resolve(), probeTimeoutMs);
             return [name, "ok"] as const;
           } catch {
             return [name, "failed"] as const;
@@ -60,4 +63,19 @@ export function createHealthService({
       };
     },
   };
+}
+
+async function withinDeadline(probe: Promise<void>, timeoutMs: number): Promise<void> {
+  let deadline: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      probe,
+      new Promise<never>((_, reject) => {
+        deadline = setTimeout(() => reject(new Error("Readiness probe timed out")), timeoutMs);
+        deadline.unref?.();
+      }),
+    ]);
+  } finally {
+    if (deadline) clearTimeout(deadline);
+  }
 }
