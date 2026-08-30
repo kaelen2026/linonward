@@ -109,6 +109,12 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%lld 分钟" } }
       }
     },
+    "reading.more" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "More Stories" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "更多文章" } }
+      }
+    },
     "reading.title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Reading" } },
