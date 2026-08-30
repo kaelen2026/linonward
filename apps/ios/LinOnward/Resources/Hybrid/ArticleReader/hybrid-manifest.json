@@ -1,5 +1,5 @@
 {
-  "artifactVersion": "85b65578eeb0f372a0e1c69a899edfb94ceeab25c2899246c95b0d52ca3d77b0",
+  "artifactVersion": "7b29cfcc07125547d0d28460d5985829d2b3e4fdb8fee170a5b2082fafda4141",
   "entrypoint": "index.html",
   "files": [
     {
@@ -8,13 +8,13 @@
       "size": 6834
     },
     {
-      "path": "assets/index-DyL5atAo.js",
-      "sha256": "dd545d76c286f027018380fa9ba9840f864f16c3e6e16fd27ec21420edc4e414",
-      "size": 224147
+      "path": "assets/index-Z9Ow3xOF.js",
+      "sha256": "c4de8746e18c3362657eeb7dce96c842e4a22cb0492fce78170648d815e50bc8",
+      "size": 224153
     },
     {
       "path": "index.html",
-      "sha256": "b7ee000d3ae0df417d75f93bf761c60c27cc44f591abf61997fb2e6deb907ac3",
+      "sha256": "43eee44415566e6d796af1e8b3d61235506d11725200f1c9e4027d7662afcab2",
       "size": 830
     }
   ],

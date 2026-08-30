@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   formatPublishedAt,
   isArticlePayload,
@@ -33,7 +33,7 @@ export function App({ bridge, initialArticle }: AppProps) {
     [payload],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const unsubscribe = bridge.onMessage((message) => {
       if (message.type === "bridge:welcome") {
         bridge.post({
