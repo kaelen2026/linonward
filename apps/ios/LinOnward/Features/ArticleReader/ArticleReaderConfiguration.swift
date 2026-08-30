@@ -2,8 +2,18 @@ import Foundation
 
 struct ArticleReaderConfiguration: Equatable, Sendable {
   static let bundleKey = "LinOnwardArticleReaderURL"
+  static let bundledScheme = "linonward-reader"
+  static let bundledHost = "app"
 
   let url: URL
+  let usesBundledResources: Bool
+
+  static var bundled: ArticleReaderConfiguration {
+    ArticleReaderConfiguration(
+      url: URL(string: "\(bundledScheme)://\(bundledHost)/index.html")!,
+      usesBundledResources: true
+    )
+  }
 
   init?(rawValue: String?, allowsLocalhostHTTP: Bool = false) {
     guard
@@ -22,6 +32,7 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
       allowsLocalhostHTTP && scheme == "http" && Self.localHosts.contains(host)
     guard isSecure || isLocalDevelopment, let url = components.url else { return nil }
     self.url = url
+    usesBundledResources = false
   }
 
   static func fromBundle(_ bundle: Bundle = .main) -> ArticleReaderConfiguration? {
@@ -33,7 +44,7 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
     return ArticleReaderConfiguration(
       rawValue: bundle.object(forInfoDictionaryKey: bundleKey) as? String,
       allowsLocalhostHTTP: allowsLocalhostHTTP
-    )
+    ) ?? .bundled
   }
 
   func articleURL(id: String) -> URL {
@@ -57,6 +68,11 @@ struct ArticleReaderConfiguration: Equatable, Sendable {
   }
 
   private static let localHosts = ["localhost", "127.0.0.1", "::1"]
+
+  private init(url: URL, usesBundledResources: Bool) {
+    self.url = url
+    self.usesBundledResources = usesBundledResources
+  }
 
   private func effectivePort(_ components: URLComponents) -> Int? {
     if let port = components.port { return port }
