@@ -40,6 +40,29 @@ describe("createBridge", () => {
     bridge.destroy();
   });
 
+  it("replays an asynchronous iOS welcome after React remounts its listener", () => {
+    const bridge = createBridge();
+    const firstListener = vi.fn();
+    const unsubscribe = bridge.onMessage(firstListener);
+    unsubscribe();
+
+    nativeWindow().LinOnward?.receive({
+      type: "bridge:welcome",
+      sessionId,
+      payload: { protocol: BRIDGE_PROTOCOL, capabilities: ["article.set"] },
+    });
+
+    const remountedListener = vi.fn();
+    bridge.onMessage(remountedListener);
+
+    expect(firstListener).not.toHaveBeenCalled();
+    expect(remountedListener).toHaveBeenCalledOnce();
+    expect(remountedListener).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "bridge:welcome", sessionId }),
+    );
+    bridge.destroy();
+  });
+
   it("rejects messages carrying another page session", () => {
     const bridge = createBridge();
     const listener = vi.fn();

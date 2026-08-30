@@ -115,6 +115,42 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "阅读" } }
       }
     },
+    "reading.empty.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Published articles will appear here." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已发布的文章会显示在这里。" } }
+      }
+    },
+    "reading.empty.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No articles yet" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无文章" } }
+      }
+    },
+    "reading.error.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check your connection and try again." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请检查网络连接后重试。" } }
+      }
+    },
+    "reading.error.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Articles unavailable" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "文章暂不可用" } }
+      }
+    },
+    "reading.loading" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading articles" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在加载文章" } }
+      }
+    },
+    "reading.retry" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Try Again" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "重试" } }
+      }
+    },
     "tab.profile" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Me" } },

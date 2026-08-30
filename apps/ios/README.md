@@ -34,6 +34,9 @@ Debug defaults to `http://localhost:3001`, which is where `pnpm --filter @linonw
 listens, so a Simulator build needs no configuration. Signing in additionally needs the API's
 authentication variables set; see [`apps/api/.env.example`](../api/.env.example).
 
+The signed-in Reading tab loads published articles from `/api/content/articles` at that origin.
+It does not ship a production article catalog; previews and tests use injected fixtures only.
+
 Release ships the value **empty** on purpose. A release that inherited the local default would
 quietly try to reach `localhost` on somebody's phone; empty instead surfaces "no server
 configured" on the sign-in screen. Supply it from the release pipeline:

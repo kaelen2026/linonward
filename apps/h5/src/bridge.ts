@@ -124,12 +124,16 @@ function parseNativeMessage(value: unknown, sessionId?: string): NativeMessage |
 export function createBridge(target: NativeWindow = window, allowedParentOrigin?: string) {
   const listeners = new Set<MessageListener>();
   let sessionId: string | undefined;
+  let welcomeMessage: NativeMessage | undefined;
   const parentOrigin = normalizeParentOrigin(allowedParentOrigin);
 
   const receive = (value: unknown) => {
     const message = parseNativeMessage(value, sessionId);
     if (!message) return;
-    if (message.type === "bridge:welcome") sessionId = message.sessionId;
+    if (message.type === "bridge:welcome") {
+      sessionId = message.sessionId;
+      welcomeMessage = message;
+    }
     for (const listener of listeners) listener(message);
   };
 
@@ -153,9 +157,11 @@ export function createBridge(target: NativeWindow = window, allowedParentOrigin?
       delete target.LinOnward;
       listeners.clear();
       sessionId = undefined;
+      welcomeMessage = undefined;
     },
     onMessage(listener: MessageListener) {
       listeners.add(listener);
+      if (welcomeMessage) listener(welcomeMessage);
       return () => {
         listeners.delete(listener);
       };
