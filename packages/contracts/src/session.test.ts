@@ -14,4 +14,17 @@ describe("webSessionSchema", () => {
 
     expect(session.user.name).toBe("reader@example.com");
   });
+
+  it("preserves an optional user avatar", () => {
+    const session = webSessionSchema.parse({
+      user: {
+        email: "reader@example.com",
+        id: "usr_1",
+        image: "https://example.com/avatar.png",
+        name: "Reader",
+      },
+    });
+
+    expect(session.user.image).toBe("https://example.com/avatar.png");
+  });
 });
