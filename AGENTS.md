@@ -29,6 +29,10 @@ their checks manually.
 Do not begin in the primary checkout and migrate changes later. If a worktree cannot be created
 safely, stop and ask the user instead of modifying `main`.
 
+When the user explicitly requests no worktree, create and switch to a task branch in the primary
+checkout before mutating files. `scripts/assert-agent-worktree.sh` accepts that non-`main` branch
+checkout while continuing to reject the primary checkout on `main`.
+
 ### Explicit `main` exception
 
 When the user explicitly asks to work in the primary `main` checkout, agents may run development
