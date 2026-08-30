@@ -4,7 +4,7 @@ import {
   singleArticleResponseSchema,
 } from "@linonward/contracts/content";
 import type { RichTextDocument } from "@/components/editor/rich-text-schema";
-import { apiUrl } from "./api";
+import { apiUrl, requestJson } from "./api";
 
 export type Article = Omit<ContractArticle, "content"> & { content: RichTextDocument };
 export type { ArticleInput } from "@linonward/contracts/content";
@@ -78,11 +78,9 @@ export function parseArticleResponse(payload: unknown): Article {
 export async function fetchArticles(locale: "zh" | "en" = "zh"): Promise<Article[]> {
   let payload: unknown;
   try {
-    const response = await fetch(apiUrl(`/api/content/articles?locale=${locale}`), {
+    payload = await requestJson<unknown>(apiUrl(`/api/content/articles?locale=${locale}`), {
       next: { revalidate: 60 },
     });
-    if (!response.ok) return previewArticles(locale);
-    payload = await response.json();
   } catch {
     return previewArticles(locale);
   }
@@ -96,14 +94,10 @@ export async function fetchArticle(
 ): Promise<Article | null> {
   let payload: unknown;
   try {
-    const response = await fetch(
+    payload = await requestJson<unknown>(
       apiUrl(`/api/content/articles/${encodeURIComponent(slug)}?locale=${locale}`),
       { next: { revalidate: 60 } },
     );
-    if (!response.ok) {
-      return previewArticles(locale).find((article) => article.slug === slug) ?? null;
-    }
-    payload = await response.json();
   } catch {
     return previewArticles(locale).find((article) => article.slug === slug) ?? null;
   }

@@ -3,7 +3,7 @@ import { type WebSession, webSessionSchema } from "@linonward/contracts/session"
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { apiUrl } from "@/lib/api";
+import { apiUrl, requestJson } from "@/lib/api";
 import {
   bootstrapAdministratorAccess,
   isAdministrator,
@@ -15,12 +15,11 @@ export type { WebSession } from "@linonward/contracts/session";
 export async function getSession(cookieHeader?: string): Promise<WebSession | null> {
   const sessionCookie = cookieHeader ?? (await cookies()).toString();
   try {
-    const response = await fetch(apiUrl("/api/auth/get-session"), {
+    const payload = await requestJson<unknown>(apiUrl("/api/auth/get-session"), {
       cache: "no-store",
       headers: { cookie: sessionCookie },
     });
-    if (!response.ok) return null;
-    const parsed = webSessionSchema.safeParse(await response.json());
+    const parsed = webSessionSchema.safeParse(payload);
     return parsed.success ? parsed.data : null;
   } catch {
     return null;
@@ -43,12 +42,11 @@ export async function requireAdministrator(): Promise<WebSession> {
 
 async function getContentAccess(cookieHeader: string): Promise<ContentAccess | null> {
   try {
-    const response = await fetch(apiUrl("/api/content/admin/access"), {
+    const payload = await requestJson<unknown>(apiUrl("/api/content/admin/access"), {
       cache: "no-store",
       headers: { cookie: cookieHeader },
     });
-    if (!response.ok) return null;
-    const parsed = contentAccessSchema.safeParse(await response.json());
+    const parsed = contentAccessSchema.safeParse(payload);
     return parsed.success ? parsed.data : null;
   } catch {
     return null;

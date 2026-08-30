@@ -1,7 +1,19 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { EditorWorkbench } from "./editor-workbench";
+
+function renderWorkbench(props: { authorName: string; canPublish: boolean }) {
+  const queryClient = new QueryClient({
+    defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <EditorWorkbench {...props} />
+    </QueryClientProvider>,
+  );
+}
 
 describe("EditorWorkbench permissions", () => {
   beforeEach(() => {
@@ -16,13 +28,13 @@ describe("EditorWorkbench permissions", () => {
   });
 
   it("does not offer publication to an editor without that capability", () => {
-    render(<EditorWorkbench authorName="Editor" canPublish={false} />);
+    renderWorkbench({ authorName: "Editor", canPublish: false });
     expect(screen.getByRole("button", { name: "保存草稿" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "发布" })).not.toBeInTheDocument();
   });
 
   it("offers publication to an administrator", () => {
-    render(<EditorWorkbench authorName="Administrator" canPublish />);
+    renderWorkbench({ authorName: "Administrator", canPublish: true });
     expect(screen.getByRole("button", { name: "发布" })).toBeInTheDocument();
   });
 
@@ -54,7 +66,7 @@ describe("EditorWorkbench permissions", () => {
         ),
       );
     vi.stubGlobal("fetch", fetchMock);
-    render(<EditorWorkbench authorName="Administrator" canPublish />);
+    renderWorkbench({ authorName: "Administrator", canPublish: true });
 
     fireEvent.click(screen.getByRole("button", { name: "发布" }));
 
