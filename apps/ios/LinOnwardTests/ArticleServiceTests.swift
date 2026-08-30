@@ -102,6 +102,66 @@ struct ArticleServiceTests {
   }
 }
 
+@Suite("Article list presentation")
+struct ArticleListPresentationTests {
+  private let day = Date.ISO8601FormatStyle.iso8601Date(timeZone: .gmt)
+
+  @Test("reads both the API timestamp and the fixture calendar day as the same day")
+  func parsesEveryShapePublishedAtArrivesIn() throws {
+    let expected = try day.parse("2026-08-30")
+
+    #expect(ArticleDate.parse("2026-08-30T00:00:00.000Z") == expected)
+    #expect(ArticleDate.parse("2026-08-30T00:00:00Z") == expected)
+    #expect(ArticleDate.parse("2026-08-30") == expected)
+  }
+
+  @Test("resolves an absent or unreadable date to nothing rather than to 1970")
+  func refusesToInventADate() {
+    #expect(ArticleDate.parse(nil) == nil)
+    #expect(ArticleDate.parse("") == nil)
+    #expect(ArticleDate.parse("   ") == nil)
+    #expect(ArticleDate.parse("not a date") == nil)
+  }
+
+  @Test("shows the day the article was published, not the reader's local day")
+  func pinsTheDisplayedDayToTheRecordedZone() throws {
+    let published = try day.parse("2026-08-30")
+
+    var unpinned = ArticleDate.dayStyle
+    unpinned.locale = Locale(identifier: "en_US")
+    unpinned.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+
+    var displayed = ArticleDate.dayStyle
+    displayed.locale = Locale(identifier: "en_US")
+
+    // What the reader's own zone would have printed, and why the style pins it.
+    #expect(published.formatted(unpinned) == "Aug 29, 2026")
+    #expect(published.formatted(displayed) == "Aug 30, 2026")
+  }
+
+  @Test("gives an article the same cover tint on every launch")
+  func keepsCoverTintStable() {
+    #expect(
+      ArticleCoverPalette.index(for: "art_1", count: 4)
+        == ArticleCoverPalette.index(for: "art_1", count: 4)
+    )
+    #expect((0..<4).contains(ArticleCoverPalette.index(for: "art_1", count: 4)))
+    #expect((0..<4).contains(ArticleCoverPalette.index(for: "", count: 4)))
+  }
+
+  @Test("spreads a list of articles across the whole palette")
+  func spreadsCoverTints() {
+    let used = Set((0..<40).map { ArticleCoverPalette.index(for: "art_\($0)", count: 4) })
+
+    #expect(used.count == 4)
+  }
+
+  @Test("treats an empty palette as a missing tint, not a division by zero")
+  func toleratesAnEmptyPalette() {
+    #expect(ArticleCoverPalette.index(for: "art_1", count: 0) == 0)
+  }
+}
+
 private struct FailingArticleService: ArticleService {
   func articles(locale: Locale) async throws -> [ReaderArticle] {
     throw ArticleServiceError.unavailable
