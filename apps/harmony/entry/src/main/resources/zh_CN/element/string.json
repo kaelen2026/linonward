@@ -34,7 +34,23 @@
     },
     {
       "name": "home_open_reader",
-      "value": "打开 Hybrid 阅读器"
+      "value": "阅读文章"
+    },
+    {
+      "name": "reading_loading",
+      "value": "正在加载文章"
+    },
+    {
+      "name": "reading_empty",
+      "value": "暂无已发布文章。"
+    },
+    {
+      "name": "reading_error",
+      "value": "无法加载文章。"
+    },
+    {
+      "name": "reading_retry",
+      "value": "重试"
     },
     {
       "name": "reader_close",

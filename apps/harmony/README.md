@@ -113,9 +113,10 @@ rawfile.
 
 The ArkUI `Web` component loads the artifact with `$rawfile`, exposes only the shared
 `LinOnwardBridge.postMessage` proxy, negotiates a page session, and disables file access, DOM
-storage, and mixed content. The current screen injects a preview article while the HarmonyOS
-authentication and article API layers remain planned. Device coverage is still required before
-promoting the capability from Planned to Preview in `docs/capabilities.md`.
+storage, and mixed content. The app loads published content from the public article API, converts
+supported rich-text nodes into escaped HTML, and injects the selected article after bridge
+negotiation. Authentication remains planned. Device coverage is still required before promoting
+the capability from Planned to Preview in `docs/capabilities.md`.
 
 Colors come from the brand ramp in [docs/design-system.md](../../docs/design-system.md), named
 semantically in `resources/base/element/color.json` and flipped by

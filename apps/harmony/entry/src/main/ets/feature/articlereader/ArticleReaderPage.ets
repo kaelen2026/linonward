@@ -1,5 +1,6 @@
 import webview from '@ohos.web.webview';
 import { ArticleReaderBridge, BridgeWelcome } from './ArticleReaderBridge';
+import { ReaderArticle } from '../reading/ArticleModels';
 
 interface BridgeProtocolPayload {
   major: number;
@@ -28,19 +29,13 @@ interface WelcomeMessage {
   payload: WelcomePayload;
 }
 
-interface ArticleContent {
-  id: string;
-  title: string;
-  contentHtml: string;
-}
-
 interface ArticleSettings {
   theme: string;
   locale: string;
 }
 
 interface ArticlePayload {
-  article: ArticleContent;
+  article: ReaderArticle;
   settings: ArticleSettings;
 }
 
@@ -53,9 +48,13 @@ interface ArticleMessage {
 class ArticleReaderProxy {
   private bridge: ArticleReaderBridge = new ArticleReaderBridge();
   private controller: webview.WebviewController;
+  private article: ReaderArticle;
+  private locale: string;
 
-  constructor(controller: webview.WebviewController) {
+  constructor(controller: webview.WebviewController, article: ReaderArticle, locale: string) {
     this.controller = controller;
+    this.article = article;
+    this.locale = locale;
   }
 
   postMessage(raw: string): void {
@@ -87,6 +86,11 @@ class ArticleReaderProxy {
     }
   }
 
+  setContent(article: ReaderArticle, locale: string): void {
+    this.article = article;
+    this.locale = locale;
+  }
+
   private sendWelcome(welcome: BridgeWelcome): void {
     const message: WelcomeMessage = {
       type: 'bridge:welcome',
@@ -104,12 +108,8 @@ class ArticleReaderProxy {
       type: 'article:set',
       sessionId: sessionId,
       payload: {
-        article: {
-          id: 'harmony-preview',
-          title: 'LinOnward Hybrid',
-          contentHtml: '<p>The HarmonyOS container is using the bundled LinOnward reader.</p>'
-        },
-        settings: { theme: 'system', locale: 'en' }
+        article: this.article,
+        settings: { theme: 'system', locale: this.locale }
       }
     };
     this.send(JSON.stringify(message));
@@ -124,8 +124,18 @@ class ArticleReaderProxy {
 @Component
 export struct ArticleReaderPage {
   onClose: () => void = () => {};
+  article: ReaderArticle = {
+    id: 'unavailable',
+    title: '',
+    contentHtml: ''
+  };
+  locale: string = 'en';
   private controller: webview.WebviewController = new webview.WebviewController();
-  private proxy: ArticleReaderProxy = new ArticleReaderProxy(this.controller);
+  private proxy: ArticleReaderProxy = new ArticleReaderProxy(this.controller, this.article, this.locale);
+
+  aboutToAppear(): void {
+    this.proxy.setContent(this.article, this.locale);
+  }
 
   build() {
     Column() {
