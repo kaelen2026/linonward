@@ -18,7 +18,10 @@ struct HomeView: View {
         }
       }
     }
-    .tint(Color.brandNavy)
+    // No `.tint` override. `brandNavy` is navy900, which all but disappears
+    // against the dark tab bar, so selection was invisible in dark mode. The
+    // asset catalog's AccentColor carries a light and a dark value and applies
+    // to every control in the app, this tab bar included.
   }
 }
 
