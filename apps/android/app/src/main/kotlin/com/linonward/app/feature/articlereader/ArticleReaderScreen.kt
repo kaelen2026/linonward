@@ -17,13 +17,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
+import com.linonward.app.feature.reading.ReaderArticle
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 private const val READER_URL =
-  "https://appassets.androidplatform.net/assets/hybrid/article-reader/index.html?demo=1"
+  "https://appassets.androidplatform.net/assets/hybrid/article-reader/index.html"
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun ArticleReaderScreen(onClose: () -> Unit, modifier: Modifier = Modifier) {
+fun ArticleReaderScreen(
+  article: ReaderArticle,
+  onClose: () -> Unit,
+  modifier: Modifier = Modifier,
+) {
   BackHandler(onBack = onClose)
   AndroidView(
     modifier = modifier,
@@ -38,7 +46,7 @@ fun ArticleReaderScreen(onClose: () -> Unit, modifier: Modifier = Modifier) {
         settings.domStorageEnabled = false
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
         settings.setSupportMultipleWindows(false)
-        addJavascriptInterface(BridgeHost(this), "LinOnwardBridge")
+        addJavascriptInterface(BridgeHost(this, article), "LinOnwardBridge")
         webViewClient = ReaderWebViewClient(context, loader, onClose)
         loadUrl(READER_URL)
       }
@@ -51,7 +59,7 @@ fun ArticleReaderScreen(onClose: () -> Unit, modifier: Modifier = Modifier) {
   )
 }
 
-private class BridgeHost(private val webView: WebView) {
+private class BridgeHost(private val webView: WebView, private val article: ReaderArticle) {
   private val bridge = ArticleReaderBridge()
   private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -59,13 +67,23 @@ private class BridgeHost(private val webView: WebView) {
   fun postMessage(raw: String) {
     val result = bridge.receive(raw)
     if (result is ArticleBridgeResult.Welcome) {
-      val encoded = android.util.Base64.encodeToString(
-        result.message.toByteArray(),
-        android.util.Base64.NO_WRAP,
-      )
-      mainHandler.post {
-        webView.evaluateJavascript("window.LinOnward.receive(JSON.parse(atob('$encoded')))", null)
-      }
+      send(result.message)
+    } else if (result is ArticleBridgeResult.Accepted && result.type == "reader:ready") {
+      val message = buildJsonObject {
+        put("type", "article:set")
+        put("sessionId", result.sessionId)
+        put("payload", buildJsonObject {
+          put("article", Json.encodeToJsonElement(ReaderArticle.serializer(), article))
+        })
+      }.toString()
+      send(message)
+    }
+  }
+
+  private fun send(message: String) {
+    val encoded = android.util.Base64.encodeToString(message.toByteArray(), android.util.Base64.NO_WRAP)
+    mainHandler.post {
+      webView.evaluateJavascript("window.LinOnward.receive(JSON.parse(atob('$encoded')))", null)
     }
   }
 }

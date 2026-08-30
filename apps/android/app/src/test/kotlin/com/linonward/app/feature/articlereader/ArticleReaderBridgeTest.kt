@@ -16,7 +16,7 @@ class ArticleReaderBridgeTest {
     assertTrue(welcome.message.contains("\"minor\":0"))
     assertTrue(welcome.message.contains("article.set"))
     assertEquals(
-      ArticleBridgeResult.Accepted,
+      ArticleBridgeResult.Accepted("reader:ready", welcome.sessionId),
       bridge.receive(
         """{"type":"reader:ready","sessionId":"${welcome.sessionId}","payload":{"protocol":{"major":1,"minor":0}}}"""
       ),

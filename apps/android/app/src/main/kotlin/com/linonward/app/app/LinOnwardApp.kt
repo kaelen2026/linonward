@@ -3,6 +3,7 @@ package com.linonward.app.app
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,6 +17,8 @@ import com.linonward.app.feature.authentication.RestoringScreen
 import com.linonward.app.feature.authentication.SignInScreen
 import com.linonward.app.feature.home.HomeScreen
 import com.linonward.app.feature.articlereader.ArticleReaderScreen
+import com.linonward.app.feature.reading.ReaderArticle
+import com.linonward.app.feature.reading.ReadingScreen
 
 /**
  * The root composition: which of the three screens the flow's state calls for.
@@ -29,7 +32,8 @@ fun LinOnwardApp(
   viewModel: AuthenticationViewModel = viewModel(factory = AuthenticationViewModel.Factory)
 ) {
   val state by viewModel.state.collectAsStateWithLifecycle()
-  var readerOpen by rememberSaveable { mutableStateOf(false) }
+  var readingOpen by rememberSaveable { mutableStateOf(false) }
+  var selectedArticle by remember { mutableStateOf<ReaderArticle?>(null) }
 
   // Once per launch: turns a stored token back into a session before the
   // sign-in form would otherwise appear. Keyed on Unit rather than on the step,
@@ -53,12 +57,21 @@ fun LinOnwardApp(
         },
         onEditEmail = viewModel::editEmail,
       )
-    is AuthenticationState.Step.SignedIn -> if (readerOpen) {
-      ArticleReaderScreen(onClose = { readerOpen = false }, modifier = Modifier.fillMaxSize())
+    is AuthenticationState.Step.SignedIn -> if (selectedArticle != null) {
+      ArticleReaderScreen(
+        article = requireNotNull(selectedArticle),
+        onClose = { selectedArticle = null },
+        modifier = Modifier.fillMaxSize(),
+      )
+    } else if (readingOpen) {
+      ReadingScreen(
+        onArticleSelected = { selectedArticle = it },
+        onClose = { readingOpen = false },
+      )
     } else {
       HomeScreen(
         user = step.user,
-        onOpenReader = { readerOpen = true },
+        onOpenReader = { readingOpen = true },
         onSignOut = viewModel::signOut,
       )
     }

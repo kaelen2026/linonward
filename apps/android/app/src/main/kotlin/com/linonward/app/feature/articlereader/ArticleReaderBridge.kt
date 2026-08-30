@@ -13,7 +13,7 @@ import java.util.UUID
 
 internal sealed interface ArticleBridgeResult {
   data class Welcome(val sessionId: String, val message: String) : ArticleBridgeResult
-  data object Accepted : ArticleBridgeResult
+  data class Accepted(val type: String, val sessionId: String) : ArticleBridgeResult
   data object Rejected : ArticleBridgeResult
 }
 
@@ -31,7 +31,11 @@ internal class ArticleReaderBridge {
     if (message["sessionId"]?.jsonPrimitive?.content != sessionId) {
       return ArticleBridgeResult.Rejected
     }
-    return if (type in acceptedMessages) ArticleBridgeResult.Accepted else ArticleBridgeResult.Rejected
+    return if (type in acceptedMessages) {
+      ArticleBridgeResult.Accepted(type, requireNotNull(sessionId))
+    } else {
+      ArticleBridgeResult.Rejected
+    }
   }
 
   private fun welcome(payload: JsonObject): ArticleBridgeResult {

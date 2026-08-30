@@ -36,7 +36,13 @@
     <string name="home_account">Account</string>
     <string name="home_sign_out">Sign out</string>
     <string name="home_sign_out_confirm">Sign out of LinOnward?</string>
-    <string name="home_open_reader">Open hybrid reader</string>
+    <string name="home_open_reader">Read articles</string>
+
+    <string name="reading_loading">Loading articles</string>
+    <string name="reading_empty">No published articles yet.</string>
+    <string name="reading_error">Could not load articles.</string>
+    <string name="reading_retry">Try again</string>
 
     <string name="common_cancel">Cancel</string>
+    <string name="common_back">Back</string>
 </resources>

@@ -121,10 +121,10 @@ pnpm hybrid:check
 `pnpm android:sync-hybrid` remains available when intentionally updating only the Android bundle.
 
 Android serves it from `https://appassets.androidplatform.net/assets/` through
-`WebViewAssetLoader`, never through `file://`. The host negotiates the shared bridge protocol,
-binds messages to a page session, blocks mixed content and file access, and hands external HTTPS
-or mail links back to Android. The current screen uses the H5 demo article while the Android
-article API layer is implemented as the next vertical slice.
+`WebViewAssetLoader`, never through `file://`. The app loads published articles from the public
+content API, converts the supported rich-text nodes into escaped HTML, and sends the selected
+article only after the page session is negotiated. The host blocks mixed content and file access
+and hands external HTTPS or mail links back to Android.
 
 Shared colors and dimensions are generated from `design/tokens.json`. Change that source and run
 `pnpm design-tokens:generate`; do not edit `BrandColors.kt` directly.
