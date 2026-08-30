@@ -1,3 +1,5 @@
+import { DesignTokens } from './DesignTokens.generated';
+
 /**
  * The navy tile with the rising teal arrow, matching `BrandMark` in apps/ios.
  * Decorative — the headline beside it already carries the meaning, so it is
@@ -13,4 +15,3 @@ export struct BrandMark {
       .accessibilityLevel('no')
   }
 }
-import { DesignTokens } from './DesignTokens.generated';
